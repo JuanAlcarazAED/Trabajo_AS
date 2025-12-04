@@ -22,7 +22,16 @@ library(av)
 
 
 ```{r}
-av_audio_convert("video.mp4", "audio.wav")
-frames<-av_video_images("video.mp4", destdir = "frames", fps = 30)
+av_audio_convert("data/video.mp4", "data/audio.wav")
+frames<-av_video_images("data/video.mp4", destdir = "data/frames", fps = 30)
+```
+```{r}
+library(tuneR)
+audio <- readWave("data/audio.wav")
+
+```
+
+```{r}
+plot(audio)  
 ```
 
