@@ -1,13 +1,13 @@
 ---
 title: "Compresión de imágenes y vídeos usando wavelets"
 subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
-author: "Adrián Carrasco Alcalá, Clara Montalvá Barcenilla, Javier Herrero Pérez, Fabián Calvo Castillo y Juan Alcaraz Otón"
+author: "Adrián Carrasco, Clara Montalvá, Javier Herrero, Fabián Calvo y Juan Alcaraz"
 date: "Curso 2025-2026"
 output:
-  html_notebook:
-    echo: true
-    number_sections: true
+  pdf_document:
     toc: true
+    toc_depth: 3
+    number_sections: true
   html_document:
     echo: true
     number_sections: true
@@ -20,10 +20,10 @@ output:
     toc: true
     figure_caption: "Figura"
     table_caption: "Tabla"
-  pdf_document:
-    toc: true
-    toc_depth: 3
+  html_notebook:
+    echo: true
     number_sections: true
+    toc: true
   bookdown::pdf_document2:
     toc: true
     toc_depth: 3
@@ -32,7 +32,7 @@ output:
     table_caption: "Tabla"
 always_allow_html: true
 params:
-  lang: ES
+  lang: spanish
 lang: "`r switch(params$lang, ES = 'es-ES', EN = 'en-US')`"
 language:
   label:
