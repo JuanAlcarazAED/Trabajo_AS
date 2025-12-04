@@ -1,12 +1,74 @@
 ---
 title: "Compresión de imágenes y vídeos usando wavelets"
+subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco Alcalá, Clara Montalvá Barcenilla, Javier Herrero Pérez, Fabián Calvo Castillo y Juan Alcaraz Otón"
-date: "2025-12-04"
-output: html_document
+date: "Curso 2025-2026"
+output:
+  html_notebook:
+    echo: true
+    number_sections: true
+    toc: true
+  html_document:
+    echo: true
+    number_sections: true
+    theme: lumen
+    toc: true
+  bookdown::html_document2:
+    echo: true
+    number_sections: true
+    theme: spacelab
+    toc: true
+    figure_caption: "Figura"
+    table_caption: "Tabla"
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+  bookdown::pdf_document2:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    figure_caption: "Figura" # Referencias en castellano
+    table_caption: "Tabla"
+always_allow_html: true
+params:
+  lang: ES
+lang: "`r switch(params$lang, ES = 'es-ES', EN = 'en-US')`"
+language:
+  label:
+    fig: 'Figura '
+    tab: 'Tabla '
+    eq: 'Ecuación '
+    thm: 'Teorema '
+    lem: 'Lema '
+    def: 'Definición '
+    cor: 'Corolario '
+    prp: 'Proposición '
+    exm: 'Ejemplo '
+    exr: 'Ejercicio '
+    proof: 'Demostración. '
+    remark: 'Nota: '
+    solution: 'Solución. '
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Introducción
 
+# Revisión bibliográfica
+
+# Objetivos
+
+# Descripción de los datos
+
+# Metodología
+
+# Resultados
+
+# Conclusiones
+
+# Link
+
+https://github.com/JuanAlcarazAED/Trabajo_AS.git
