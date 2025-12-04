@@ -4,15 +4,15 @@ subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco, Clara Montalvá, Javier Herrero, Fabián Calvo y Juan Alcaraz"
 date: "Curso 2025-2026"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     echo: true
     number_sections: true
     theme: lumen
     toc: true
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   bookdown::html_document2:
     echo: true
     number_sections: true
