@@ -13,3 +13,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Separar audio y video
 
+```{r}
+# Librerías
+library(av)
+```
+
+
+
+
+```{r}
+av_audio_convert("video.mp4", "audio.wav")
+frames<-av_video_images("video.mp4", destdir = "frames", fps = 30)
+```
+
