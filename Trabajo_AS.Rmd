@@ -1,0 +1,12 @@
+---
+title: "Compresión de imágenes y vídeos usando wavelets"
+author: "Adrián Carrasco Alcalá, Clara Montalvá Barcenilla, Javier Herrero Pérez, Fabián Calvo Castillo y Juan Alcaraz Otón"
+date: "2025-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
