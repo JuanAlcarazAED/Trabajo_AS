@@ -16,6 +16,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # Librerías
 library(av)
+
+library(wavelets)
+library(tuneR)
+
+library(tuneR)
+library(dplyr)
+library(ggplot2)
 ```
 
 
@@ -26,7 +33,10 @@ av_audio_convert("data/video.mp4", "data/audio.wav")
 frames<-av_video_images("data/video.mp4", destdir = "data/frames", fps = 30)
 ```
 ```{r}
-library(tuneR)
+```
+
+
+```{r}
 audio <- readWave("data/audio.wav")
 
 ```
@@ -34,4 +44,151 @@ audio <- readWave("data/audio.wav")
 ```{r}
 plot(audio)  
 ```
+
+
+```{r}
+signal<-as.numeric(audio@left)
+```
+
+Cosas que tengo pensadas hacer:
+- Calcular la energía en función de las wavelets
+- Representar los niveles de la wavlet, los coeficientes y el tiempo
+- Representar las ondas con el threshold
+
+```{r}
+# Página que voy a usar de referencia
+#https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels
+n.levels <- 6
+wt <- dwt(signal, filter = "la8", n.levels = n.levels)
+
+# Expandir los valores
+expand_to_length <- function(coefs, target_len) {
+  # Expandir los valores para que no se queden a la mitad
+  rep_each <- ceiling(target_len / length(coefs))
+  expanded <- rep(coefs, each = rep_each)
+  expanded[1:target_len]
+}
+
+L <- length(signal)
+
+coef_df <- lapply(1:n.levels, function(i) {
+  expanded <- expand_to_length(wt@W[[i]], L)
+  data.frame(
+    time = 1:L,
+    coef = expanded,
+    level = paste0("d", i)
+  )
+}) %>% bind_rows()
+
+ggplot(coef_df, aes(x = time, y = level, fill = coef)) +
+  geom_raster() +
+  scale_fill_gradient2(low = "white", high = "black") +
+  labs(title = "Wavelet Detail Coefficients Heatmap",
+       x = "Tiempo (muestras)",
+       y = "Nivel wavelet") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 12),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+
+```
+CÓDIGO DE PRUEBA PARA VER CÓMO QUEDA ->
+```{r}
+# Librerías necesarias
+library(ggplot2)
+library(gridExtra)
+library(grid)
+
+set.seed(123)
+
+# ----------------------------
+# Datos para los 4 paneles D4–D1
+# ----------------------------
+
+generate_series <- function() {
+  x <- 1:100
+  y <- runif(100, -100, 100) / x
+  data.frame(x = x, y = y)
+}
+
+df_list <- lapply(1:4, function(i) generate_series())
+names(df_list) <- paste0("D", 4:1)
+
+make_plot <- function(df, label) {
+  ggplot(df, aes(x, y)) +
+    geom_line(color="green") +
+    geom_hline(yintercept = c(10,-10), color="orange", linetype="dashed") +
+    coord_cartesian(ylim=c(-20,20)) +
+    theme_minimal() +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.grid.major.x = element_blank(),
+      plot.margin = margin(2,2,2,2),
+      axis.title.y = element_text(angle = 0, vjust=0.5)
+    ) +
+    labs(y = label)
+}
+
+plots_left <- mapply(make_plot, df_list, names(df_list), SIMPLIFY = FALSE)
+
+# Para el último subplot permitimos eje X
+plots_left[[4]] <- plots_left[[4]] +
+  theme(axis.text.x = element_text(), axis.title.x = element_text())
+
+
+# ----------------------------
+# Heatmap datos
+# ----------------------------
+
+X <- 1:1000
+Y <- 0:3
+Z <- matrix(sample(0:100, 4*1000, replace=TRUE), nrow=4, byrow=TRUE)
+
+df_heat <- expand.grid(x=X, y=Y)
+df_heat$z <- as.vector(Z)
+
+# Heatmap en R
+p_heat1 <- ggplot(df_heat, aes(x, y, fill=z)) +
+  geom_tile() +
+  scale_fill_distiller(palette="YlOrBr") +
+  theme_minimal() +
+  theme(
+    plot.margin = margin(2,2,2,2),
+    panel.grid = element_blank()
+  ) +
+  labs(y="", x="")
+
+# Heatmap con máscara Z < 90
+df_heat$zm <- ifelse(df_heat$z < 90, NA, df_heat$z)
+
+p_heat2 <- ggplot(df_heat, aes(x, y, fill=zm)) +
+  geom_tile() +
+  scale_fill_distiller(palette="YlOrBr", na.value=NA) +
+  theme_minimal() +
+  theme(
+    plot.margin = margin(2,2,2,2),
+    panel.grid = element_blank()
+  ) +
+  labs(y="", x="")
+
+layout_matrix <- rbind(
+  c(1, 5, 5, 5),
+  c(2, 5, 5, 5),
+  c(3, 6, 6, 6),
+  c(4, 6, 6, 6)
+)
+
+grid.arrange(
+  grobs = c(plots_left, list(p_heat1, p_heat2)),
+  layout_matrix = layout_matrix
+)
+
+```
+
+
+
 
