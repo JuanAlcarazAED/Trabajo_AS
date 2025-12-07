@@ -90,9 +90,9 @@ plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
 #Parámetros y valores
 
 L <- length(signal)
-n.levels <- 6
+n.levels <- 8
 wt <- dwt(signal, filter = "la8", n.levels = n.levels)
-lambda <- 0.9
+lambda <- 0.8
 wt_thresholded <- wt 
 wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
 
@@ -107,28 +107,28 @@ plot_heatmap_wavelet_coef(wt_thresholded,L,n.levels)
 
 #n.levels
 for (i in 1:n.levels) {
-# vector de coeficientes
-coefs <- wt@W[[i]]
-
-# Establecer límites para todos los gráficos
-
-y_lim <- max(abs(unlist(coefs))) * (1+lambda)
-
-# Trazar los coeficientes
-plot(coefs, 
-type = 'l',
-main = paste("Nivel de Detalle d",i),
-xlab = "Índice del Coeficiente",
-ylab = expression(w[i]), 
-ylim = c(-y_lim, y_lim), # Usar el límite Y calculado
-col = "darkgray"
-)
-
-points(x = which(log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))), 
-y = coefs[log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))], 
-col = "blue", 
-pch = 19, 
-cex = 0.5)
+  # vector de coeficientes
+  coefs <- wt@W[[i]]
+  
+  # Establecer límites para todos los gráficos
+  
+  y_lim <- max(abs(unlist(coefs))) * (1+lambda)
+  
+  # Trazar los coeficientes
+  plot(coefs, 
+  type = 'l',
+  main = paste("Nivel de Detalle d",i),
+  xlab = "Índice del Coeficiente",
+  ylab = expression(w[i]), 
+  ylim = c(-y_lim, y_lim), # Usar el límite Y calculado
+  col = "darkgray"
+  )
+  
+  points(x = which(log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))), 
+  y = coefs[log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))], 
+  col = "blue", 
+  pch = 19, 
+  cex = 0.5)
 }
 
 
