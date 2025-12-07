@@ -51,17 +51,17 @@ signal<-as.numeric(audio@left)
 ```
 
 Cosas que tengo pensadas hacer:
-- Calcular la energía en función de las wavelets
-- Representar los niveles de la wavlet, los coeficientes y el tiempo
-- Representar las ondas con el threshold
-
+- Calcular la energía en función de las wavelets 
+- Representar los niveles de la wavlet, los coeficientes y el tiempo tick
+- Representar las ondas con el threshold tick
+- Normalizar los valores
 
 ```{r}
 # Página que voy a usar de referencia
 #https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels 
 # Apuntes del tema 3 de compresión de una onda
-n.levels <- 6
-wt <- dwt(signal, filter = "la8", n.levels = n.levels)
+
+# Funciones importantes
 
 expand_to_length <- function(coefs, target_len) {
 rep_each <- ceiling(target_len / length(coefs))
@@ -72,12 +72,6 @@ hard_threshold <- function(coefs, lambda) {
   coefs[log(1+abs(coefs)**2) < lambda*max(log(1+abs(coefs)**2))] <- 0
   return(coefs)
 }
-
-lambda <- 0.9
-wt_thresholded <- wt 
-wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
-
-L <- length(signal)
 
 plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
   coef_list <- lapply(1:n.levels, function(i) {
@@ -93,107 +87,54 @@ plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
   axis(side=2,at=1:n.levels,labels = paste0("d", 1:n.levels))
 }
 
+#Parámetros y valores
+
+L <- length(signal)
+n.levels <- 6
+wt <- dwt(signal, filter = "la8", n.levels = n.levels)
+lambda <- 0.9
+wt_thresholded <- wt 
+wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
+
+
+# Representaciones
+
 plot_heatmap_wavelet_coef(wt,L,n.levels)
 plot_heatmap_wavelet_coef(wt_thresholded,L,n.levels)
 
 ```
-
-
-
-CÓDIGO DE PRUEBA PARA VER CÓMO QUEDA ->
 ```{r}
-# Librerías necesarias
-library(ggplot2)
-library(gridExtra)
-library(grid)
 
-set.seed(123)
+#n.levels
+for (i in 1:n.levels) {
+# vector de coeficientes
+coefs <- wt@W[[i]]
 
-# ----------------------------
-# Datos para los 4 paneles D4–D1
-# ----------------------------
+# Establecer límites para todos los gráficos
 
-generate_series <- function() {
-  x <- 1:100
-  y <- runif(100, -100, 100) / x
-  data.frame(x = x, y = y)
-}
+y_lim <- max(abs(unlist(coefs))) * (1+lambda)
 
-df_list <- lapply(1:4, function(i) generate_series())
-names(df_list) <- paste0("D", 4:1)
-
-make_plot <- function(df, label) {
-  ggplot(df, aes(x, y)) +
-    geom_line(color="green") +
-    geom_hline(yintercept = c(10,-10), color="orange", linetype="dashed") +
-    coord_cartesian(ylim=c(-20,20)) +
-    theme_minimal() +
-    theme(
-      axis.title.x = element_blank(),
-      axis.text.x = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.grid.major.x = element_blank(),
-      plot.margin = margin(2,2,2,2),
-      axis.title.y = element_text(angle = 0, vjust=0.5)
-    ) +
-    labs(y = label)
-}
-
-plots_left <- mapply(make_plot, df_list, names(df_list), SIMPLIFY = FALSE)
-
-# Para el último subplot permitimos eje X
-plots_left[[4]] <- plots_left[[4]] +
-  theme(axis.text.x = element_text(), axis.title.x = element_text())
-
-
-# ----------------------------
-# Heatmap datos
-# ----------------------------
-
-X <- 1:1000
-Y <- 0:3
-Z <- matrix(sample(0:100, 4*1000, replace=TRUE), nrow=4, byrow=TRUE)
-
-df_heat <- expand.grid(x=X, y=Y)
-df_heat$z <- as.vector(Z)
-
-# Heatmap en R
-p_heat1 <- ggplot(df_heat, aes(x, y, fill=z)) +
-  geom_tile() +
-  scale_fill_distiller(palette="YlOrBr") +
-  theme_minimal() +
-  theme(
-    plot.margin = margin(2,2,2,2),
-    panel.grid = element_blank()
-  ) +
-  labs(y="", x="")
-
-# Heatmap con máscara Z < 90
-df_heat$zm <- ifelse(df_heat$z < 90, NA, df_heat$z)
-
-p_heat2 <- ggplot(df_heat, aes(x, y, fill=zm)) +
-  geom_tile() +
-  scale_fill_distiller(palette="YlOrBr", na.value=NA) +
-  theme_minimal() +
-  theme(
-    plot.margin = margin(2,2,2,2),
-    panel.grid = element_blank()
-  ) +
-  labs(y="", x="")
-
-layout_matrix <- rbind(
-  c(1, 5, 5, 5),
-  c(2, 5, 5, 5),
-  c(3, 6, 6, 6),
-  c(4, 6, 6, 6)
+# Trazar los coeficientes
+plot(coefs, 
+type = 'l',
+main = paste("Nivel de Detalle d",i),
+xlab = "Índice del Coeficiente",
+ylab = expression(w[i]), 
+ylim = c(-y_lim, y_lim), # Usar el límite Y calculado
+col = "darkgray"
 )
 
-grid.arrange(
-  grobs = c(plots_left, list(p_heat1, p_heat2)),
-  layout_matrix = layout_matrix
-)
+points(x = which(log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))), 
+y = coefs[log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))], 
+col = "blue", 
+pch = 19, 
+cex = 0.5)
+}
+
 
 ```
+
+
 
 
 
