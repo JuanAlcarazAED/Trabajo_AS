@@ -55,45 +55,37 @@ Cosas que tengo pensadas hacer:
 - Representar los niveles de la wavlet, los coeficientes y el tiempo
 - Representar las ondas con el threshold
 
+
 ```{r}
 # Página que voy a usar de referencia
 #https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels
+# Apuntes del tema 3 de compresión de una onda
 n.levels <- 6
 wt <- dwt(signal, filter = "la8", n.levels = n.levels)
 
-# Expandir los valores
 expand_to_length <- function(coefs, target_len) {
-  # Expandir los valores para que no se queden a la mitad
-  rep_each <- ceiling(target_len / length(coefs))
-  expanded <- rep(coefs, each = rep_each)
-  expanded[1:target_len]
+rep_each <- ceiling(target_len / length(coefs))
+expanded <- rep(coefs, each = rep_each)
+expanded[1:target_len]
 }
 
 L <- length(signal)
-
-coef_df <- lapply(1:n.levels, function(i) {
+# Creamos una lista donde cada elemento es el vector de coeficientes expandidos
+coef_list <- lapply(1:n.levels, function(i) {
   expanded <- expand_to_length(wt@W[[i]], L)
-  data.frame(
-    time = 1:L,
-    coef = expanded,
-    level = paste0("d", i)
-  )
-}) %>% bind_rows()
+  log1p(abs(expanded)^2)
+})
+coef_matrix_raw <- do.call(cbind, coef_list)
+coef_matrix <- (coef_matrix_raw[, 1:n.levels])
 
-ggplot(coef_df, aes(x = time, y = level, fill = coef)) +
-  geom_raster() +
-  scale_fill_gradient2(low = "white", high = "black") +
-  labs(title = "Wavelet Detail Coefficients Heatmap",
-       x = "Tiempo (muestras)",
-       y = "Nivel wavelet") +
-  theme_minimal() +
-  theme(
-    axis.text.y = element_text(size = 12),
-    plot.title = element_text(size = 16, face = "bold")
-  )
+colores <- brewer.pal(9, "YlOrBr")
 
-
+image(x=1:L,y=1:n.levels,z=(coef_matrix),main="Wavelet coeficientes de detalle heatmap",xlab="Tiempo",ylab="Nivel wavelet",yaxt="n")
+axis(side=2,at=1:n.levels,labels = paste0("d", 1:n.levels))
 ```
+
+
+
 CÓDIGO DE PRUEBA PARA VER CÓMO QUEDA ->
 ```{r}
 # Librerías necesarias
