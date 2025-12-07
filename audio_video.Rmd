@@ -68,20 +68,34 @@ rep_each <- ceiling(target_len / length(coefs))
 expanded <- rep(coefs, each = rep_each)
 expanded[1:target_len]
 }
+hard_threshold <- function(coefs, lambda) {
+  coefs[log(1+abs(coefs)**2) < lambda*max(log(1+abs(coefs)**2))] <- 0
+  return(coefs)
+}
+
+lambda <- 0.9
+wt_thresholded <- wt 
+wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
 
 L <- length(signal)
-# Creamos una lista donde cada elemento es el vector de coeficientes expandidos
-coef_list <- lapply(1:n.levels, function(i) {
-  expanded <- expand_to_length(wt@W[[i]], L)
-  log1p(abs(expanded)^2)
-})
-coef_matrix_raw <- do.call(cbind, coef_list)
-coef_matrix <- (coef_matrix_raw[, 1:n.levels])
 
-colores <- brewer.pal(9, "YlOrBr")
+plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
+  coef_list <- lapply(1:n.levels, function(i) {
+    expanded <- expand_to_length(wt@W[[i]], L)
+    log1p(abs(expanded)^2)
+  })
+  coef_matrix_raw <- do.call(cbind, coef_list)
+  coef_matrix <- (coef_matrix_raw[, 1:n.levels])
+  
+  colores <- brewer.pal(9, "YlOrBr")
+  
+  image(x=1:L,y=1:n.levels,z=(coef_matrix),main="Wavelet coeficientes de detalle heatmap",xlab="Tiempo",ylab="Nivel wavelet",yaxt="n")
+  axis(side=2,at=1:n.levels,labels = paste0("d", 1:n.levels))
+}
 
-image(x=1:L,y=1:n.levels,z=(coef_matrix),main="Wavelet coeficientes de detalle heatmap",xlab="Tiempo",ylab="Nivel wavelet",yaxt="n")
-axis(side=2,at=1:n.levels,labels = paste0("d", 1:n.levels))
+plot_heatmap_wavelet_coef(wt,L,n.levels)
+plot_heatmap_wavelet_coef(wt_thresholded,L,n.levels)
+
 ```
 
 
