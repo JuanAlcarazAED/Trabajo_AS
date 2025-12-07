@@ -58,7 +58,7 @@ Cosas que tengo pensadas hacer:
 
 ```{r}
 # Página que voy a usar de referencia
-#https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels
+#https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels 
 # Apuntes del tema 3 de compresión de una onda
 n.levels <- 6
 wt <- dwt(signal, filter = "la8", n.levels = n.levels)
