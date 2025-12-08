@@ -208,6 +208,7 @@ wt_thresholded@W <- lapply(wt@W, function(W_i) hard_threshold(W_i, lambda))
 
 signal_compressed <- idwt(wt_thresholded)
 compressed_audio <- Wave(left = signal_compressed,
+                         right=signal_compressed,
                          samp.rate = audio@samp.rate,
                          bit = audio@bit)
 
@@ -237,36 +238,6 @@ SNR  <- 10 * log10(sum(signal^2) / sum(error^2))
 
 RMSE
 SNR
-
-```
-```{r}
-audio <- readWave("data/audio.wav")
-signal <- as.numeric(audio@left)
-fs <- audio@samp.rate
-L <- length(signal)
-
-n.levels <- 8
-wt <- dwt(signal, filter = "la8", n.levels = n.levels)
-
-hard_threshold <- function(coefs, lambda) {
-  thr <- lambda * max(abs(coefs))
-  coefs[abs(coefs) < thr] <- 0
-  return(coefs)
-}
-
-lambda <- 0.9
-
-wt_thr <- wt
-wt_thr@W <- lapply(wt@W, function(Wi) hard_threshold(Wi, lambda))
-
-reconstructed <- idwt(wt_thr)
-reconstructed <- reconstructed[1:L]
-
-# normalizar sin reventar
-# reconstructed <- reconstructed / max(abs(reconstructed))
-
-audio_comp <- Wave(right = reconstructed, samp.rate = fs, bit = 16)
-writeWave(audio_comp, "data_comp/audio_comp2.wav")
 
 ```
 
