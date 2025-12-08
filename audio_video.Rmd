@@ -153,6 +153,38 @@ Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimi
 
 
 ```{r}
+all_coefs <- unlist(wt@W)
+energies <- abs(all_coefs)^2
+# Ordenar por energía descendente
+ord <- order(energies, decreasing = TRUE)
+coefs_sorted <- all_coefs[ord]
+energies_sorted <- energies[ord]
+# Energía total
+E_total <- sum(energies_sorted)
+
+E_cum <- cumsum(energies_sorted)
+
+# Porcentaje de energía
+percent_energy <- E_cum / E_total * 100
+
+# Número de coeficientes preservados
+k_vals <- 1:length(all_coefs)
+
+plot(k_vals, percent_energy,
+     type = "l",
+     col = "darkorange",
+     lwd = 2,
+     xlab = "Número de coeficientes preservados",
+     ylab = "Energía capturada (%)",
+     main = "Curva energía capturada vs coeficientes preservados")
+coefs_keep <- sum(unlist(lapply(wt_thresholded@W, function(v) v != 0)))
+
+# Porcentaje correspondiente
+energy_keep <- percent_energy[coefs_keep]
+
+points(coefs_keep, energy_keep, pch = 19, col = "blue", cex = 1.3)
+text(coefs_keep, energy_keep, labels = " umbral", pos = 4)
+grid()
 
 ```
 
