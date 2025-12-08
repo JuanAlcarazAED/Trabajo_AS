@@ -86,31 +86,8 @@ plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
   axis(side=2,at=1:n.levels,labels = paste0("d", 1:n.levels))
 }
 
-#Parámetros y valores
 
-L <- length(signal)
-n.levels <- 8
-wt <- dwt(signal, filter = "la8", n.levels = n.levels)
-lambda <- 0.1
-wt_thresholded <- wt 
-wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
-
-
-# Representaciones
-
-plot_heatmap_wavelet_coef(wt,L,n.levels)
-plot_heatmap_wavelet_coef(wt_thresholded,L,n.levels)
-
-```
-
-
-
-
-```{r}
-
-#n.levels
-for (i in 1:n.levels) {
-  
+plot_umbralD<-function(wt,i,lambda){
   # Coeficientes del nivel i
   coefs <- wt@W[[i]]
   
@@ -146,65 +123,82 @@ for (i in 1:n.levels) {
   )
 }
 
+plot_energy_vs_coeff<-function(wt,wt_thresholded){
+  all_coefs <- unlist(wt@W)
+  energies <- abs(all_coefs)^2
+  # Ordenar por energía descendente
+  ord <- order(energies, decreasing = TRUE)
+  coefs_sorted <- all_coefs[ord]
+  energies_sorted <- energies[ord]
+  # Energía total
+  E_total <- sum(energies_sorted)
+  
+  E_cum <- cumsum(energies_sorted)
+  
+  # Porcentaje de energía
+  percent_energy <- E_cum / E_total * 100
+  
+  # Número de coeficientes preservados
+  k_vals <- 1:length(all_coefs)
+  
+  plot(k_vals, percent_energy,
+       type = "l",
+       col = "darkorange",
+       lwd = 2,
+       xlab = "Número de coeficientes preservados",
+       ylab = "Energía capturada (%)",
+       main = "Curva energía capturada vs coeficientes preservados")
+  coefs_keep <- sum(unlist(lapply(wt_thresholded@W, function(v) v != 0)))
+  
+  # Porcentaje correspondiente
+  energy_keep <- percent_energy[coefs_keep]
+  
+  points(coefs_keep, energy_keep, pch = 19, col = "blue", cex = 1.3)
+  text(coefs_keep, energy_keep, labels = " umbral", pos = 4)
+  grid()
+  }
+
 
 ```
+
+
+
+
+```{r}
+lambda <- 0.8
+n.levels <- 3
+
+
+L <- length(signal)
+wt <- dwt(signal, filter = "la8", n.levels = n.levels)
+wt_thresholded <- wt 
+wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
+
+```
+
+
+```{r}
+plot_heatmap_wavelet_coef(wt,L,n.levels)
+plot_heatmap_wavelet_coef(wt_thresholded,L,n.levels)
+
+
+for (i in 1:n.levels){
+plot_umbralD(wt,i,lambda)
+}
+
+plot_energy_vs_coeff(wt,wt_thresholded)
+```
+
+
 
 Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimina
 
 
-```{r}
-all_coefs <- unlist(wt@W)
-energies <- abs(all_coefs)^2
-# Ordenar por energía descendente
-ord <- order(energies, decreasing = TRUE)
-coefs_sorted <- all_coefs[ord]
-energies_sorted <- energies[ord]
-# Energía total
-E_total <- sum(energies_sorted)
 
-E_cum <- cumsum(energies_sorted)
-
-# Porcentaje de energía
-percent_energy <- E_cum / E_total * 100
-
-# Número de coeficientes preservados
-k_vals <- 1:length(all_coefs)
-
-plot(k_vals, percent_energy,
-     type = "l",
-     col = "darkorange",
-     lwd = 2,
-     xlab = "Número de coeficientes preservados",
-     ylab = "Energía capturada (%)",
-     main = "Curva energía capturada vs coeficientes preservados")
-coefs_keep <- sum(unlist(lapply(wt_thresholded@W, function(v) v != 0)))
-
-# Porcentaje correspondiente
-energy_keep <- percent_energy[coefs_keep]
-
-points(coefs_keep, energy_keep, pch = 19, col = "blue", cex = 1.3)
-text(coefs_keep, energy_keep, labels = " umbral", pos = 4)
-grid()
-
-```
 ## Comprimir el audio 
 
 
 ```{r}
-audio <- readWave("data/audio.wav")
-signal <- as.numeric(audio@left)
-n.levels <- 6
-wt <- dwt(signal, n.levels = n.levels)
-lambda <- 0.1
-
-
-hard_threshold <- function(coefs, lambda) {
-  coefs[log(1 + abs(coefs)^2) < lambda * max(log(1 + abs(coefs)^2))] <- 0
-  return(coefs)
-}
-
-wt_thresholded <- wt
-wt_thresholded@W <- lapply(wt@W, function(W_i) hard_threshold(W_i, lambda))
 
 signal_compressed <- idwt(wt_thresholded)
 compressed_audio <- Wave(left = signal_compressed,
@@ -214,8 +208,13 @@ compressed_audio <- Wave(left = signal_compressed,
 
 writeWave(compressed_audio, "data_comp/audio_comp.wav")
 
-```
+error <- signal - signal_compressed
+RMSE <- sqrt(mean(error^2))
 
+RMSE
+print(sqrt(mean(signal^2)))
+
+```
 
 
 
@@ -226,18 +225,29 @@ coefs_compressed <- unlist(wt_thresholded@W)
 n_original  <- length(coefs_original)
 n_kept      <- sum(coefs_compressed != 0)
 
-compression_ratio <- n_original / n_kept
+compression_ratio <- n_kept/n_original
 compression_ratio
 ```
 
-
 ```{r}
-error <- signal - signal_compressed
-RMSE <- sqrt(mean(error^2))
-SNR  <- 10 * log10(sum(signal^2) / sum(error^2))
+total_coefs <- 0
+zero_coefs <- 0
 
-RMSE
-SNR
+# W contiene los coeficientes de detalle
+for (W_i in wt_thresholded@W) {
+    total_coefs <- total_coefs + length(W_i)
+    zero_coefs <- zero_coefs + sum(W_i == 0)
+}
 
+V_final <- wt_thresholded@V[[n.levels]]
+total_coefs <- total_coefs + length(V_final)
+zero_coefs <- zero_coefs + sum(V_final == 0)
+
+sparsity_ratio <- zero_coefs / total_coefs
+
+cat(sprintf("Coeficientes Totales: %d\n", total_coefs))
+cat(sprintf("Coeficientes Cero: %d\n", zero_coefs))
+cat(sprintf("Tasa de Esparsidad (Ahorro Teórico de Datos): %.2f%%\n", sparsity_ratio * 100))
 ```
+
 
