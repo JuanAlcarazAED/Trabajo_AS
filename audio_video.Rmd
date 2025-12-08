@@ -20,9 +20,7 @@ library(av)
 library(wavelets)
 library(tuneR)
 
-library(tuneR)
-library(dplyr)
-library(ggplot2)
+library(RColorBrewer)
 ```
 
 
@@ -69,7 +67,8 @@ expanded <- rep(coefs, each = rep_each)
 expanded[1:target_len]
 }
 hard_threshold <- function(coefs, lambda) {
-  coefs[log(1+abs(coefs)**2) < lambda*max(log(1+abs(coefs)**2))] <- 0
+  power<-log(1+abs(coefs)**2)
+  coefs[power < lambda*max(power)] <- 0
   return(coefs)
 }
 
@@ -92,7 +91,7 @@ plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
 L <- length(signal)
 n.levels <- 8
 wt <- dwt(signal, filter = "la8", n.levels = n.levels)
-lambda <- 0.8
+lambda <- 0.9
 wt_thresholded <- wt 
 wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
 
@@ -103,39 +102,58 @@ plot_heatmap_wavelet_coef(wt,L,n.levels)
 plot_heatmap_wavelet_coef(wt_thresholded,L,n.levels)
 
 ```
+
+
+
+
 ```{r}
 
 #n.levels
 for (i in 1:n.levels) {
-  # vector de coeficientes
+  
+  # Coeficientes del nivel i
   coefs <- wt@W[[i]]
   
-  # Establecer límites para todos los gráficos
+  # Energía logarítmica (solo la calculamos una vez)
+  power <- log1p(abs(coefs)^2)
   
-  y_lim <- max(abs(unlist(coefs))) * (1+lambda)
+  # Umbral relativo
+  umbral <- lambda * max(power)
   
-  # Trazar los coeficientes
-  plot(coefs, 
-  type = 'l',
-  main = paste("Nivel de Detalle d",i),
-  xlab = "Índice del Coeficiente",
-  ylab = expression(w[i]), 
-  ylim = c(-y_lim, y_lim), # Usar el límite Y calculado
-  col = "darkgray"
+  # Índices que superan el umbral
+  idx_keep <- which(power >= umbral)
+  
+  # Límite vertical para el plot
+  y_lim <- 1.1 * max(abs(coefs))
+  
+  # Grafica
+  plot(
+    coefs, type = 'l',
+    main = paste("Nivel de Detalle d", i),
+    xlab = "Índice del Coeficiente",
+    ylab = bquote(w[.(i)]),
+    ylim = c(-y_lim, y_lim),
+    col = "darkgray"
   )
   
-  points(x = which(log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))), 
-  y = coefs[log(1+abs(coefs)**2) >= lambda*max(log(1+abs(coefs)**2))], 
-  col = "blue", 
-  pch = 19, 
-  cex = 0.5)
+  # Añadimos puntos thresholded
+  points(
+    x = idx_keep,
+    y = coefs[idx_keep],
+    col = "blue",
+    pch = 19,
+    cex = 0.6
+  )
 }
 
 
 ```
 
+Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimina
 
 
+```{r}
 
+```
 
 
