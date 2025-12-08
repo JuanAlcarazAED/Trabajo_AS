@@ -91,7 +91,7 @@ plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
 L <- length(signal)
 n.levels <- 8
 wt <- dwt(signal, filter = "la8", n.levels = n.levels)
-lambda <- 0.9
+lambda <- 0.1
 wt_thresholded <- wt 
 wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
 
@@ -187,5 +187,86 @@ text(coefs_keep, energy_keep, labels = " umbral", pos = 4)
 grid()
 
 ```
+## Comprimir el audio 
 
+
+```{r}
+audio <- readWave("data/audio.wav")
+signal <- as.numeric(audio@left)
+n.levels <- 6
+wt <- dwt(signal, n.levels = n.levels)
+lambda <- 0.1
+
+
+hard_threshold <- function(coefs, lambda) {
+  coefs[log(1 + abs(coefs)^2) < lambda * max(log(1 + abs(coefs)^2))] <- 0
+  return(coefs)
+}
+
+wt_thresholded <- wt
+wt_thresholded@W <- lapply(wt@W, function(W_i) hard_threshold(W_i, lambda))
+
+signal_compressed <- idwt(wt_thresholded)
+compressed_audio <- Wave(left = signal_compressed,
+                         samp.rate = audio@samp.rate,
+                         bit = audio@bit)
+
+writeWave(compressed_audio, "data_comp/audio_comp.wav")
+
+```
+
+
+
+
+```{r}
+coefs_original  <- unlist(wt@W)
+coefs_compressed <- unlist(wt_thresholded@W)
+
+n_original  <- length(coefs_original)
+n_kept      <- sum(coefs_compressed != 0)
+
+compression_ratio <- n_original / n_kept
+compression_ratio
+```
+
+
+```{r}
+error <- signal - signal_compressed
+RMSE <- sqrt(mean(error^2))
+SNR  <- 10 * log10(sum(signal^2) / sum(error^2))
+
+RMSE
+SNR
+
+```
+```{r}
+audio <- readWave("data/audio.wav")
+signal <- as.numeric(audio@left)
+fs <- audio@samp.rate
+L <- length(signal)
+
+n.levels <- 8
+wt <- dwt(signal, filter = "la8", n.levels = n.levels)
+
+hard_threshold <- function(coefs, lambda) {
+  thr <- lambda * max(abs(coefs))
+  coefs[abs(coefs) < thr] <- 0
+  return(coefs)
+}
+
+lambda <- 0.9
+
+wt_thr <- wt
+wt_thr@W <- lapply(wt@W, function(Wi) hard_threshold(Wi, lambda))
+
+reconstructed <- idwt(wt_thr)
+reconstructed <- reconstructed[1:L]
+
+# normalizar sin reventar
+# reconstructed <- reconstructed / max(abs(reconstructed))
+
+audio_comp <- Wave(right = reconstructed, samp.rate = fs, bit = 16)
+writeWave(audio_comp, "data_comp/audio_comp2.wav")
+
+```
 
