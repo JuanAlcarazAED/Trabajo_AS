@@ -165,8 +165,8 @@ plot_energy_vs_coeff<-function(wt,wt_thresholded){
 
 
 ```{r}
-lambda <- 0.8
-n.levels <- 3
+lambda <- 0.7
+n.levels <- 2
 
 
 L <- length(signal)
@@ -202,12 +202,14 @@ Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimi
 
 signal_compressed <- idwt(wt_thresholded)
 compressed_audio <- Wave(left = signal_compressed,
-                         right=signal_compressed,
+                         right=signal_compressed, # Habría que hacer la compresión también para la izqueirda y comprobar si es monocanal
                          samp.rate = audio@samp.rate,
                          bit = audio@bit)
 
 writeWave(compressed_audio, "data_comp/audio_comp.wav")
 
+# Reduce el tamaño pero utilizando mp3 no con todo lo que he hecho
+#av_audio_convert("data_comp/audio_comp.wav",output = "data_comp/audio_comp.mp3")
 error <- signal - signal_compressed
 RMSE <- sqrt(mean(error^2))
 
@@ -216,7 +218,7 @@ print(sqrt(mean(signal^2)))
 
 ```
 
-
+567
 
 ```{r}
 coefs_original  <- unlist(wt@W)
@@ -250,4 +252,15 @@ cat(sprintf("Coeficientes Cero: %d\n", zero_coefs))
 cat(sprintf("Tasa de Esparsidad (Ahorro Teórico de Datos): %.2f%%\n", sparsity_ratio * 100))
 ```
 
+```{r}
+entropy <- function(x) {
+  p <- table(x) / length(x)
+  -sum(p * log2(p))
+}
+
+bits_original <- audio@bit
+H <- entropy(round(wt_thresholded@W$W1))
+redundancy <- (bits_original - H) / bits_original
+redundancy
+```
 
