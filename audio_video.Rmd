@@ -148,16 +148,6 @@ plot_energy_vs_coeff<-function(wt,wt_thresholded){
   grid()
   }
 
-
-```
-
-
-
-
-```{r}
-lambda <- 1
-n.levels <- 2
-
 dwt_values<-function(audio,n.levels,lambda){
   signal_left<-as.numeric(audio@left)
   signal_rigth<-as.numeric(audio@right)
@@ -169,12 +159,27 @@ dwt_values<-function(audio,n.levels,lambda){
   wt_thresholded_left@W <- lapply(wt_left@W, function(W_i) {hard_threshold(W_i, lambda)})
   wt_thresholded_right@W <- lapply(wt_right@W, function(W_i) {hard_threshold(W_i, lambda)})
   return(list(
-    original_left  = wt_left,
-    original_right = wt_right,
+    wt_left  = wt_left,
+    wt_right = wt_right,
     thresholded_left  = wt_thresholded_left,
     thresholded_right = wt_thresholded_right
   ))
 }
+
+
+entropy <- function(x) {
+  p <- table(x) / length(x)
+  -sum(p * log2(p))
+}
+
+```
+
+
+## Análisis 
+
+```{r}
+lambda <- 1
+n.levels <- 2
 vals<-dwt_values(audio,n.levels,lambda)
 ```
 
@@ -201,22 +206,34 @@ Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimi
 
 
 ```{r}
-
-signal_compressed <- idwt(wt_thresholded)
-compressed_audio <- Wave(left = signal_compressed,
-                         right=signal_compressed, # Habría que hacer la compresión también para la izqueirda y comprobar si es monocanal
-                         samp.rate = audio@samp.rate,
-                         bit = audio@bit)
-
-writeWave(compressed_audio, "data_comp/audio_comp.wav")
-
-# Reduce el tamaño pero utilizando mp3 no con todo lo que he hecho
-#av_audio_convert("data_comp/audio_comp.wav",output = "data_comp/audio_comp.mp3")
-error <- signal - signal_compressed
-RMSE <- sqrt(mean(error^2))
-
-RMSE
-print(sqrt(mean(signal^2)))
+audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp.wav"){
+  vals<-dwt_values(audio,n.levels,lambda)
+  
+  wt_left  <- vals[1]
+  wt_right <- vals[2]
+  thresholded_left  <- vals[3]
+  thresholded_right <- vals[4]
+  
+  
+  signal_compressed_left <- idwt(thresholded_left)
+  signal_compressed_right <- idwt(thresholded_right)
+  
+  # Juntar el audio comprimido
+  compressed_audio <- Wave(left = signal_compressed_left,
+                           right=signal_compressed_right,
+                           samp.rate = audio@samp.rate,
+                           bit = audio@bit)
+  
+  writeWave(compressed_audio, ruta)
+  
+  # Reduce el tamaño pero utilizando mp3 no con todo lo que he hecho
+  #av_audio_convert("data_comp/audio_comp.wav",output = "data_comp/audio_comp.mp3")
+  error <- signal - signal_compressed
+  RMSE <- sqrt(mean(error^2))
+  
+  RMSE
+  print(sqrt(mean(signal^2)))
+}
 
 ```
 
@@ -251,10 +268,7 @@ sparsity_ratio <- zero_coefs / total_coefs
 ```
 
 ```{r}
-entropy <- function(x) {
-  p <- table(x) / length(x)
-  -sum(p * log2(p))
-}
+
 
 bits_original <- audio@bit
 H <- entropy(round(wt_thresholded@W$W1))
