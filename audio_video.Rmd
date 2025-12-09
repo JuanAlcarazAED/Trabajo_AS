@@ -45,16 +45,6 @@ plot(audio)
 
 
 ```{r}
-signal<-as.numeric(audio@left)
-```
-
-Cosas que tengo pensadas hacer:
-- Calcular la energía en función de las wavelets 
-- Representar los niveles de la wavlet, los coeficientes y el tiempo tick
-- Representar las ondas con el threshold tick
-- Normalizar los valores
-
-```{r}
 # Página que voy a usar de referencia
 #https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels 
 # Apuntes del tema 3 de compresión de una onda
@@ -165,15 +155,27 @@ plot_energy_vs_coeff<-function(wt,wt_thresholded){
 
 
 ```{r}
-lambda <- 0.7
+lambda <- 1
 n.levels <- 2
 
-
-L <- length(signal)
-wt <- dwt(signal, filter = "la8", n.levels = n.levels)
-wt_thresholded <- wt 
-wt_thresholded@W <- lapply(wt@W, function(W_i) {hard_threshold(W_i, lambda)})
-
+dwt_values<-function(audio,n.levels,lambda){
+  signal_left<-as.numeric(audio@left)
+  signal_rigth<-as.numeric(audio@right)
+  L <- length(signal_left)
+  wt_left <- dwt(signal_left, filter = "la8", n.levels = n.levels)
+  wt_right <- dwt(signal_rigth, filter = "la8", n.levels = n.levels)
+  wt_thresholded_left <- wt_left 
+  wt_thresholded_right <- wt_right 
+  wt_thresholded_left@W <- lapply(wt_left@W, function(W_i) {hard_threshold(W_i, lambda)})
+  wt_thresholded_right@W <- lapply(wt_right@W, function(W_i) {hard_threshold(W_i, lambda)})
+  return(list(
+    original_left  = wt_left,
+    original_right = wt_right,
+    thresholded_left  = wt_thresholded_left,
+    thresholded_right = wt_thresholded_right
+  ))
+}
+vals<-dwt_values(audio,n.levels,lambda)
 ```
 
 
@@ -246,10 +248,6 @@ total_coefs <- total_coefs + length(V_final)
 zero_coefs <- zero_coefs + sum(V_final == 0)
 
 sparsity_ratio <- zero_coefs / total_coefs
-
-cat(sprintf("Coeficientes Totales: %d\n", total_coefs))
-cat(sprintf("Coeficientes Cero: %d\n", zero_coefs))
-cat(sprintf("Tasa de Esparsidad (Ahorro Teórico de Datos): %.2f%%\n", sparsity_ratio * 100))
 ```
 
 ```{r}
