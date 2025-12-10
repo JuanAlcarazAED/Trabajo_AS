@@ -26,19 +26,6 @@ library(RColorBrewer)
 
 
 
-```{r}
-av_audio_convert("data/video.mp4", "data/audio.wav")
-frames<-av_video_images("data/video.mp4", destdir = "data/frames", fps = 30)
-```
-```{r}
-```
-
-
-
-```{r}
-plot(audio)  
-```
-
 
 ```{r}
 # Página que voy a usar de referencia
@@ -46,6 +33,13 @@ plot(audio)
 # Apuntes del tema 3 de compresión de una onda
 
 # Funciones importantes
+
+sep_audio_video<-function(main="data/video.mp4",audio="data/audio.wav",video="data/frames",fps=30){
+  # Función para separar imagen de audio
+  av_audio_convert(main,audio)
+  frames<-av_video_images(main,destdir=video,fps=fps)
+}
+
 
 expand_to_length <- function(coefs, target_len) {
 rep_each <- ceiling(target_len / length(coefs))
@@ -93,12 +87,30 @@ plot_heatmap_wavelet_coef<-function(audio,n.levels,lambda,plot="left",threshold=
 }
 
 
-plot_umbralD<-function(wt,i,lambda){
+plot_umbralD<-function(audio,n.levels,lambda,i,plot="left",threshold=F){
   # Coeficientes del nivel i
+  vals<-dwt_values(audio,n.levels,lambda)
+    if (threshold==F){
+    if (plot=="left"){
+      wt<-vals[[1]]
+    }
+    else{
+      wt<-vals[[2]]
+    }
+  }
+  else{
+    if (plot=="left"){
+      wt<-vals[[3]]
+    }
+    else{
+      wt<-vals[[4]]
+    }
+    
+  }
   coefs <- wt@W[[i]]
   
   # Energía logarítmica (solo la calculamos una vez)
-  power <- log1p(abs(coefs)^2)
+  power <- log(1+abs(coefs)^2)
   
   # Umbral relativo
   umbral <- lambda * max(power)
@@ -129,7 +141,19 @@ plot_umbralD<-function(wt,i,lambda){
   )
 }
 
-plot_energy_vs_coeff<-function(wt,wt_thresholded){
+plot_energy_vs_coeff<-function(audio,n.levels,lambda,plot="left"){
+    vals<-dwt_values(audio,n.levels,lambda)
+    if (plot=="left"){
+      wt<-vals[[1]]
+      wt_thresholded<-vals[[3]]
+    }
+    else{
+      wt<-vals[[2]]
+      wt_thresholded<-vals[[4]]
+    }
+
+    
+  
   all_coefs <- unlist(wt@W)
   energies <- abs(all_coefs)^2
   # Ordenar por energía descendente
@@ -210,20 +234,38 @@ audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp.wav"){
   
   writeWave(compressed_audio, ruta)
   
-  # Reduce el tamaño pero utilizando mp3 no con todo lo que he hecho
-  #av_audio_convert("data_comp/audio_comp.wav",output = "data_comp/audio_comp.mp3")
-  error <- signal - signal_compressed
-  RMSE <- sqrt(mean(error^2))
-  
-  RMSE
-  print(sqrt(mean(signal^2)))
+  # error <- signal - signal_compressed
+  # RMSE <- sqrt(mean(error^2))
+  # 
+  # coefs_original  <- unlist(wt@W)
+  # coefs_compressed <- unlist(wt_thresholded@W)
+  # 
+  # n_original  <- length(coefs_original)
+  # n_kept      <- sum(coefs_compressed != 0)
+  # 
+  # compression_ratio <- n_kept/n_original
+  # compression_ratio
+  # 
+  # bits_original <- audio@bit
+  # H <- entropy(round(wt_thresholded@W$W1))
+  # redundancy <- (bits_original - H) / bits_original
+  # redundancy
+  # 
+  # print(paste0("RMSE:",RMSE))
+  # 
+  # 
 }
 
 ```
 
 
 ## Análisis 
+Separar audio de imagen:
+```{r}
+sep_audio_video()
+```
 
+Parámetros:
 ```{r}
 lambda <- 0.8
 n.levels <- 2
@@ -237,10 +279,10 @@ plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
 
 
 for (i in 1:n.levels){
-plot_umbralD(vals[[1]],i,lambda)
+  plot_umbralD(audio,n.levels,lambda,i,plot="left",threshold=F)
 }
 
-plot_energy_vs_coeff(vals[[1]],wt_thresholded)
+plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
 
@@ -256,16 +298,7 @@ Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimi
 audio_compress(audio,n.levels,lambda)
 ```
 
-```{r}
-coefs_original  <- unlist(wt@W)
-coefs_compressed <- unlist(wt_thresholded@W)
 
-n_original  <- length(coefs_original)
-n_kept      <- sum(coefs_compressed != 0)
-
-compression_ratio <- n_kept/n_original
-compression_ratio
-```
 
 ```{r}
 total_coefs <- 0
@@ -285,8 +318,6 @@ sparsity_ratio <- zero_coefs / total_coefs
 ```
 
 ```{r}
-
-
 bits_original <- audio@bit
 H <- entropy(round(wt_thresholded@W$W1))
 redundancy <- (bits_original - H) / bits_original
