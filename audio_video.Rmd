@@ -34,10 +34,6 @@ frames<-av_video_images("data/video.mp4", destdir = "data/frames", fps = 30)
 ```
 
 
-```{r}
-audio <- readWave("data/audio.wav")
-
-```
 
 ```{r}
 plot(audio)  
@@ -62,7 +58,27 @@ hard_threshold <- function(coefs, lambda) {
   return(coefs)
 }
 
-plot_heatmap_wavelet_coef<-function(wt,L,n.levels){
+plot_heatmap_wavelet_coef<-function(audio,n.levels,lambda,plot="left",threshold=F){
+  vals<-dwt_values(audio,n.levels,lambda)
+  if (threshold==F){
+    if (plot=="left"){
+      wt<-vals[[1]]
+    }
+    else{
+      wt<-vals[[2]]
+    }
+  }
+  else{
+    if (plot=="left"){
+      wt<-vals[[3]]
+    }
+    else{
+      wt<-vals[[4]]
+    }
+    
+  }
+  L<- length(audio@left)
+  
   coef_list <- lapply(1:n.levels, function(i) {
     expanded <- expand_to_length(wt@W[[i]], L)
     log1p(abs(expanded)^2)
@@ -172,47 +188,15 @@ entropy <- function(x) {
   -sum(p * log2(p))
 }
 
-```
 
 
-## Análisis 
-
-```{r}
-lambda <- 1
-n.levels <- 2
-vals<-dwt_values(audio,n.levels,lambda)
-```
-
-
-```{r}
-plot_heatmap_wavelet_coef(wt,L,n.levels)
-plot_heatmap_wavelet_coef(wt_thresholded,L,n.levels)
-
-
-for (i in 1:n.levels){
-plot_umbralD(wt,i,lambda)
-}
-
-plot_energy_vs_coeff(wt,wt_thresholded)
-```
-
-
-
-Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimina
-
-
-
-## Comprimir el audio 
-
-
-```{r}
 audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp.wav"){
   vals<-dwt_values(audio,n.levels,lambda)
   
-  wt_left  <- vals[1]
-  wt_right <- vals[2]
-  thresholded_left  <- vals[3]
-  thresholded_right <- vals[4]
+  wt_left  <- vals[[1]]
+  wt_right <- vals[[2]]
+  thresholded_left  <- vals[[3]]
+  thresholded_right <- vals[[4]]
   
   
   signal_compressed_left <- idwt(thresholded_left)
@@ -237,7 +221,40 @@ audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp.wav"){
 
 ```
 
-567
+
+## Análisis 
+
+```{r}
+lambda <- 0.8
+n.levels <- 2
+audio <- readWave("data/audio.wav")
+```
+
+
+```{r}
+plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
+plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
+
+
+for (i in 1:n.levels){
+plot_umbralD(vals[[1]],i,lambda)
+}
+
+plot_energy_vs_coeff(vals[[1]],wt_thresholded)
+```
+
+
+
+Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimina
+
+
+
+## Comprimir el audio 
+
+
+```{r}
+audio_compress(audio,n.levels,lambda)
+```
 
 ```{r}
 coefs_original  <- unlist(wt@W)
