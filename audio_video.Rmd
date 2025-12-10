@@ -225,38 +225,56 @@ audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp.wav"){
   
   signal_compressed_left <- idwt(thresholded_left)
   signal_compressed_right <- idwt(thresholded_right)
+  # signal_compressed_left <- idwt(wt_left)
+  # signal_compressed_right <- idwt(wt_right)
   
   # Juntar el audio comprimido
   compressed_audio <- Wave(left = signal_compressed_left,
                            right=signal_compressed_right,
                            samp.rate = audio@samp.rate,
                            bit = audio@bit)
-  
   writeWave(compressed_audio, ruta)
+}
+
+
+reconstruir_video <- function(frames_dir = "data/frames",
+                              audio_comp = "data_comp/audio_comp.wav",
+                              output = "data_comp/video_final.mp4",
+                              fps = 30) {
   
-  # error <- signal - signal_compressed
-  # RMSE <- sqrt(mean(error^2))
-  # 
-  # coefs_original  <- unlist(wt@W)
-  # coefs_compressed <- unlist(wt_thresholded@W)
-  # 
-  # n_original  <- length(coefs_original)
-  # n_kept      <- sum(coefs_compressed != 0)
-  # 
-  # compression_ratio <- n_kept/n_original
-  # compression_ratio
-  # 
-  # bits_original <- audio@bit
-  # H <- entropy(round(wt_thresholded@W$W1))
-  # redundancy <- (bits_original - H) / bits_original
-  # redundancy
-  # 
-  # print(paste0("RMSE:",RMSE))
-  # 
-  # 
+  # Creamos un patrón para leer los frames (images)
+  frames <- list.files(frames_dir, full.names = TRUE)
+  
+  # Asegurarnos de que se ordenan en orden numérico
+  frames <- frames[order(nchar(frames), frames)]
+  
+  # Codificar el video a partir de las imágenes y el audio comprimido
+  av::av_encode_video(
+    input = frames,
+    output = output,
+    framerate = fps,
+    audio = audio_comp
+  )
+  
 }
 
 ```
+
+
+```{r}
+audio_compress(audio,n.levels,lambda)
+```
+
+
+
+
+```{r}
+reconstruir_video()
+```
+
+
+
+
 
 
 ## Análisis 
@@ -300,6 +318,8 @@ audio_compress(audio,n.levels,lambda)
 
 
 
+
+
 ```{r}
 total_coefs <- 0
 zero_coefs <- 0
@@ -323,4 +343,49 @@ H <- entropy(round(wt_thresholded@W$W1))
 redundancy <- (bits_original - H) / bits_original
 redundancy
 ```
+
+```{r}
+compress_audio_wavelet_to_aac <- function(audio,
+                                          n.levels,
+                                          lambda,
+                                          ruta_aac = "data_comp/audio_comp.aac",
+                                          ruta_wav_tmp = "data_comp/tmp_audio.wav") {
+  # 1. Obtener coeficientes wavelet y los umbralizados
+  vals <- dwt_values(audio, n.levels, lambda)
+  
+  wt_left  <- vals[[1]]
+  wt_right <- vals[[2]]
+  thr_left <- vals[[3]]
+  thr_right <- vals[[4]]
+  
+  # 2. Reconstruir señal comprimida
+  signal_left  <- idwt(thr_left)
+  signal_right <- idwt(thr_right)
+  
+  # 3. Crear objeto Wave
+  audio_wav <- Wave(left = signal_left,
+                    right = signal_right,
+                    samp.rate = audio@samp.rate,
+                    bit = audio@bit)
+  
+  # 4. Guardar WAV temporal (PCM sin comprimir)
+  writeWave(audio_wav, ruta_wav_tmp)
+  
+  # 5. Convertir a AAC (códec comprimido real)
+  av::av_audio_convert(ruta_wav_tmp, ruta_aac)
+  
+  
+  
+}
+
+compress_audio_wavelet_to_aac(
+  audio = audio,
+  n.levels = 6,
+  lambda = 0.8,
+  ruta_aac = "data_comp/audio_comp.aac"
+)
+```
+
+
+
 
