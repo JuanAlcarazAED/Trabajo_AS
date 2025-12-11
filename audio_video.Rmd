@@ -426,11 +426,21 @@ compress_audio_wavelet_to_aac <- function(audio,
 compress_audio_wavelet_to_aac(
   audio = audio,
   n.levels = 6,
-  lambda = 1,
-  ruta_aac = "data_comp/audio_comp.aac"
+  lambda = 0,
+  ruta_aac = "data_comp/audio_comp0.aac"
 )
 ```
 
+```{r}
+source("funciones_audio.R",echo=F)
+
+compress_audio_wavelet_to_aac(
+  audio = audio,
+  n.levels = 6,
+  lambda = 1,
+  ruta_aac = "data_comp/audio_comp1.aac"
+)
+```
 
 
 
