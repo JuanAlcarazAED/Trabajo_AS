@@ -46,10 +46,55 @@ rep_each <- ceiling(target_len / length(coefs))
 expanded <- rep(coefs, each = rep_each)
 expanded[1:target_len]
 }
+
+
 hard_threshold <- function(coefs, lambda) {
-  power<-abs(coefs)**2
-  coefs[abs(coefs) <= lambda * max(abs(coefs))] <- 0
+  power<- abs(coefs)**2#log(1+abs(coefs)**2)
+  umbral <-lambda*max(power)
+  coefs[power <= umbral] <- 0
   return(coefs)
+}
+hard_threshold2 <- function(coefs, lambda) {
+  power<- log(1+abs(coefs)**2)
+  umbral <-lambda*max(power)
+  coefs[power <= umbral] <- 0
+  return(coefs)
+}
+
+plot_heatmap_wavelet_coef2<-function(audio,n.levels,lambda,plot="left",threshold=F){
+  # Señales
+  signal_left  <- as.numeric(audio@left)
+  signal_right <- as.numeric(audio@right)
+  L <- length(signal_left)
+  
+  # DWT sin umbralizar
+  wt_left  <- dwt(signal_left,  filter = "la8", n.levels = n.levels)
+  wt_right <- dwt(signal_right, filter = "la8", n.levels = n.levels)
+  
+  # DWT umbralizado para visualización log
+  wt_thr_left  <- wt_left
+  wt_thr_right <- wt_right
+  
+  wt_thr_left@W  <- lapply(wt_left@W,  hard_threshold2, lambda = lambda)
+  wt_thr_right@W <- lapply(wt_right@W, hard_threshold2, lambda = lambda)
+  
+  # Selección del lado (izquierda/derecha)
+  wt <- switch(plot,
+               left  = if (!threshold) wt_left  else wt_thr_left,
+               right = if (!threshold) wt_right else wt_thr_right)
+  
+  # Expandimos coeficientes y computamos energía logarítmica
+  coef_list <- lapply(1:n.levels, function(i) {
+    expanded <- expand_to_length(wt@W[[i]], L)
+    log(1 + abs(expanded)^2)
+  })
+  
+  coef_matrix <- do.call(cbind, coef_list)
+  
+  colores <- brewer.pal(9, "YlOrBr")
+  
+  image(x=1:L,y=1:n.levels,z=(coef_matrix),main="Wavelet coeficientes de detalle heatmap",xlab="Tiempo",ylab="Nivel wavelet",yaxt="n")
+  axis(side=2,at=1:n.levels,labels = paste0("d", 1:n.levels))
 }
 
 plot_heatmap_wavelet_coef<-function(audio,n.levels,lambda,plot="left",threshold=F){
@@ -75,8 +120,9 @@ plot_heatmap_wavelet_coef<-function(audio,n.levels,lambda,plot="left",threshold=
   
   coef_list <- lapply(1:n.levels, function(i) {
     expanded <- expand_to_length(wt@W[[i]], L)
-    log1p(abs(expanded)^2)
+    abs(expanded)^2
   })
+  
   coef_matrix_raw <- do.call(cbind, coef_list)
   coef_matrix <- (coef_matrix_raw[, 1:n.levels])
   
@@ -110,8 +156,7 @@ plot_umbralD<-function(audio,n.levels,lambda,i,plot="left",threshold=F){
   coefs <- wt@W[[i]]
   
   # Energía logarítmica (solo la calculamos una vez)
-  power <- log(1+abs(coefs)^2)
-  
+  power <- abs(coefs)**2
   # Umbral relativo
   umbral <- lambda * max(power)
   
@@ -141,63 +186,53 @@ plot_umbralD<-function(audio,n.levels,lambda,i,plot="left",threshold=F){
   )
 }
 
-plot_energy_vs_coeff<-function(audio,n.levels,lambda,plot="left"){
-    vals<-dwt_values(audio,n.levels,lambda)
-    if (plot=="left"){
-      wt<-vals[[1]]
-      wt_thresholded<-vals[[3]]
-    }
-    else{
-      wt<-vals[[2]]
-      wt_thresholded<-vals[[4]]
-    }
-
-    
+plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot="left"){
+  vals <- dwt_values(audio, n.levels, lambda)
+  
+  wt  <- if (plot=="left") vals$wt_left  else vals$wt_right
+  wtT <- if (plot=="left") vals$thresholded_left else vals$thresholded_right
   
   all_coefs <- unlist(wt@W)
-  energies <- abs(all_coefs)^2
-  # Ordenar por energía descendente
-  ord <- order(energies, decreasing = TRUE)
-  coefs_sorted <- all_coefs[ord]
+  energies   <- abs(all_coefs)^2
+  
+  ord <- order(energies, decreasing=TRUE)
   energies_sorted <- energies[ord]
-  # Energía total
   E_total <- sum(energies_sorted)
+  E_cum   <- cumsum(energies_sorted)
   
-  E_cum <- cumsum(energies_sorted)
+  percent_energy <- 100 * E_cum / E_total
+  k_vals <- seq_along(all_coefs)
   
-  # Porcentaje de energía
-  percent_energy <- E_cum / E_total * 100
+  plot(k_vals, percent_energy, type="l",
+       col="darkorange", lwd=2,
+       xlab="Coeficientes preservados",
+       ylab="Energía capturada (%)",
+       main="Curva energía capturada vs coeficientes preservados")
   
-  # Número de coeficientes preservados
-  k_vals <- 1:length(all_coefs)
+  coefs_keep <- sum(unlist(lapply(wtT@W, function(v) v != 0)))
   
-  plot(k_vals, percent_energy,
-       type = "l",
-       col = "darkorange",
-       lwd = 2,
-       xlab = "Número de coeficientes preservados",
-       ylab = "Energía capturada (%)",
-       main = "Curva energía capturada vs coeficientes preservados")
-  coefs_keep <- sum(unlist(lapply(wt_thresholded@W, function(v) v != 0)))
+  points(coefs_keep, percent_energy[coefs_keep], 
+         pch=19, col="blue", cex=1.3)
   
-  # Porcentaje correspondiente
-  energy_keep <- percent_energy[coefs_keep]
+  text(coefs_keep, percent_energy[coefs_keep],
+       labels=" umbral", pos=4)
   
-  points(coefs_keep, energy_keep, pch = 19, col = "blue", cex = 1.3)
-  text(coefs_keep, energy_keep, labels = " umbral", pos = 4)
   grid()
-  }
+}
 
 dwt_values<-function(audio,n.levels,lambda){
+  
   signal_left<-as.numeric(audio@left)
   signal_rigth<-as.numeric(audio@right)
-  L <- length(signal_left)
+  
   wt_left <- dwt(signal_left, filter = "la8", n.levels = n.levels)
   wt_right <- dwt(signal_rigth, filter = "la8", n.levels = n.levels)
+  
   wt_thresholded_left <- wt_left 
   wt_thresholded_right <- wt_right 
-  wt_thresholded_left@W <- lapply(wt_left@W, function(W_i) {hard_threshold(W_i, lambda)})
-  wt_thresholded_right@W <- lapply(wt_right@W, function(W_i) {hard_threshold(W_i, lambda)})
+  
+  wt_thresholded_left@W  <- lapply(wt_left@W,  hard_threshold, lambda=lambda)
+  wt_thresholded_right@W <- lapply(wt_right@W, hard_threshold, lambda=lambda)
   return(list(
     wt_left  = wt_left,
     wt_right = wt_right,
@@ -285,13 +320,14 @@ sep_audio_video()
 
 Parámetros:
 ```{r}
-lambda <- 0.99
+lambda <- 0.5
 n.levels <- 2
 audio <- readWave("data/audio.wav")
 ```
 
 
 ```{r}
+source("funciones_audio.R",echo=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
 
@@ -390,7 +426,7 @@ compress_audio_wavelet_to_aac <- function(audio,
 compress_audio_wavelet_to_aac(
   audio = audio,
   n.levels = 6,
-  lambda = 0,
+  lambda = 1,
   ruta_aac = "data_comp/audio_comp.aac"
 )
 ```
