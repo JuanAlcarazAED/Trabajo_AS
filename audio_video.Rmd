@@ -47,8 +47,8 @@ expanded <- rep(coefs, each = rep_each)
 expanded[1:target_len]
 }
 hard_threshold <- function(coefs, lambda) {
-  power<-log(1+abs(coefs)**2)
-  coefs[power < lambda*max(power)] <- 0
+  power<-abs(coefs)**2
+  coefs[abs(coefs) <= lambda * max(abs(coefs))] <- 0
   return(coefs)
 }
 
@@ -214,7 +214,7 @@ entropy <- function(x) {
 
 
 
-audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp.wav"){
+audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp2.wav"){
   vals<-dwt_values(audio,n.levels,lambda)
   
   wt_left  <- vals[[1]]
@@ -223,10 +223,10 @@ audio_compress<-function(audio,n.levels,lambda,ruta="data_comp/audio_comp.wav"){
   thresholded_right <- vals[[4]]
   
   
-  signal_compressed_left <- idwt(thresholded_left)
-  signal_compressed_right <- idwt(thresholded_right)
-  # signal_compressed_left <- idwt(wt_left)
-  # signal_compressed_right <- idwt(wt_right)
+  # signal_compressed_left <- idwt(thresholded_left)
+  # signal_compressed_right <- idwt(thresholded_right)
+  signal_compressed_left <- idwt(wt_left)
+  signal_compressed_right <- idwt(wt_right)
   
   # Juntar el audio comprimido
   compressed_audio <- Wave(left = signal_compressed_left,
@@ -285,7 +285,7 @@ sep_audio_video()
 
 Parámetros:
 ```{r}
-lambda <- 0.8
+lambda <- 0.99
 n.levels <- 2
 audio <- readWave("data/audio.wav")
 ```
@@ -361,12 +361,21 @@ compress_audio_wavelet_to_aac <- function(audio,
   # 2. Reconstruir señal comprimida
   signal_left  <- idwt(thr_left)
   signal_right <- idwt(thr_right)
-  
+
+  # signal_left  <- idwt(wt_left)
+  # signal_right <- idwt(wt_right)
   # 3. Crear objeto Wave
+  print(max(abs(signal_left)))
+  
   audio_wav <- Wave(left = signal_left,
                     right = signal_right,
                     samp.rate = audio@samp.rate,
                     bit = audio@bit)
+
+  # audio_wav<-Wave(left = rep(0.0, length(signal_left)),
+  #                     right = rep(0.0, length(signal_right)),
+  #                     samp.rate = audio@samp.rate,
+  #                     bit = audio@bit)
   
   # 4. Guardar WAV temporal (PCM sin comprimir)
   writeWave(audio_wav, ruta_wav_tmp)
@@ -381,7 +390,7 @@ compress_audio_wavelet_to_aac <- function(audio,
 compress_audio_wavelet_to_aac(
   audio = audio,
   n.levels = 6,
-  lambda = 0.8,
+  lambda = 0,
   ruta_aac = "data_comp/audio_comp.aac"
 )
 ```
