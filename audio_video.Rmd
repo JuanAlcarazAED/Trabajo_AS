@@ -386,7 +386,6 @@ compress_audio_wavelet_to_aac <- function(audio,
                                           lambda,
                                           ruta_aac = "data_comp/audio_comp.aac",
                                           ruta_wav_tmp = "data_comp/tmp_audio.wav") {
-  # 1. Obtener coeficientes wavelet y los umbralizados
   vals <- dwt_values(audio, n.levels, lambda)
   
   wt_left  <- vals[[1]]
@@ -394,14 +393,12 @@ compress_audio_wavelet_to_aac <- function(audio,
   thr_left <- vals[[3]]
   thr_right <- vals[[4]]
   
-  # 2. Reconstruir señal comprimida
   signal_left  <- idwt(thr_left)
   signal_right <- idwt(thr_right)
 
   # signal_left  <- idwt(wt_left)
   # signal_right <- idwt(wt_right)
-  # 3. Crear objeto Wave
-  print(max(abs(signal_left)))
+
   
   audio_wav <- Wave(left = signal_left,
                     right = signal_right,
@@ -425,9 +422,9 @@ compress_audio_wavelet_to_aac <- function(audio,
 
 compress_audio_wavelet_to_aac(
   audio = audio,
-  n.levels = 6,
-  lambda = 0,
-  ruta_aac = "data_comp/audio_comp0.aac"
+  n.levels = 1,
+  lambda = 1,
+  ruta_aac = "data_comp/audio_comp0.wav"
 )
 ```
 
