@@ -6,7 +6,7 @@ library(RColorBrewer)
 #https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels 
 # Apuntes del tema 3 de compresión de una onda
 
-# Funciones importantes
+# --------------- FUNCIONES GRÁFICAS-----------------------
 
 
 sep_audio_video<-function(main="data/video.mp4",audio="data/audio.wav",video="data/frames",fps=30){
@@ -16,131 +16,69 @@ sep_audio_video<-function(main="data/video.mp4",audio="data/audio.wav",video="da
 }
 
 expand_to_length <- function(coefs, target_len) {
+  coefs <- as.vector(coefs)
   rep_each <- ceiling(target_len / length(coefs))
   expanded <- rep(coefs, each = rep_each)
   expanded[1:target_len]
 }
 
-
-hard_threshold_energy <- function(coefs, lambda) {
-  power <- abs(coefs)^2
-  total_energy <- sum(power)
+plot_heatmap_wavelet_coef <- function(audio, n.levels, lambda,
+                                      plot = "left", threshold = FALSE) {
+  vals <- dwt_values(audio, n.levels, lambda)
   
-  # Ordenar coeficientes por energía creciente
-  ord <- order(power)
-  cum_energy <- cumsum(power[ord])
-  idx <- ord[cum_energy < lambda * total_energy]
-  coefs[idx] <- 0
-  
-  return(coefs)
-}
-
-
-dwt_values<-function(audio,n.levels,lambda){
-  
-  signal_left<-as.numeric(audio@left)
-  signal_rigth<-as.numeric(audio@right)
-  
-  wt_left <- dwt(signal_left, filter = "la8", n.levels = n.levels)
-  wt_right <- dwt(signal_rigth, filter = "la8", n.levels = n.levels)
-  
-  wt_thresholded_left <- wt_left 
-  wt_thresholded_right <- wt_right 
-  
-  wt_thresholded_left@W  <- lapply(wt_left@W,  hard_threshold_energy, lambda=lambda)
-  wt_thresholded_right@W <- lapply(wt_right@W, hard_threshold_energy, lambda=lambda)
-  return(list(
-    wt_left  = wt_left,
-    wt_right = wt_right,
-    thresholded_left  = wt_thresholded_left,
-    thresholded_right = wt_thresholded_right
-  ))
-}
-
-
-plot_heatmap_wavelet_coef<-function(audio,n.levels,lambda,plot="left",threshold=F){
-  vals<-dwt_values(audio,n.levels,lambda)
-  if (threshold==F){
-    if (plot=="left"){
-      wt<-vals[[1]]
-    }
-    else{
-      wt<-vals[[2]]
-    }
+  wt <- if (!threshold) {
+    if (plot == "left") vals$wt_left else vals$wt_right
+  } else {
+    if (plot == "left") vals$thr_left else vals$thr_right
   }
-  else{
-    if (plot=="left"){
-      wt<-vals[[3]]
-    }
-    else{
-      wt<-vals[[4]]
-    }
-    
-  }
-  L<- length(audio@left)
+  
+  L <- length(audio@left)
   
   coef_list <- lapply(1:n.levels, function(i) {
     expanded <- expand_to_length(wt@W[[i]], L)
-    log(1+abs(expanded)^2)
+    log1p(expanded^2)
   })
   
-  coef_matrix_raw <- do.call(cbind, coef_list)
-  coef_matrix <- (coef_matrix_raw[, 1:n.levels])
+  coef_matrix <- do.call(cbind, coef_list)
   
-  colores <- brewer.pal(9, "YlOrBr")
-  
-  image(x=1:L,y=1:n.levels,z=(coef_matrix),main="Wavelet coeficientes de detalle heatmap",xlab="Tiempo",ylab="Nivel wavelet",yaxt="n")
-  axis(side=2,at=1:n.levels,labels = paste0("d", 1:n.levels))
+  image(
+    x = 1:L, y = 1:n.levels, z = coef_matrix,
+    main = "Heatmap coeficientes wavelet (detalle)",
+    xlab = "Tiempo", ylab = "Nivel wavelet",
+    yaxt = "n", col = heat.colors(100)
+  )
+  axis(2, at = 1:n.levels, labels = paste0("d", 1:n.levels))
 }
 
 
-plot_umbralD<-function(audio,n.levels,lambda,i,plot="left",threshold=F){
-  # Coeficientes del nivel i
-  vals<-dwt_values(audio,n.levels,lambda)
-  if (threshold==F){
-    if (plot=="left"){
-      wt<-vals[[1]]
-    }
-    else{
-      wt<-vals[[2]]
-    }
-  }
-  else{
-    if (plot=="left"){
-      wt<-vals[[3]]
-    }
-    else{
-      wt<-vals[[4]]
-    }
-    
-  }
-  coefs <- wt@W[[i]]
+
+plot_umbralD_energy <- function(audio, n.levels, lambda, i,
+                                plot = "left", threshold = TRUE) {
   
-  # Energía logarítmica (solo la calculamos una vez)
-  power <- abs(coefs)**2
-  # Umbral relativo
-  umbral <- lambda * max(power)
+  vals <- dwt_values(audio, n.levels, lambda)
   
-  # Índices que superan el umbral
-  idx_keep <- which(power >= umbral)
+  wt_orig <- if (plot == "left") vals$wt_left else vals$wt_right
+  wt_thr  <- if (plot == "left") vals$thr_left else vals$thr_right
   
-  # Límite vertical para el plot
+  coefs <- coef_to_vector(wt_orig@W[[i]])
+  coefs_thr <- coef_to_vector(wt_thr@W[[i]])
+  
+  idx_keep <- which(coefs_thr != 0)
+  
   y_lim <- 1.1 * max(abs(coefs))
   
-  # Grafica
   plot(
-    coefs, type = 'l',
-    main = paste("Nivel de Detalle d", i),
-    xlab = "Índice del Coeficiente",
+    coefs, type = "l",
+    main = paste("Nivel de detalle d", i),
+    xlab = "Índice del coeficiente",
     ylab = bquote(w[.(i)]),
     ylim = c(-y_lim, y_lim),
     col = "darkgray"
   )
   
-  # Añadimos puntos thresholded
   points(
-    x = idx_keep,
-    y = coefs[idx_keep],
+    idx_keep,
+    coefs[idx_keep],
     col = "blue",
     pch = 19,
     cex = 0.6
@@ -148,136 +86,172 @@ plot_umbralD<-function(audio,n.levels,lambda,i,plot="left",threshold=F){
 }
 
 
-plot_umbralD_energy <- function(audio, n.levels, perc, i, plot="left", threshold=FALSE) {
-  vals <- dwt_values(audio, n.levels, perc)
-  
-  if (!threshold) {
-    wt <- if (plot=="left") vals[[1]] else vals[[2]]
-  } else {
-    wt <- if (plot=="left") vals[[3]] else vals[[4]]
-  }
-  
-  # Coefs originales (para graficar)
-  wt_original <- if (plot=="left") vals[[1]] else vals[[2]]
-  coefs <- wt_original@W[[i]]
-  
-  # Coefs thresholded
-  coefs_thr <- wt@W[[i]]
-  
-  # Determinar índices mantenidos
-  idx_keep <- which(coefs_thr != 0)
-  
-  y_lim <- 1.1 * max(abs(coefs))
-  
-  plot(
-    coefs, type="l",
-    main=paste("Nivel de Detalle d", i),
-    xlab="Índice del Coeficiente",
-    ylab=bquote(w[.(i)]),
-    ylim=c(-y_lim, y_lim),
-    col="darkgray"
-  )
-  
-  points(
-    x=idx_keep,
-    y=coefs[idx_keep],
-    col="blue",
-    pch=19,
-    cex=0.6
-  )
-}
-plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot="left") {
+
+plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot = "left") {
   vals <- dwt_values(audio, n.levels, lambda)
   
-  wt  <- if (plot=="left") vals$wt_left  else vals$wt_right
-  wtT <- if (plot=="left") vals$thresholded_left else vals$thresholded_right
+  wt  <- if (plot == "left") vals$wt_left  else vals$wt_right
+  wtT <- if (plot == "left") vals$thr_left else vals$thr_right
   
   # Energía original
-  all_coefs <- unlist(wt@W)
+  all_coefs <- unlist(lapply(wt@W, as.vector))
   energies  <- abs(all_coefs)^2
   ord <- order(energies, decreasing = TRUE)
   energies_sorted <- energies[ord]
+  
   E_total <- sum(energies_sorted)
   E_cum   <- cumsum(energies_sorted)
   percent_energy <- 100 * E_cum / E_total
-  k_vals <- seq_along(all_coefs)
+  k_vals <- seq_along(percent_energy)
   
-  # Energía tras threshold real
-  all_coefs_thr <- unlist(wtT@W)
-  E_after_thr   <- sum(abs(all_coefs_thr)^2)
+  # Energía tras threshold
+  all_coefs_thr <- unlist(lapply(wtT@W, as.vector))
+  E_after_thr <- sum(abs(all_coefs_thr)^2)
   percent_after_thr <- 100 * E_after_thr / E_total
   
-  # Número real de coeficientes preservados:
-  coefs_keep <- sum(all_coefs_thr != 0)
+  # Número real de coeficientes preservados
+  k_preserved <- sum(all_coefs_thr != 0)
   
-  # Dibujar curva
-  plot(k_vals, percent_energy, type="l",
-       col="darkorange", lwd=2,
-       xlab="Coeficientes preservados (ordenados por energía)",
-       ylab="Energía capturada (%)",
-       main="Curva energía capturada vs coeficientes preservados")
+  # --- PLOT ---
+  plot(
+    k_vals, percent_energy, type = "l",
+    col = "darkorange", lwd = 2,
+    xlab = "Coeficientes preservados (ordenados por energía)",
+    ylab = "Energía capturada (%)",
+    main = "Energía capturada vs coeficientes"
+  )
   
-  # Para situar el punto sobre la curva: encontrar k tal que percent_energy[k] >= percent_after_thr
-    k_on_curve <- which(percent_energy >= percent_after_thr)[1]
-    if (is.na(k_on_curve)) { # por si ocurre redondeo y percent_after_thr == 100
-      k_on_curve <- length(k_vals)
-    }
-    # Punto sobre la curva
-    points(k_on_curve, percent_energy[k_on_curve], pch=19, col="blue", cex=1.3)
-    text(k_on_curve, percent_energy[k_on_curve],
-         labels = sprintf("  %.2f%% energía", percent_after_thr),
-         pos = 4, col="blue")
-
+  # Área bajo la curva hasta k_preserved
+  polygon(
+    x = c(0, k_vals[1:k_preserved], k_preserved),
+    y = c(0, percent_energy[1:k_preserved], 0),
+    col = rgb(0.2, 0.4, 0.8, 0.35),
+    border = NA
+  )
+  
+  # Línea vertical de referencia
+  abline(v = k_preserved, lty = 2, col = "blue")
+  
   
   grid()
 }
 
 
-compress_audio_wavelet_to_aac <- function(audio,
-                                          n.levels,
-                                          lambda,
-                                          ruta_aac = "data_comp/audio_comp.aac",
-                                          ruta_wav_tmp = "data_comp/tmp_audio.wav",
-                                          borrar_tmp = TRUE) {
-  
-  # 1. Obtener coeficientes wavelet y umbralizarlos
-  vals <- dwt_values(audio, n.levels, lambda)
-  
-  wt_left  <- vals[[1]]
-  wt_right <- vals[[2]]
-  thr_left <- vals[[3]]
-  thr_right <- vals[[4]]
-  
-  
-  # 2. Reconstrucción
-  signal_left  <- idwt(thr_left)
-  signal_right <- idwt(thr_right)
-  sd(signal_left)
-  eps <- 1e-5
-  signal_left[abs(signal_left) < eps] <- 0
-  signal_right[abs(signal_right) < eps] <- 0
-  
-  # 4. Crear objeto Wave
-  audio_wav <- Wave(
-    left = signal_left,
-    right = signal_right,
-    samp.rate = audio@samp.rate,
-    bit = audio@bit
-  )
-  
-  # 5. Guardar WAV temporal
-  writeWave(audio_wav, ruta_wav_tmp)
-  
-  # 6. Convertir a AAC
-  av::av_audio_convert(ruta_wav_tmp, ruta_aac)
-  
-  # 7. Borrar WAV temporal si se pide
-  if (borrar_tmp && file.exists(ruta_wav_tmp)) {
-    file.remove(ruta_wav_tmp)
-  }
-  
-  cat("Archivo AAC creado en:", ruta_aac, "\n")
-  invisible(ruta_aac)
-  return(vals)
+
+
+# -------------- FUNCIONES IMPORTANTES --------------------
+hard_threshold_energy <- function(coefs, lambda) {
+  # Función para aplicar el umbral de energía
+  # lambda=0 => No se comprime la señal
+  # lambda=1 => se comprime el 100% señal
+  power <- abs(coefs)^2
+  total_energy <- sum(power)
+  ord <- order(power)
+  cum_energy <- cumsum(power[ord])
+  idx <- ord[cum_energy <= lambda * total_energy]
+  coefs[idx] <- 0
+  coefs
 }
 
+dwt_values <- function(audio, n.levels, lambda) {
+  # Hacer la dwt sobre los dos canales de la señal y aplicar el threshold
+  signal_left  <- as.numeric(audio@left)
+  signal_right <- as.numeric(audio@right)
+  
+  wt_left  <- dwt(signal_left,  filter = "la8", n.levels = n.levels)
+  wt_right <- dwt(signal_right, filter = "la8", n.levels = n.levels)
+  
+  thr_left  <- wt_left
+  thr_right <- wt_right
+  
+  thr_left@W  <- lapply(wt_left@W,  hard_threshold_energy, lambda = lambda)
+  thr_right@W <- lapply(wt_right@W, hard_threshold_energy, lambda = lambda)
+  
+  list(
+    wt_left  = wt_left,
+    wt_right = wt_right,
+    thr_left = thr_left,
+    thr_right = thr_right
+  )
+}
+
+
+quantize <- function(x, delta) {
+  # Cuantización de la señal para la compresión (función usada en quantize_wt)
+  round(x / delta)
+}
+
+
+quantize_wt <- function(wt, delta) {
+  wt_q <- wt
+  wt_q@W <- lapply(wt@W, quantize, delta = delta)
+  wt_q@V[[length(wt@V)]] <- quantize(wt@V[[length(wt@V)]], delta)
+  wt_q
+}
+coef_to_vector <- function(x) {
+  as.vector(x)
+}
+
+
+rle_encode <- function(x) {
+  x <- as.vector(x)
+  r <- rle(x)
+  list(values = r$values, lengths = r$lengths)
+}
+
+encode_wt <- function(wt_q) {
+  list(
+    W = lapply(wt_q@W, rle_encode),
+    V = rle_encode(wt_q@V[[length(wt_q@V)]])
+  )
+}
+
+
+save_compressed <- function(file, left, right, delta, filter, n.levels) {
+  saveRDS(
+    list(
+      left = left,
+      right = right,
+      delta = delta,
+      filter = filter,
+      n.levels = n.levels
+    ),
+    file = file
+  )
+  file.info(file)$size
+}
+
+
+rle_decode <- function(enc) {
+  inverse.rle(list(values = enc$values, lengths = enc$lengths))
+}
+
+
+decode_wt <- function(enc, template_wt) {
+  wt <- template_wt
+  
+  wt@W <- Map(
+    function(e, ref) {
+      v <- rle_decode(e)
+      matrix(v, nrow = length(v), ncol = ncol(ref))
+    },
+    enc$W,
+    template_wt@W
+  )
+  
+  v <- rle_decode(enc$V)
+  wt@V[[length(wt@V)]] <- matrix(
+    v,
+    nrow = length(v),
+    ncol = ncol(template_wt@V[[length(template_wt@V)]])
+  )
+  
+  wt
+}
+
+
+dequantize_wt <- function(wt, delta) {
+  wt@W <- lapply(wt@W, function(x) x * delta)
+  wt@V[[length(wt@V)]] <- wt@V[[length(wt@V)]] * delta
+  wt
+}
