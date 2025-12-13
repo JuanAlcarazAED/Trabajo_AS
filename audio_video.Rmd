@@ -339,227 +339,179 @@ plot_energy_vs_coeff(audio,n.levels,lambda)
 
 
 
-Los puntos azules son los que sobreviven a la compresión, todo lo gris se elimina
-
-
-
-## Comprimir el audio 
-
 
 ```{r}
-audio_compress(audio,n.levels,lambda)
-```
-
-
-
-
-
-```{r}
-total_coefs <- 0
-zero_coefs <- 0
-
-# W contiene los coeficientes de detalle
-for (W_i in wt_thresholded@W) {
-    total_coefs <- total_coefs + length(W_i)
-    zero_coefs <- zero_coefs + sum(W_i == 0)
+hard_threshold_energy <- function(coefs, lambda) {
+  power <- abs(coefs)^2
+  total_energy <- sum(power)
+  ord <- order(power)
+  cum_energy <- cumsum(power[ord])
+  idx <- ord[cum_energy <= lambda * total_energy]
+  coefs[idx] <- 0
+  coefs
 }
 
-V_final <- wt_thresholded@V[[n.levels]]
-total_coefs <- total_coefs + length(V_final)
-zero_coefs <- zero_coefs + sum(V_final == 0)
-
-sparsity_ratio <- zero_coefs / total_coefs
-```
-
-```{r}
-bits_original <- audio@bit
-H <- entropy(round(wt_thresholded@W$W1))
-redundancy <- (bits_original - H) / bits_original
-redundancy
-```
-
-```{r}
-compress_audio_wavelet_to_aac <- function(audio,
-                                          n.levels,
-                                          lambda,
-                                          ruta_aac = "data_comp/audio_comp.aac",
-                                          ruta_wav_tmp = "data_comp/tmp_audio.wav") {
-  vals <- dwt_values(audio, n.levels, lambda)
+dwt_values <- function(audio, n.levels, lambda) {
   
-  wt_left  <- vals[[1]]
-  wt_right <- vals[[2]]
-  thr_left <- vals[[3]]
-  thr_right <- vals[[4]]
+  signal_left  <- as.numeric(audio@left)
+  signal_right <- as.numeric(audio@right)
   
-  signal_left  <- idwt(thr_left)
-  signal_right <- idwt(thr_right)
-
-  # signal_left  <- idwt(wt_left)
-  # signal_right <- idwt(wt_right)
-
+  wt_left  <- dwt(signal_left,  filter = "la8", n.levels = n.levels)
+  wt_right <- dwt(signal_right, filter = "la8", n.levels = n.levels)
   
-  audio_wav <- Wave(left = signal_left,
-                    right = signal_right,
-                    samp.rate = audio@samp.rate,
-                    bit = audio@bit)
-
-  # audio_wav<-Wave(left = rep(0.0, length(signal_left)),
-  #                     right = rep(0.0, length(signal_right)),
-  #                     samp.rate = audio@samp.rate,
-  #                     bit = audio@bit)
+  thr_left  <- wt_left
+  thr_right <- wt_right
   
-  # 4. Guardar WAV temporal (PCM sin comprimir)
-  writeWave(audio_wav, ruta_wav_tmp)
+  thr_left@W  <- lapply(wt_left@W,  hard_threshold_energy, lambda = lambda)
+  thr_right@W <- lapply(wt_right@W, hard_threshold_energy, lambda = lambda)
   
-  # 5. Convertir a AAC (códec comprimido real)
-  av::av_audio_convert(ruta_wav_tmp, ruta_aac)
-  
-  
-  
-}
-
-compress_audio_wavelet_to_aac(
-  audio = audio,
-  n.levels = 1,
-  lambda = 1,
-  ruta_aac = "data_comp/audio_comp0.wav"
-)
-```
-
-```{r}
-source("funciones_audio.R",echo=F)
-
-compress_audio_wavelet_to_aac(
-  audio = audio,
-  n.levels = 6,
-  lambda = 1,
-  ruta_aac = "data_comp/audio_comp1.aac"
-)
-```
-
-```{r}
-library(tuneR)
-library(waveslim)
-
-
-audio <- readWave("data/audio.wav")
-
-fs  <- audio@samp.rate
-bit <- audio@bit
-maxval <- 2^(bit - 1)
-
-left  <- as.numeric(audio@left)  / maxval
-right <- as.numeric(audio@right) / maxval
-
-compress_channel_energy <- function(sig, J = 6, rho = 0.99) {
-
-  N <- length(sig)
-
-  wt <- dwt(sig, wf = "haar", n.levels = J, boundary = "periodic")
-
-  details <- lapply(1:J, function(j) wt[[paste0("d", j)]])
-  approx  <- wt[[paste0("s", J)]]
-
-  all_det <- unlist(details)
-
-  E <- all_det^2
-  ord <- order(E, decreasing = TRUE)
-  E_cum <- cumsum(E[ord])
-  k <- which(E_cum >= rho * sum(E))[1]
-
-  keep <- ord[1:k]
-
-  all_det_pruned <- numeric(length(all_det))
-  all_det_pruned[keep] <- all_det[keep]
-
-  lengths <- sapply(details, length)
-  idx <- cumsum(c(0, lengths))
-
-  det_sparse <- list()
-  for (j in 1:J) {
-    d <- all_det_pruned[(idx[j] + 1):idx[j + 1]]
-    nz <- which(d != 0)
-    det_sparse[[j]] <- list(
-      idx = nz,
-      val = d[nz],
-      n   = length(d)
-    )
-  }
-
   list(
-    N = N,
-    J = J,
-    approx = approx,
-    details = det_sparse
+    wt_left  = wt_left,
+    wt_right = wt_right,
+    thr_left = thr_left,
+    thr_right = thr_right
   )
 }
 
-J   <- 6
-rho <- 0.99
+quantize <- function(x, delta) {
+  round(x / delta)
+}
 
-left_c  <- compress_channel_energy(left,  J, rho)
-right_c <- compress_channel_energy(right, J, rho)
+quantize_wt <- function(wt, delta) {
+  wt_q <- wt
+  wt_q@W <- lapply(wt@W, quantize, delta = delta)
+  wt_q@V[[length(wt@V)]] <- quantize(wt@V[[length(wt@V)]], delta)
+  wt_q
+}
 
+rle_encode <- function(x) {
+  x <- as.vector(x)
+  r <- rle(x)
+  list(values = r$values, lengths = r$lengths)
+}
 
-codec <- list(
-  samp.rate = fs,
-  bit = bit,
-  rho = rho,
-  left  = left_c,
-  right = right_c
-)
-
-saveRDS(codec,
-        "data_comp/audio_wavelet_sparse.rds",
-        compress = "gzip")
-
-reconstruct_channel <- function(ch) {
-
-  wt <- dwt(
-    rep(0, ch$N),
-    wf = "haar",
-    n.levels = ch$J,
-    boundary = "periodic"
+encode_wt <- function(wt_q) {
+  list(
+    W = lapply(wt_q@W, rle_encode),
+    V = rle_encode(wt_q@V[[length(wt_q@V)]])
   )
-
-  for (j in 1:ch$J) {
-    d <- numeric(length(wt[[paste0("d", j)]]))
-    if (length(ch$details[[j]]$idx) > 0) {
-      d[ch$details[[j]]$idx] <- ch$details[[j]]$val
-    }
-    wt[[paste0("d", j)]] <- d
-  }
-
-  wt[[paste0("s", ch$J)]] <- ch$approx
-
-  rec <- idwt(wt)
-  rec[1:ch$N]
 }
 
-left_rec  <- reconstruct_channel(codec$left)
-right_rec <- reconstruct_channel(codec$right)
-
-
-left_int  <- as.integer(pmax(pmin(left_rec  * maxval, maxval - 1), -maxval))
-right_int <- as.integer(pmax(pmin(right_rec * maxval, maxval - 1), -maxval))
-
-audio_rec <- Wave(
-  left  = left_int,
-  right = right_int,
-  samp.rate = fs,
-  bit = bit
-)
-
-writeWave(audio_rec, "data_comp/audio_recon.wav")
-
-snr <- function(x, y) {
-  10 * log10(sum(x^2) / sum((x - y)^2))
+save_compressed <- function(file, left, right, delta, filter, n.levels) {
+  saveRDS(
+    list(
+      left = left,
+      right = right,
+      delta = delta,
+      filter = filter,
+      n.levels = n.levels
+    ),
+    file = file
+  )
+  file.info(file)$size
 }
 
-cat("SNR izquierdo:", snr(left, left_rec), "dB\n")
-cat("SNR derecho :", snr(right, right_rec), "dB\n")
+
+rle_decode <- function(enc) {
+  inverse.rle(list(values = enc$values, lengths = enc$lengths))
+}
+
+decode_wt <- function(enc, template_wt) {
+  wt <- template_wt
+  
+  wt@W <- Map(
+    function(e, ref) {
+      v <- rle_decode(e)
+      matrix(v, nrow = length(v), ncol = ncol(ref))
+    },
+    enc$W,
+    template_wt@W
+  )
+  
+  v <- rle_decode(enc$V)
+  wt@V[[length(wt@V)]] <- matrix(
+    v,
+    nrow = length(v),
+    ncol = ncol(template_wt@V[[length(template_wt@V)]])
+  )
+  
+  wt
+}
+
+
+dequantize_wt <- function(wt, delta) {
+  wt@W <- lapply(wt@W, function(x) x * delta)
+  wt@V[[length(wt@V)]] <- wt@V[[length(wt@V)]] * delta
+  wt
+}
 
 
 ```
 
+```{r}
+# Parámetros
+n.levels <- 6
+lambda <- 0   # sparsity
+delta  <- 1e-1     # cuantización
+
+# DWT + threshold
+vals <- dwt_values(audio, n.levels, lambda)
+
+# Cuantización
+q_left  <- quantize_wt(vals$thr_left,  delta)
+q_right <- quantize_wt(vals$thr_right, delta)
+
+# Codificación
+enc_left  <- encode_wt(q_left)
+enc_right <- encode_wt(q_right)
+
+# Guardar archivo comprimido
+size_bytes <- save_compressed(
+  "audio_wavelet_comp.rds",
+  left  = enc_left,
+  right = enc_right,
+  delta = delta,
+  filter = "la8",
+  n.levels = n.levels
+)
+
+cat("Tamaño comprimido:", size_bytes, "bytes\n")
+
+```
+187239 
+4885757 
+3299333 
+
+```{r}
+# Decodificar
+wt_left_rec <- dequantize_wt(
+  decode_wt(enc_left, vals$thr_left),
+  delta
+)
+
+wt_right_rec <- dequantize_wt(
+  decode_wt(enc_right, vals$thr_right),
+  delta
+)
+
+# Señal final
+signal_left_rec  <- idwt(wt_left_rec)
+signal_right_rec <- idwt(wt_right_rec)
+
+audio_wav <- Wave(
+    left = signal_left_rec,
+    right = signal_right_rec,
+    samp.rate = audio@samp.rate,
+    bit = audio@bit
+)
+writeWave(audio_wav, "data_comp/audio2comp.wav")
+
+
+mse_left  <- mean((audio@left  - signal_left_rec)^2)
+mse_right <- mean((audio@right - signal_right_rec)^2)
+
+cat("MSE Left :", mse_left, "\n")
+cat("MSE Right:", mse_right, "\n")
+
+```
 

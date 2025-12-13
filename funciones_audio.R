@@ -29,7 +29,7 @@ hard_threshold_energy <- function(coefs, lambda) {
   # Ordenar coeficientes por energía creciente
   ord <- order(power)
   cum_energy <- cumsum(power[ord])
-  idx <- ord[cum_energy <= lambda * total_energy]
+  idx <- ord[cum_energy < lambda * total_energy]
   coefs[idx] <- 0
   
   return(coefs)
@@ -248,15 +248,14 @@ compress_audio_wavelet_to_aac <- function(audio,
   thr_left <- vals[[3]]
   thr_right <- vals[[4]]
   
+  
   # 2. Reconstrucción
   signal_left  <- idwt(thr_left)
   signal_right <- idwt(thr_right)
-  
-  # Asegurar que ambas señales tienen la MISMA longitud
-  n <- min(length(signal_left), length(signal_right))
-  signal_left  <- signal_left[1:n]
-  signal_right <- signal_right[1:n]
-  
+  sd(signal_left)
+  eps <- 1e-5
+  signal_left[abs(signal_left) < eps] <- 0
+  signal_right[abs(signal_right) < eps] <- 0
   
   # 4. Crear objeto Wave
   audio_wav <- Wave(
@@ -279,5 +278,6 @@ compress_audio_wavelet_to_aac <- function(audio,
   
   cat("Archivo AAC creado en:", ruta_aac, "\n")
   invisible(ruta_aac)
+  return(vals)
 }
 
