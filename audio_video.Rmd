@@ -16,10 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 # Librerías
 library(av)
-
 library(wavelets)
 library(tuneR)
-
 library(RColorBrewer)
 ```
 
@@ -439,5 +437,129 @@ compress_audio_wavelet_to_aac(
 )
 ```
 
+```{r}
+library(tuneR)
+library(waveslim)
+
+
+audio <- readWave("data/audio.wav")
+
+fs  <- audio@samp.rate
+bit <- audio@bit
+maxval <- 2^(bit - 1)
+
+left  <- as.numeric(audio@left)  / maxval
+right <- as.numeric(audio@right) / maxval
+
+compress_channel_energy <- function(sig, J = 6, rho = 0.99) {
+
+  N <- length(sig)
+
+  wt <- dwt(sig, wf = "haar", n.levels = J, boundary = "periodic")
+
+  details <- lapply(1:J, function(j) wt[[paste0("d", j)]])
+  approx  <- wt[[paste0("s", J)]]
+
+  all_det <- unlist(details)
+
+  E <- all_det^2
+  ord <- order(E, decreasing = TRUE)
+  E_cum <- cumsum(E[ord])
+  k <- which(E_cum >= rho * sum(E))[1]
+
+  keep <- ord[1:k]
+
+  all_det_pruned <- numeric(length(all_det))
+  all_det_pruned[keep] <- all_det[keep]
+
+  lengths <- sapply(details, length)
+  idx <- cumsum(c(0, lengths))
+
+  det_sparse <- list()
+  for (j in 1:J) {
+    d <- all_det_pruned[(idx[j] + 1):idx[j + 1]]
+    nz <- which(d != 0)
+    det_sparse[[j]] <- list(
+      idx = nz,
+      val = d[nz],
+      n   = length(d)
+    )
+  }
+
+  list(
+    N = N,
+    J = J,
+    approx = approx,
+    details = det_sparse
+  )
+}
+
+J   <- 6
+rho <- 0.99
+
+left_c  <- compress_channel_energy(left,  J, rho)
+right_c <- compress_channel_energy(right, J, rho)
+
+
+codec <- list(
+  samp.rate = fs,
+  bit = bit,
+  rho = rho,
+  left  = left_c,
+  right = right_c
+)
+
+saveRDS(codec,
+        "data_comp/audio_wavelet_sparse.rds",
+        compress = "gzip")
+
+reconstruct_channel <- function(ch) {
+
+  wt <- dwt(
+    rep(0, ch$N),
+    wf = "haar",
+    n.levels = ch$J,
+    boundary = "periodic"
+  )
+
+  for (j in 1:ch$J) {
+    d <- numeric(length(wt[[paste0("d", j)]]))
+    if (length(ch$details[[j]]$idx) > 0) {
+      d[ch$details[[j]]$idx] <- ch$details[[j]]$val
+    }
+    wt[[paste0("d", j)]] <- d
+  }
+
+  wt[[paste0("s", ch$J)]] <- ch$approx
+
+  rec <- idwt(wt)
+  rec[1:ch$N]
+}
+
+left_rec  <- reconstruct_channel(codec$left)
+right_rec <- reconstruct_channel(codec$right)
+
+
+left_int  <- as.integer(pmax(pmin(left_rec  * maxval, maxval - 1), -maxval))
+right_int <- as.integer(pmax(pmin(right_rec * maxval, maxval - 1), -maxval))
+
+audio_rec <- Wave(
+  left  = left_int,
+  right = right_int,
+  samp.rate = fs,
+  bit = bit
+)
+
+writeWave(audio_rec, "data_comp/audio_recon.wav")
+
+snr <- function(x, y) {
+  10 * log10(sum(x^2) / sum((x - y)^2))
+}
+
+cat("SNR izquierdo:", snr(left, left_rec), "dB\n")
+cat("SNR derecho :", snr(right, right_rec), "dB\n")
+
+
+```
 
 
