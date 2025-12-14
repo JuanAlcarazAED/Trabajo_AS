@@ -144,7 +144,7 @@ plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot = "left") {
   )
   
   # Línea horizontal de referencia
-  abline(h = percent_after_thr, lty = 2, col = "blue")
+  abline(h = percent_after_thr, lty = 2, col = "red")
   
   grid()
 }

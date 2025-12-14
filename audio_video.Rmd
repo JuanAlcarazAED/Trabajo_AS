@@ -25,7 +25,7 @@ library(RColorBrewer)
 ```{r}
 # Parámetros
 n.levels <- 3
-lambda <- 0.2
+lambda <- 0.5
 
 audio <- readWave("data/audio.wav")
 
@@ -54,34 +54,7 @@ size_bytes <- save_compressed(
 cat("Tamaño del archivo comprimido:", size_bytes/1024, "KB\n")
 
 ```
-### Decodificación
 
-```{r}
-
-wt_left_rec <- decode_wt(enc_left, vals$thr_left)
-
-wt_right_rec <- decode_wt(enc_right, vals$thr_right)
-
-# Señal final
-signal_left_rec  <- idwt(wt_left_rec)
-signal_right_rec <- idwt(wt_right_rec)
-
-audio_wav <- Wave(
-    left = signal_left_rec,
-    right = signal_right_rec,
-    samp.rate = audio@samp.rate,
-    bit = audio@bit
-)
-writeWave(audio_wav, "data_comp/audio2comp.wav")
-
-
-mse_left  <- mean((audio@left  - signal_left_rec)^2)
-mse_right <- mean((audio@right - signal_right_rec)^2)
-
-cat("MSE Left :", mse_left, "\n")
-cat("MSE Right:", mse_right, "\n")
-
-```
 ```{r}
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
@@ -90,28 +63,6 @@ plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
 
 ```{r}
 plot_energy_vs_coeff(audio,n.levels,lambda)
-```
-```{r}
-lambda_vals <- seq(0, 1, by = 0.1)
-
-size_data <- size_vs_lambda(
-  audio     = audio,
-  n.levels  = n.levels,
-  lambda_vals = lambda_vals
-)
-
-plot(
-  red_data$redundancy,
-  size_data$size_bytes/max(size_data$size_bytes),
-  type = "b", pch = 19,
-  col = "darkred",
-  xlab = "Redundancia",
-  ylab = "Porcentaje de archivo comprimido",
-  main = "Porcentaje de archivo comprimido vs redundancia"
-)
-
-grid()
-
 ```
 ## Redundancia de la señal
 
@@ -140,6 +91,59 @@ plot(
 )
 
 grid()
+
+```
+
+## Tamaño del archivo
+
+```{r}
+lambda_vals <- seq(0, 1, by = 0.1)
+
+size_data <- size_vs_lambda(
+  audio     = audio,
+  n.levels  = n.levels,
+  lambda_vals = lambda_vals
+)
+
+plot(
+  red_data$redundancy,
+  size_data$size_bytes/max(size_data$size_bytes),
+  type = "b", pch = 19,
+  col = "darkred",
+  xlab = "Redundancia",
+  ylab = "Porcentaje de archivo comprimido",
+  main = "Porcentaje de archivo comprimido vs redundancia"
+)
+
+grid()
+
+```
+## Decodificación
+
+```{r}
+
+wt_left_rec <- decode_wt(enc_left, vals$thr_left)
+
+wt_right_rec <- decode_wt(enc_right, vals$thr_right)
+
+# Señal final
+signal_left_rec  <- idwt(wt_left_rec)
+signal_right_rec <- idwt(wt_right_rec)
+
+audio_wav <- Wave(
+    left = signal_left_rec,
+    right = signal_right_rec,
+    samp.rate = audio@samp.rate,
+    bit = audio@bit
+)
+writeWave(audio_wav, "data_comp/audio2comp.wav")
+
+
+mse_left  <- mean((audio@left  - signal_left_rec)^2)
+mse_right <- mean((audio@right - signal_right_rec)^2)
+
+cat("MSE Left :", mse_left, "\n")
+cat("MSE Right:", mse_right, "\n")
 
 ```
 
