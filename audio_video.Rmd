@@ -101,13 +101,13 @@ size_data <- size_vs_lambda(
 )
 
 plot(
-  size_data$lambda,
+  red_data$redundancy,
   size_data$size_bytes/max(size_data$size_bytes),
   type = "b", pch = 19,
   col = "darkred",
-  xlab = expression(lambda),
+  xlab = "Redundancia",
   ylab = "Porcentaje de archivo comprimido",
-  main = "Porcentaje de archivo comprimido vs umbral"
+  main = "Porcentaje de archivo comprimido vs redundancia"
 )
 
 grid()
