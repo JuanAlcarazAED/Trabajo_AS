@@ -6,7 +6,7 @@ library(RColorBrewer)
 #https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels 
 # Apuntes del tema 3 de compresión de una onda
 
-# --------------- FUNCIONES GRÁFICAS-----------------------
+# --------------- FUNCIÓN SEPARAR AUDIO-FRAME DE VIDEO-----------------------
 
 
 sep_audio_video<-function(main="data/video.mp4",audio="data/audio.wav",video="data/frames",fps=30){
@@ -14,7 +14,7 @@ sep_audio_video<-function(main="data/video.mp4",audio="data/audio.wav",video="da
   av_audio_convert(main,audio)
   frames<-av_video_images(main,destdir=video,fps=fps)
 }
-
+# --------------- FUNCIONES GRÁFICAS-----------------------
 expand_to_length <- function(coefs, target_len) {
   coefs <- as.vector(coefs)
   rep_each <- ceiling(target_len / length(coefs))
@@ -323,9 +323,9 @@ entropy_redundancy <-function(x){
   p<-tabla/sum(tabla)
   
   H<--sum(p*log2(p))
-  
   Hmax<-log2(L)
   
+
   R<-1-H/Hmax
   
   list(entropy=H,Hmax=Hmax,redundancy=R)

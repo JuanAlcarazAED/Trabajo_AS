@@ -25,7 +25,7 @@ library(RColorBrewer)
 ```{r}
 # Parámetros
 n.levels <- 3
-lambda <- 0.9
+lambda <- 0.2
 
 audio <- readWave("data/audio.wav")
 
