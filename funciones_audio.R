@@ -5,6 +5,7 @@ library(RColorBrewer)
 # Página que voy a usar de referencia
 #https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels 
 # Apuntes del tema 3 de compresión de una onda
+# Referencia de cómo se umbraliza y redundancia: https://www.di.ens.fr/~mallat/papiers/WaveletTourChap1-6.pdf
 
 # --------------- FUNCIÓN SEPARAR AUDIO-FRAME DE VIDEO-----------------------
 
@@ -109,10 +110,8 @@ plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot = "left") {
   E_after_thr <- sum(abs(all_coefs_thr)^2)
   percent_after_thr <- 100 * E_after_thr / E_total
   
-  # Número real de coeficientes preservados
   k_preserved <- sum(all_coefs_thr != 0)
   
-  # --- PLOT ---
   plot(
     k_vals, percent_energy, type = "l",
     col = "darkorange", lwd = 2,
@@ -121,30 +120,9 @@ plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot = "left") {
     main = "Energía capturada vs coeficientes"
   )
   
-  # Área a la izquierda de la curva hasta percent_after_thr
-  polygon(
-    x = c(
-      0,
-      k_vals[percent_energy <= percent_after_thr],
-      approx(
-        x = percent_energy,
-        y = k_vals,
-        xout = percent_after_thr
-      )$y,
-      0
-    ),
-    y = c(
-      0,
-      percent_energy[percent_energy <= percent_after_thr],
-      percent_after_thr,
-      percent_after_thr
-    ),
-    col = rgb(0.2, 0.4, 0.8, 0.35),
-    border = NA
-  )
   
   # Línea horizontal de referencia
-  abline(h = percent_after_thr, lty = 2, col = "red")
+  abline(h = percent_after_thr, lty = 5, col = "red")
   
   grid()
 }
@@ -194,18 +172,6 @@ dwt_values <- function(audio, n.levels, lambda) {
 }
 
 
-# quantize <- function(x, delta) {
-#   # Cuantización de la señal para la compresión (función usada en quantize_wt)
-#   round(x / delta)
-# }
-# 
-# 
-# quantize_wt <- function(wt, delta) {
-#   wt_q <- wt
-#   wt_q@W <- lapply(wt@W, quantize, delta = delta)
-#   wt_q@V[[length(wt@V)]] <- quantize(wt@V[[length(wt@V)]], delta)
-#   wt_q
-# }
 coef_to_vector <- function(x) {
   as.vector(x)
 }
@@ -265,13 +231,6 @@ decode_wt <- function(enc, template_wt) {
   
   wt
 }
-
-
-# dequantize_wt <- function(wt, delta) {
-#   wt@W <- lapply(wt@W, function(x) x * delta)
-#   wt@V[[length(wt@V)]] <- wt@V[[length(wt@V)]] * delta
-#   wt
-# }
 
 
 size_vs_lambda <- function(audio, n.levels, lambda_vals,
