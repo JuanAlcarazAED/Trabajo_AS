@@ -24,9 +24,9 @@ library(RColorBrewer)
 
 ```{r}
 # Parámetros
-n.levels <- 4
-lambda <- 0.2   # sparsity
-delta  <- 0.01     # cuantización
+n.levels <- 3
+lambda <- 0.9
+
 audio <- readWave("data/audio.wav")
 
 source("funciones_audio.R",echo=F)
@@ -35,8 +35,8 @@ source("funciones_audio.R",echo=F)
 vals <- dwt_values(audio, n.levels, lambda)
 
 # Cuantización
-q_left  <- quantize_wt(vals$thr_left,  delta)
-q_right <- quantize_wt(vals$thr_right, delta)
+q_left  <- vals$thr_left
+q_right <- vals$thr_right
 
 # Codificación
 enc_left  <- encode_wt(q_left)
@@ -47,27 +47,20 @@ size_bytes <- save_compressed(
   "data_comp/audio_wavelet_comp.rds",
   left  = enc_left,
   right = enc_right,
-  delta = delta,
   filter = "la8",
   n.levels = n.levels
 )
 
-cat("Tamaño del archivo comprimido:", size_bytes, "bytes\n")
+cat("Tamaño del archivo comprimido:", size_bytes/1024, "KB\n")
 
 ```
 ### Decodificación
 
 ```{r}
 
-wt_left_rec <- dequantize_wt(
-  decode_wt(enc_left, vals$thr_left),
-  delta
-)
+wt_left_rec <- decode_wt(enc_left, vals$thr_left)
 
-wt_right_rec <- dequantize_wt(
-  decode_wt(enc_right, vals$thr_right),
-  delta
-)
+wt_right_rec <- decode_wt(enc_right, vals$thr_right)
 
 # Señal final
 signal_left_rec  <- idwt(wt_left_rec)
@@ -94,11 +87,6 @@ plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
 ```
 
-```{r}
-for (i in 1:n.levels){
-  plot_umbralD_energy(audio,n.levels,lambda,i,plot="left",threshold=F)
-}
-```
 
 ```{r}
 plot_energy_vs_coeff(audio,n.levels,lambda)
@@ -109,24 +97,49 @@ lambda_vals <- seq(0, 1, by = 0.1)
 size_data <- size_vs_lambda(
   audio     = audio,
   n.levels  = n.levels,
-  lambda_vals = lambda_vals,
-  delta     = delta   # o NULL si no cuantizas
+  lambda_vals = lambda_vals
 )
 
 plot(
   size_data$lambda,
-  size_data$size_bytes / 1000,
+  size_data$size_bytes/max(size_data$size_bytes),
   type = "b", pch = 19,
   col = "darkred",
   xlab = expression(lambda),
-  ylab = "Tamaño archivo (KB)",
-  main = "Tamaño del archivo comprimido vs umbral"
+  ylab = "Porcentaje de archivo comprimido",
+  main = "Porcentaje de archivo comprimido vs umbral"
 )
 
 grid()
 
 ```
+## Redundancia de la señal
+
+Escribimos la redundancia de la señal como:
+
+$$R(\lambda)=1-\frac{H(\lambda)}{H_{max}(\lambda)}$$
+Donde $H(\lambda)$ es la entropía de los coeficientes wavelet tras el threshold y $H_{max}$ es la entropía máxima posible. En este caso una redundancia alta significa que la señal está formada por pocos símbolos que dominan (muchos ceros y pocos valores no nulos), por lo tanto, una alta redundancia significa que la información está muy estructurada. 
+
+El valor de la redundancia va a permitir elegir el valor de $\lambda$ óptimo, este valor busca el máximo de redundancia sin degradar la señal. El objetivo es eliminar la redundancia estadística sin pérdida perceptual ni estructural relevante.
+
+
 ```{r}
+red_data <- redundancy_vs_lambda(
+  audio,
+  n.levels,
+  lambda_vals = seq(0, 1, 0.1)
+)
+plot(
+  red_data$lambda,
+  red_data$redundancy,
+  type = "b", pch = 19,
+  col = "darkgreen",
+  xlab = expression(lambda),
+  ylab = "Redundancia",
+  main = "Redundancia de la señal wavelet vs umbral"
+)
+
+grid()
 
 ```
 

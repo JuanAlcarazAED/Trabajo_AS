@@ -121,20 +121,34 @@ plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot = "left") {
     main = "Energía capturada vs coeficientes"
   )
   
-  # Área bajo la curva hasta k_preserved
+  # Área a la izquierda de la curva hasta percent_after_thr
   polygon(
-    x = c(0, k_vals[1:k_preserved], k_preserved),
-    y = c(0, percent_energy[1:k_preserved], 0),
+    x = c(
+      0,
+      k_vals[percent_energy <= percent_after_thr],
+      approx(
+        x = percent_energy,
+        y = k_vals,
+        xout = percent_after_thr
+      )$y,
+      0
+    ),
+    y = c(
+      0,
+      percent_energy[percent_energy <= percent_after_thr],
+      percent_after_thr,
+      percent_after_thr
+    ),
     col = rgb(0.2, 0.4, 0.8, 0.35),
     border = NA
   )
   
-  # Línea vertical de referencia
-  abline(v = k_preserved, lty = 2, col = "blue")
-  
+  # Línea horizontal de referencia
+  abline(h = percent_after_thr, lty = 2, col = "blue")
   
   grid()
 }
+
 
 
 
@@ -180,18 +194,18 @@ dwt_values <- function(audio, n.levels, lambda) {
 }
 
 
-quantize <- function(x, delta) {
-  # Cuantización de la señal para la compresión (función usada en quantize_wt)
-  round(x / delta)
-}
-
-
-quantize_wt <- function(wt, delta) {
-  wt_q <- wt
-  wt_q@W <- lapply(wt@W, quantize, delta = delta)
-  wt_q@V[[length(wt@V)]] <- quantize(wt@V[[length(wt@V)]], delta)
-  wt_q
-}
+# quantize <- function(x, delta) {
+#   # Cuantización de la señal para la compresión (función usada en quantize_wt)
+#   round(x / delta)
+# }
+# 
+# 
+# quantize_wt <- function(wt, delta) {
+#   wt_q <- wt
+#   wt_q@W <- lapply(wt@W, quantize, delta = delta)
+#   wt_q@V[[length(wt@V)]] <- quantize(wt@V[[length(wt@V)]], delta)
+#   wt_q
+# }
 coef_to_vector <- function(x) {
   as.vector(x)
 }
@@ -211,12 +225,11 @@ encode_wt <- function(wt_q) {
 }
 
 
-save_compressed <- function(file, left, right, delta, filter, n.levels) {
+save_compressed <- function(file, left, right, filter, n.levels) {
   saveRDS(
     list(
       left = left,
       right = right,
-      delta = delta,
       filter = filter,
       n.levels = n.levels
     ),
@@ -254,14 +267,14 @@ decode_wt <- function(enc, template_wt) {
 }
 
 
-dequantize_wt <- function(wt, delta) {
-  wt@W <- lapply(wt@W, function(x) x * delta)
-  wt@V[[length(wt@V)]] <- wt@V[[length(wt@V)]] * delta
-  wt
-}
+# dequantize_wt <- function(wt, delta) {
+#   wt@W <- lapply(wt@W, function(x) x * delta)
+#   wt@V[[length(wt@V)]] <- wt@V[[length(wt@V)]] * delta
+#   wt
+# }
 
 
-size_vs_lambda <- function(audio, n.levels, lambda_vals, delta = NULL,
+size_vs_lambda <- function(audio, n.levels, lambda_vals,
                            filter = "la8", tmp_file = "tmp_comp.rds") {
   
   sizes <- numeric(length(lambda_vals))
@@ -272,14 +285,10 @@ size_vs_lambda <- function(audio, n.levels, lambda_vals, delta = NULL,
     # Wavelet + threshold
     vals <- dwt_values(audio, n.levels, lambda)
     
-    wt_left  <- vals[[3]]  # thresholded left
+    wt_left  <- vals[[3]]  # thresholded left delta
     wt_right <- vals[[4]]  # thresholded right
     
-    # Cuantización opcional
-    if (!is.null(delta)) {
-      wt_left  <- quantize_wt(wt_left,  delta)
-      wt_right <- quantize_wt(wt_right, delta)
-    }
+
     
     # Guardar archivo comprimido
     saveRDS(
@@ -287,7 +296,6 @@ size_vs_lambda <- function(audio, n.levels, lambda_vals, delta = NULL,
         left   = wt_left,
         right  = wt_right,
         lambda = lambda,
-        delta  = delta,
         filter = filter,
         levels = n.levels
       ),
@@ -307,7 +315,7 @@ size_vs_lambda <- function(audio, n.levels, lambda_vals, delta = NULL,
   )
 }
 
-entropy_redundace<-function(x){
+entropy_redundancy <-function(x){
   x<-x[!is.na(x)] # Para evitar valores na
   
   tabla<-table(x)
@@ -333,7 +341,7 @@ entropy_redundancy_wt <- function(wt_q) {
   entropy_redundancy(coefs)
 }
 
-redundancy_vs_lambda <- function(audio, n.levels, lambda_vals, delta,
+redundancy_vs_lambda <- function(audio, n.levels, lambda_vals,
                                  plot = "left") {
   
   H <- numeric(length(lambda_vals))
@@ -345,8 +353,8 @@ redundancy_vs_lambda <- function(audio, n.levels, lambda_vals, delta,
     vals <- dwt_values(audio, n.levels, lambda)
     wt_thr <- if (plot == "left") vals[[3]] else vals[[4]]
     
-    wt_q <- quantize_wt(wt_thr, delta)
-    
+    wt_q <- wt_thr
+  
     info <- entropy_redundancy_wt(wt_q)
     
     H[i] <- info$entropy
