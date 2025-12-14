@@ -139,6 +139,10 @@ plot_energy_vs_coeff <- function(audio, n.levels, lambda, plot = "left") {
 
 
 
+
+
+
+
 # -------------- FUNCIONES IMPORTANTES --------------------
 hard_threshold_energy <- function(coefs, lambda) {
   # Función para aplicar el umbral de energía
@@ -255,3 +259,104 @@ dequantize_wt <- function(wt, delta) {
   wt@V[[length(wt@V)]] <- wt@V[[length(wt@V)]] * delta
   wt
 }
+
+
+size_vs_lambda <- function(audio, n.levels, lambda_vals, delta = NULL,
+                           filter = "la8", tmp_file = "tmp_comp.rds") {
+  
+  sizes <- numeric(length(lambda_vals))
+  
+  for (i in seq_along(lambda_vals)) {
+    lambda <- lambda_vals[i]
+    
+    # Wavelet + threshold
+    vals <- dwt_values(audio, n.levels, lambda)
+    
+    wt_left  <- vals[[3]]  # thresholded left
+    wt_right <- vals[[4]]  # thresholded right
+    
+    # Cuantización opcional
+    if (!is.null(delta)) {
+      wt_left  <- quantize_wt(wt_left,  delta)
+      wt_right <- quantize_wt(wt_right, delta)
+    }
+    
+    # Guardar archivo comprimido
+    saveRDS(
+      list(
+        left   = wt_left,
+        right  = wt_right,
+        lambda = lambda,
+        delta  = delta,
+        filter = filter,
+        levels = n.levels
+      ),
+      file = tmp_file
+    )
+    
+    # Tamaño real en bytes
+    sizes[i] <- file.info(tmp_file)$size
+    
+    # Limpieza
+    unlink(tmp_file)
+  }
+  
+  data.frame(
+    lambda = lambda_vals,
+    size_bytes = sizes
+  )
+}
+
+entropy_redundace<-function(x){
+  x<-x[!is.na(x)] # Para evitar valores na
+  
+  tabla<-table(x)
+  L<-length(tabla)
+  p<-tabla/sum(tabla)
+  
+  H<--sum(p*log2(p))
+  
+  Hmax<-log2(L)
+  
+  R<-1-H/Hmax
+  
+  list(entropy=H,Hmax=Hmax,redundancy=R)
+}
+
+
+entropy_redundancy_wt <- function(wt_q) {
+  coefs <- c(
+    unlist(wt_q@W),
+    wt_q@V[[length(wt_q@V)]]
+  )
+  
+  entropy_redundancy(coefs)
+}
+
+redundancy_vs_lambda <- function(audio, n.levels, lambda_vals, delta,
+                                 plot = "left") {
+  
+  H <- numeric(length(lambda_vals))
+  R <- numeric(length(lambda_vals))
+  
+  for (i in seq_along(lambda_vals)) {
+    lambda <- lambda_vals[i]
+    
+    vals <- dwt_values(audio, n.levels, lambda)
+    wt_thr <- if (plot == "left") vals[[3]] else vals[[4]]
+    
+    wt_q <- quantize_wt(wt_thr, delta)
+    
+    info <- entropy_redundancy_wt(wt_q)
+    
+    H[i] <- info$entropy
+    R[i] <- info$redundancy
+  }
+  
+  data.frame(
+    lambda = lambda_vals,
+    entropy = H,
+    redundancy = R
+  )
+}
+

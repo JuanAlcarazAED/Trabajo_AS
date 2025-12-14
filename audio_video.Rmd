@@ -103,4 +103,30 @@ for (i in 1:n.levels){
 ```{r}
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
+```{r}
+lambda_vals <- seq(0, 1, by = 0.1)
+
+size_data <- size_vs_lambda(
+  audio     = audio,
+  n.levels  = n.levels,
+  lambda_vals = lambda_vals,
+  delta     = delta   # o NULL si no cuantizas
+)
+
+plot(
+  size_data$lambda,
+  size_data$size_bytes / 1000,
+  type = "b", pch = 19,
+  col = "darkred",
+  xlab = expression(lambda),
+  ylab = "Tamaño archivo (KB)",
+  main = "Tamaño del archivo comprimido vs umbral"
+)
+
+grid()
+
+```
+```{r}
+
+```
 
