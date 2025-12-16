@@ -20,21 +20,59 @@ library(tuneR)
 library(RColorBrewer)
 ```
 
+```{r}
+source("funciones_audio.R",echo=F)
+```
+
+
+```{r}
+audio <- readWave("data/audio.wav")
+n.levels <- 6
+```
+
+
+## Redundancia de la señal
+
+
+La compresión de una señal mediante umbralizado de energía busca maximizar la dispersión lo que resulta en una distribución de coeficientes de baja entropía, que es ideal para la codificación final. Cuando se realiza la umbralización la mayoría de los coeficientes se agrupan en un determinado rango y el resto de valores pasan a ser muy pequeños, creando una distribución de coeficientes no uniforme con una distribución de baja entropía. 
+
+El estudio de la entropía va a permitir ver el comportamiento de la compresión en función del parámetro umbral. Para tener en cuenta también la entropía máxima de la señal se va hacer el estudio desde la perspectiva de la redundancia de la señal. Escribimos la redundancia de la señal como:
+
+$$R(\lambda)=1-\frac{H(\lambda)}{H_{max}(\lambda)}$$
+
+Donde $H(\lambda)$ es la entropía de los coeficientes wavelet tras el threshold y $H_{max}$ es la entropía máxima posible que varía en función del valor umbral, ya que está definida como el logarítmo en base dos del número de posibles configuraciones, al aumentar el valor umbral las posibles configuraciones disminuyen. En este caso una redundancia alta significa que la señal está formada por pocos símbolos que dominan (muchos ceros y pocos valores no nulos), por lo tanto, una alta redundancia significa que la información está muy estructurada. 
+
+El valor de la redundancia va a permitir elegir el valor de $\lambda$ óptimo, este valor busca el máximo de redundancia sin degradar la señal. El objetivo es eliminar la redundancia estadística sin pérdida perceptual ni estructural relevante.
+
+
+```{r}
+red_data <- redundancy_vs_lambda(
+  audio,
+  n.levels,
+  lambda_vals = seq(0, 1, 0.1)
+)
+plot(
+  red_data$lambda,
+  red_data$redundancy,
+  type = "b", pch = 19,
+  col = "darkgreen",
+  xlab = expression(lambda),
+  ylab = "Redundancia",
+  main = "Redundancia de la señal wavelet vs umbral"
+)
+
+grid()
+```
+
 
 
 ```{r}
 # Parámetros
-n.levels <- 1
-lambda <- 0.2
-
-audio <- readWave("data/audio.wav")
-
-source("funciones_audio.R",echo=F)
+lambda <- 0.8
 
 # DWT + threshold
 vals <- dwt_values(audio, n.levels, lambda)
 
-# Cuantización
 q_left  <- vals$thr_left
 q_right <- vals$thr_right
 
@@ -64,37 +102,7 @@ plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
 ```{r}
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
-## Redundancia de la señal
 
-
-La compresión de una señal mediante umbralizado de energía busca maximizar la dispersión lo que resulta en una distribución de coeficientes de baja entropía, que es ideal para la codificación final. Cuando se realiza la umbralización la mayoría de los coeficientes se agrupan en un determinado rango y el resto de valores pasan a ser muy pequeños, creando una distribución de coeficientes no uniforme con una distribución de baja entropía. 
-
-El estudio de la entropía va a permitir ver el comportamiento de la compresión en función del parámetro umbral. Para tener en cuenta también la entropía máxima de la señal se va hacer el estudio desde la perspectiva de la redundancia de la señal. Escribimos la redundancia de la señal como:
-
-$$R(\lambda)=1-\frac{H(\lambda)}{H_{max}(\lambda)}$$
-Donde $H(\lambda)$ es la entropía de los coeficientes wavelet tras el threshold y $H_{max}$ es la entropía máxima posible que varía en función del valor umbral, ya que está definida como el logarítmo en base dos del número de posibles configuraciones, al aumentar el valor umbral las posibles configuraciones disminuyen. En este caso una redundancia alta significa que la señal está formada por pocos símbolos que dominan (muchos ceros y pocos valores no nulos), por lo tanto, una alta redundancia significa que la información está muy estructurada. 
-
-El valor de la redundancia va a permitir elegir el valor de $\lambda$ óptimo, este valor busca el máximo de redundancia sin degradar la señal. El objetivo es eliminar la redundancia estadística sin pérdida perceptual ni estructural relevante.
-
-
-```{r}
-red_data <- redundancy_vs_lambda(
-  audio,
-  n.levels,
-  lambda_vals = seq(0, 1, 0.1)
-)
-plot(
-  red_data$lambda,
-  red_data$redundancy,
-  type = "b", pch = 19,
-  col = "darkgreen",
-  xlab = expression(lambda),
-  ylab = "Redundancia",
-  main = "Redundancia de la señal wavelet vs umbral"
-)
-
-grid()
-```
 
 ## Tamaño del archivo
 
