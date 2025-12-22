@@ -20,14 +20,22 @@ library(tuneR)
 library(RColorBrewer)
 ```
 
+
 ```{r}
 source("funciones_audio.R",echo=F)
 ```
 
 
+
+```{r}
+sep_audio_video(main="data/video2.mp4",audio="data/audio.wav",video="data/frames",fps=30)
+```
+
+
+
 ```{r}
 audio <- readWave("data/audio.wav")
-n.levels <- 6
+n.levels <- 3
 ```
 
 
@@ -68,7 +76,7 @@ grid()
 
 ```{r}
 # Parámetros
-lambda <- 0.8
+lambda <- 0.5
 
 # DWT + threshold
 vals <- dwt_values(audio, n.levels, lambda)
