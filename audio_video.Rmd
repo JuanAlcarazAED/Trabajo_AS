@@ -28,91 +28,100 @@ source("funciones_audio.R",echo=F)
 
 
 ```{r}
-sep_audio_video(main="data/video2.mp4",audio="data/audio.wav",video="data/frames",fps=30)
+sep_audio_video(main="data/video3.mp4",audio="data/audio.wav",video="data/frames",fps=30)
 ```
 
-
+La compresión del audio se ha realizado en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal aplicada el umbral. Se busca un equilibrio entre reducir la redundancia y la compresión del archivo, eliminando componentes sin afectar a la integridad estructural de la señal. 
+ La frecuencia de muestreo del auido es de 44100 Hz, dado que cada nivel de descomposición divide el espectro a la mitad, elegir 6 niveles es razonable ya que se llega a cubrir las frecuencias medias y bajas donde se concentra energías. 
 
 ```{r}
 audio <- readWave("data/audio.wav")
-n.levels <- 3
+n.levels <- 6
+```
+
+El audio a estudiar es estéreo, la amplitud del audio para ambos canales se puede observar en la siguiente figura.
+
+```{r}
+N <- length(audio@left)
+freq <- audio@samp.rate
+tiempo <- (0:(N-1)) / freq
+
+
+par(mfrow = c(2, 1), mar = c(4, 4, 2, 1)) 
+
+
+plot(tiempo, audio@left, type = "l",
+     main = "Canal Izquierdo",
+     xlab = "", ylab = "Amplitud")
+
+
+plot(tiempo, audio@right, type = "l",
+     main = "Canal Derecho",
+     xlab = "Tiempo (segundos)", ylab = "Amplitud")
+
+par(mfrow = c(1, 1))
+```
+
+El parámetro fundamental en este estudio es la energía, definida como la amplitud al cuadrado de la señal. En la siguiente figura se representa la energía de la señal, donde se observa que ambos canales presentan picos pronunciados. Esta concentración de energía indica una baja entropía, mientras que una distribución de energía uniforme dificultaría la compresión, una señal con picos de energía concentrado permite un umbralado más eficiente en el dominio wavelet.
+
+```{r}
+
+N <- length(audio@left)
+freq <- audio@samp.rate
+tiempo <- (0:(N-1)) / freq
+
+
+par(mfrow = c(2, 1), mar = c(4, 4, 2, 1)) 
+
+
+plot(tiempo, (audio@left)^2, type = "l",
+     main = "Canal Izquierdo",
+     xlab = "", ylab = "Energía")
+
+
+plot(tiempo, (audio@right)^2, type = "l",
+     main = "Canal Derecho",
+     xlab = "Tiempo (segundos)", ylab = "Energía")
+
+par(mfrow = c(1, 1))
+
 ```
 
 
 ## Redundancia de la señal
 
 
-La compresión de una señal mediante umbralizado de energía busca maximizar la dispersión lo que resulta en una distribución de coeficientes de baja entropía, que es ideal para la codificación final. Cuando se realiza la umbralización la mayoría de los coeficientes se agrupan en un determinado rango y el resto de valores pasan a ser muy pequeños, creando una distribución de coeficientes no uniforme con una distribución de baja entropía. 
+La compresión de una señal mediante umbralizado de energía en el dominio wavelet busca concentrar la energía de la señal en un número reducido de coeficientes, eliminando aquellos que aportan poca contribución energética. Este proceso modifica la distribución estadística de la energía, haciendo que esta se concentre en menos estados. Como consecuencia la señal resultante presenta una distribución menos uniforme, lo que conlleva a una reducción de la entropía.
 
-El estudio de la entropía va a permitir ver el comportamiento de la compresión en función del parámetro umbral. Para tener en cuenta también la entropía máxima de la señal se va hacer el estudio desde la perspectiva de la redundancia de la señal. Escribimos la redundancia de la señal como:
+Para analizar de forma cuantitativa este efecto, se estudia la entropía de Shannon asociada a la distribución de energía de los coeficientes wavelet tras haber umbralizado. La entropía se calcula a partir del histograma de energías, en el que cada bin representa un simbolo discreto. De esta forma se puede medir de manera robusta el grado de concentración energética dado por el parámetro umbral $\lambda$. Con el fin de normalizar la magnitud se introduce el concepto de redundancia definida como:
 
-$$R(\lambda)=1-\frac{H(\lambda)}{H_{max}(\lambda)}$$
+$$R(\lambda)=1-\frac{H(\lambda)}{H_{max}}$$
 
-Donde $H(\lambda)$ es la entropía de los coeficientes wavelet tras el threshold y $H_{max}$ es la entropía máxima posible que varía en función del valor umbral, ya que está definida como el logarítmo en base dos del número de posibles configuraciones, al aumentar el valor umbral las posibles configuraciones disminuyen. En este caso una redundancia alta significa que la señal está formada por pocos símbolos que dominan (muchos ceros y pocos valores no nulos), por lo tanto, una alta redundancia significa que la información está muy estructurada. 
-
-El valor de la redundancia va a permitir elegir el valor de $\lambda$ óptimo, este valor busca el máximo de redundancia sin degradar la señal. El objetivo es eliminar la redundancia estadística sin pérdida perceptual ni estructural relevante.
+Donde $H(\lambda)$ es la entropía de la distribución de energía de los coeficientes wavelet tras umbralizar y $H_{max}=\log_2(N_{bins})$. Una redundancia elevada indica que la entropía de la señal está concentrada en un número reducido de estados, lo que indica que la señal presenta una alta compresibilidad. El análisis de la redundancia en función del parámetro $\lambda$ eprmite identificar el régimen en el que se elimina principalmente la redundancia estadística sin introducir una degradación significativa a la señal.
 
 
 ```{r}
-red_data <- redundancy_vs_lambda(
-  audio,
-  n.levels,
-  lambda_vals = seq(0, 1, 0.1)
-)
-plot(
-  red_data$lambda,
-  red_data$redundancy,
-  type = "b", pch = 19,
-  col = "darkgreen",
-  xlab = expression(lambda),
-  ylab = "Redundancia",
-  main = "Redundancia de la señal wavelet vs umbral"
-)
-
-grid()
+# red_data <- redundancy_vs_lambda(
+#   audio,
+#   n.levels,
+#   lambda_vals = seq(0, 1, 0.1)
+# )
+# plot(
+#   red_data$lambda,
+#   red_data$redundancy,
+#   type = "b", pch = 19,
+#   col = "darkgreen",
+#   xlab = expression(lambda),
+#   ylab = "Redundancia",
+#   main = "Redundancia de la señal wavelet vs umbral"
+# )
+# 
+# grid()
 ```
-
-
-
-```{r}
-# Parámetros
-lambda <- 0.5
-
-# DWT + threshold
-vals <- dwt_values(audio, n.levels, lambda)
-
-q_left  <- vals$thr_left
-q_right <- vals$thr_right
-
-# Codificación
-enc_left  <- encode_wt(q_left)
-enc_right <- encode_wt(q_right)
-
-# Guardar archivo comprimido
-size_bytes <- save_compressed(
-  "data_comp/audio_wavelet_comp.rds",
-  left  = enc_left,
-  right = enc_right,
-  filter = "la8",
-  n.levels = n.levels
-)
-
-cat("Tamaño del archivo comprimido:", size_bytes/1024, "KB\n")
-
-```
-
-```{r}
-plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
-plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
-```
-
-
-```{r}
-plot_energy_vs_coeff(audio,n.levels,lambda)
-```
-
 
 ## Tamaño del archivo
+
+El objetivo principal es encontrar la máxima tasa de compresión con la menor pérdida de información posible. En la siguiente figura se representa el porcentaje de reducción del archivo en memoria frente a su redundancia. 
 
 ```{r}
 lambda_vals <- seq(0, 1, by = 0.1)
@@ -136,6 +145,54 @@ plot(
 grid()
 
 ```
+
+Se observa que el valor óptimo, que logra un equilibrio entre una alta redundancia y la preservación de la información de la señal, corresponde a un umbral de $\lambda=0.1$. Por tanto, este será el valor utilizado para la compresión definitiva del audio.
+
+
+## Análisis de la señal comprimida
+
+
+```{r}
+# Parámetros
+lambda <- 0.1
+
+# DWT + threshold
+vals <- dwt_values(audio, n.levels, lambda)
+
+q_left  <- vals$thr_left
+q_right <- vals$thr_right
+
+# Codificación
+enc_left  <- encode_wt(q_left)
+enc_right <- encode_wt(q_right)
+
+# Guardar archivo comprimido
+size_bytes <- save_compressed(
+  "data_comp/audio_wavelet_comp.rds",
+  left  = enc_left,
+  right = enc_right,
+  filter = "la8",
+  n.levels = n.levels
+)
+
+#cat("Tamaño del archivo comprimido:", size_bytes/1024, "KB\n")
+
+```
+
+
+
+```{r}
+plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
+plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
+```
+
+
+```{r}
+plot_energy_vs_coeff(audio,n.levels,lambda)
+```
+
+
+
 
 ## Decodificación
 
@@ -164,5 +221,28 @@ mse_right <- mean((audio@right - signal_right_rec)^2)
 cat("MSE Left :", mse_left, "\n")
 cat("MSE Right:", mse_right, "\n")
 
+```
+
+```{r}
+audio_comp <- readWave("data_comp/audio2comp.wav")
+
+
+N <- length(audio_comp@left)
+freq <- audio_comp@samp.rate
+
+tiempo <- (0:(N-1)) / freq
+
+
+par(mfrow = c(2, 1), mar = c(4, 4, 2, 1)) 
+
+
+plot(tiempo,audio@left,type="l",col="red",main = "Canal Izquierdo",xlab = "", ylab = "Amplitud")
+lines(tiempo, audio_comp@left, type = "l", col = "black")
+
+
+plot(tiempo,audio@right,type="l",col="red",main = "Canal Derecho",xlab = "Tiempo (segundos)", ylab = "Amplitud")
+lines(tiempo, audio_comp@right, type = "l", col = "black")
+
+par(mfrow = c(1, 1))
 ```
 
