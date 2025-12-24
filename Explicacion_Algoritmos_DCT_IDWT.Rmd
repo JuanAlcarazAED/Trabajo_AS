@@ -1,0 +1,29 @@
+---
+title: "Explicación DCT"
+author: "Fabián Calvo Castillo"
+date: "2025-12-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# ALGORITMO DCT
+
+Basado en PDF "DCT para la compresión de imágenes con perdida de calidad" de Ángel Luis Perales Gómez de la Universidad de Murcia
+
+La DCT es una operación matemática relacionada con la Transformada de Fourier, pero trabaja solo con números reales (cosenos). Su función principal no es comprimir por sí misma, sino traducir la información de la imagen. Pasa de píxeles de colores (dominio espacial) a frecuencias (dominio de la frecuencia).
+
+Esto se realiza porque el ojo humano es muy sensible a las frecuencias bajas (cambios suaves de color) pero muy poco sensible a las frecuencias altas (detalles finos o ruido). Al separar estas frecuencias, podemos eliminar las que el ojo no ve bien sin que se note demasiado.
+
+Con este método la imagen se divide en bloques de 8x8 píxeles. Al aplicar la fórmula matemática a cada bloque, se obtiene una matriz de frecuencias donde:
+  •	Esquina superior izquierda (Componente DC): Contiene la información más importante (el color promedio del bloque).
+  •	Esquina inferior derecha (Componentes AC): Contienen las frecuencias altas (detalles finos). Aquí es donde se acumulan valores pequeños o prescindibles.
+  
+Dicha matriz de frecuencias se divide por una "Matriz de Cuantización" predefinida (Q).
+  •	El objetivo es que los valores de las frecuencias altas (los detalles que el ojo casi no ve) se conviertan en ceros o números muy bajos al dividirse por números grandes.
+•	Es el único paso donde realmente se pierde información irrecuperable.
+•	La "Calidad" del JPG (ej. 50% vs 80%) depende de qué tan agresiva sea esta matriz.
+
+Finalmente, se aplica el algoritmo de Huffman. Se asignan códigos binarios muy cortos a los valores que se repiten mucho y códigos más largos a los poco frecuentes. Esto comprime aún más el archivo final sin perder datos adicionales.
