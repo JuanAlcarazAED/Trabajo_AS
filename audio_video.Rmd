@@ -28,7 +28,8 @@ source("funciones_audio.R",echo=F)
 
 
 ```{r}
-sep_audio_video()
+# Para separar auido-iamgen
+#sep_audio_video()
 ```
 
 La compresión del audio se ha realizado en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal aplicada el umbral. Se busca un equilibrio entre reducir la redundancia y la compresión del archivo, eliminando componentes sin afectar a la integridad estructural de la señal.
