@@ -275,15 +275,17 @@ size_vs_lambda <- function(audio, n.levels, lambda_vals,
 }
 
 entropy_redundancy <-function(x){
-  x<-x[!is.na(x)] # Para evitar valores na
+  nbins<-1000
+  energia <- x^2
   
-  tabla<-table(x)
-  L<-length(tabla)
-  p<-tabla/sum(tabla)
-  
+  min_e <- min(energia, na.rm = TRUE)
+  max_e <- max(energia, na.rm = TRUE)
+  h <- hist(energia, breaks = seq(min_e, max_e, length.out = nbins + 1), plot = FALSE)
+
+  p <- h$counts / sum(h$counts)
+  p <- p[p > 0] # Solo usamos los bins que tienen datos
   H<--sum(p*log2(p))
-  Hmax<-log2(L)
-  
+  Hmax<-log2(nbins)
 
   R<-1-H/Hmax
   
