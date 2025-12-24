@@ -31,8 +31,11 @@ source("funciones_audio.R",echo=F)
 sep_audio_video()
 ```
 
-La compresión del audio se ha realizado en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal aplicada el umbral. Se busca un equilibrio entre reducir la redundancia y la compresión del archivo, eliminando componentes sin afectar a la integridad estructural de la señal. 
- La frecuencia de muestreo del auido es de 44100 Hz, dado que cada nivel de descomposición divide el espectro a la mitad, elegir 6 niveles es razonable ya que se llega a cubrir las frecuencias medias y bajas donde se concentra energías. 
+La compresión del audio se ha realizado en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal aplicada el umbral. Se busca un equilibrio entre reducir la redundancia y la compresión del archivo, eliminando componentes sin afectar a la integridad estructural de la señal.
+
+La compresión se realiza mediante un umbralado global basado en la energía acumulada. Primero se ordenan todos los coeficientes wavelet de mayor a menor energía para identificar su peso en la señal. Posteriormente se define un porcentaje de preservación energética determinado por un valor umbral $\lambda$ y se establecen a cero todos aquellos coeficientes cuya contribución queda por debajo del valor umbral.
+
+La frecuencia de muestreo del auido es de 44100 Hz, dado que cada nivel de descomposición divide el espectro a la mitad, elegir 6 niveles es razonable ya que se llega a cubrir las frecuencias medias y bajas donde se concentra energías. 
 
 ```{r}
 audio <- readWave("data/audio.wav")
@@ -151,6 +154,7 @@ Se observa que el valor óptimo, que logra un equilibrio entre una alta redundan
 
 ## Análisis de la señal comprimida
 
+Se ha seleccionado el formato .rds para el análisis de almacenamiento debido a su capacidad de contabilizar de manera eficiente los coeficientes nulos generados por el umbralado, una característica de la que carece el formato estándar .wav
 
 ```{r}
 # Parámetros
@@ -195,7 +199,6 @@ plot_energy_vs_coeff(audio,n.levels,lambda)
 En la representación de la energía capturada frente a coeficientes se observa que una fracción mínima de los coeficienteslogra capturar el $90\%$ de la energía total del audio. Esto permite eliminar la gran mayoría de los coeficientes con menor energía sin generar una pérdida de información significativa.
 
 
-## Decodificación
 
 ```{r}
 
@@ -224,7 +227,7 @@ cat("MSE Right:", mse_right, "\n")
 
 ```
 
-Para ver el efecto de la señal comprimida se va a comprar la amplitud de la señal original (rojo) y en negro la señal comprimida. A pesar de haber eliminado solo un $10\%$ de la energía hay un efecto importante en la señal.
+Para ver el efecto de la señal comprimida se va a comprar la amplitud de la señal original (rojo) y la señal comprimida (negro). A pesar de haber eliminado solo un $10\%$ de la energía hay un efecto importante en la señal como se puede ver en la figura.
 
 ```{r}
 audio_comp <- readWave("data_comp/audio2comp.wav")
