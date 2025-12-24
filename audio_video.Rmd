@@ -28,7 +28,7 @@ source("funciones_audio.R",echo=F)
 
 
 ```{r}
-sep_audio_video(main="data/video3.mp4",audio="data/audio.wav",video="data/frames",fps=30)
+sep_audio_video()
 ```
 
 La compresión del audio se ha realizado en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal aplicada el umbral. Se busca un equilibrio entre reducir la redundancia y la compresión del archivo, eliminando componentes sin afectar a la integridad estructural de la señal. 
@@ -179,19 +179,20 @@ size_bytes <- save_compressed(
 
 ```
 
-
+El mapa de calor de los coeficientes de detalle permite visualizar la distribución de la energía de la señal a través de las seis escalas wavelet. Las áreas en rojo representan coeficientes con valores cercanos a cero, mientras que las zonas amarillas y blancas indican la presencia de componentes de alta energía. Tras aplicar el umbral se observa una escasez estructural, especialmente en los niveles más finos $d_1$ y $d_2$.
 
 ```{r}
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
 ```
 
+Se ha aplicado una función de expansión para compensar el submuestreo intrínseco de la DWT, donde los niveles más profundos como $d_6$ contienen menos coeficientes que los niveles finos. Esta replicación alinea todas las escalas con la longitud original de la señal, permitiendo una comparación visual directa de la energía en cada instante de tiempo.
 
 ```{r}
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
-
+En la representación de la energía capturada frente a coeficientes se observa que una fracción mínima de los coeficienteslogra capturar el $90\%$ de la energía total del audio. Esto permite eliminar la gran mayoría de los coeficientes con menor energía sin generar una pérdida de información significativa.
 
 
 ## Decodificación
@@ -222,6 +223,8 @@ cat("MSE Left :", mse_left, "\n")
 cat("MSE Right:", mse_right, "\n")
 
 ```
+
+Para ver el efecto de la señal comprimida se va a comprar la amplitud de la señal original (rojo) y en negro la señal comprimida. A pesar de haber eliminado solo un $10\%$ de la energía hay un efecto importante en la señal.
 
 ```{r}
 audio_comp <- readWave("data_comp/audio2comp.wav")
