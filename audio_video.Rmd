@@ -40,7 +40,7 @@ La compresión del audio se va a realizar en el dominio wavelet mediante el umbr
 
 La compresión se realiza mediante un umbralado global basado en la energía acumulada. Primero se ordenan todos los coeficientes wavelet de mayor a menor energía para identificar su peso en la señal. Posteriormente se define un porcentaje de preservación energética determinado por un valor umbral $\lambda$ y se establecen a cero todos aquellos coeficientes cuya contribución queda por debajo del valor umbral.
 
-La frecuencia de muestreo del auido es de 44100 Hz, dado que cada nivel de descomposición divide el espectro a la mitad, elegir 6 niveles es razonable ya que se llega a cubrir las frecuencias medias y bajas donde se concentra energías. 
+La frecuencia de muestreo del audio es de 44100 Hz, dado que cada nivel de descomposición divide el espectro a la mitad, elegir 6 niveles es razonable ya que se llega a cubrir las frecuencias medias y bajas donde se concentra energías. 
 
 ```{r}
 audio <- readWave("data/audio.wav")
@@ -71,7 +71,7 @@ plot(tiempo, audio@right, type = "l",
 par(mfrow = c(1, 1))
 ```
 
-El parámetro fundamental en este estudio es la energía, definida como la amplitud al cuadrado de la señal. En la siguiente figura se representa la energía de la señal, donde se observa que ambos canales presentan picos pronunciados. Esta concentración de energía indica una baja entropía, mientras que una distribución de energía uniforme dificultaría la compresión, una señal con picos de energía concentrado permite un umbralado más eficiente en el dominio wavelet.
+El parámetro fundamental en este estudio es la energía, definida como la amplitud al cuadrado de la señal. En la siguiente figura se representa la energía de la señal, donde se observa que ambos canales presentan picos pronunciados. Esta concentración de energía indica una baja entropía, mientras que una distribución de energía uniforme dificultaría la compresión. Una señal con picos de energía concentrado permite un umbralado más eficiente en el dominio wavelet.
 
 ```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
 
@@ -106,7 +106,7 @@ Para analizar de forma cuantitativa este efecto, se estudia la entropía de Shan
 
 $$R(\lambda)=1-\frac{H(\lambda)}{H_{max}}$$
 
-Donde $H(\lambda)$ es la entropía de la distribución de energía de los coeficientes wavelet tras umbralizar y $H_{max}=\log_2(N_{bins})$. Una redundancia elevada indica que la entropía de la señal está concentrada en un número reducido de estados, lo que indica que la señal presenta una alta compresibilidad. 
+Donde $H(\lambda)$ es la entropía de la distribución de energía de los coeficientes wavelet tras umbralizar y $H_{max}=\log_2(N_{bins})$ con $N_{bins}$ el número de bins que se mantiene constante para todos los valores de $\lambda$. Una redundancia elevada indica que la entropía de la señal está concentrada en un número reducido de estados, lo que indica que la señal presenta una alta compresibilidad. 
 
 
 ```{r}
@@ -216,7 +216,7 @@ Se ha aplicado una función de expansión para compensar el submuestreo intríns
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
-En la representación de la energía capturada frente a coeficientes se observa que una fracción mínima de los coeficienteslogra capturar el $90\%$ de la energía total del audio. Esto permite eliminar la gran mayoría de los coeficientes con menor energía sin generar una pérdida de información significativa.
+En la representación de la energía capturada frente a coeficientes se observa que una fracción mínima de los coeficientes logra capturar el $90\%$ de la energía total del audio, en torno a los 25000 primeros coeficientes. Esto permite eliminar la gran mayoría de los coeficientes con menor energía sin generar una pérdida de información significativa.
 
 
 
