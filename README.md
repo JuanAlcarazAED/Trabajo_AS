@@ -6,7 +6,7 @@ Repositorio para el trabajo de la asignatura análisis de señales para el grupo
 ## Compresión de imagen
 
 ## Compresión de audio
-Esta sección se centra en la compresión de la señal sonora del vídeo utilizando la Transformada Wavelet Discreta (DWT).
+Esta sección se centra en la compresión de la señal sonora del vídeo utilizando la Transformada Wavelet Discreta (DWT). Para el desarrollo de este módulo se ha creado el script **`funciones_audio.R`**, disponible en la raíz de este repositorio.
 
 ### Metodología
 La compresión se realiza en el dominio wavelet mediante el **umbralado selectivo de la energía** de los coeficientes. Los pasos a seguir son los siguientes:
