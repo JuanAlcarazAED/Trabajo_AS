@@ -2,11 +2,15 @@
 title: "Compresión del audio"
 author: "Javier Herrero Pérez"
 date: "2025-12-04"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
+bibliography: referencias.bib
+csl: ieee.csl
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=FALSE,warning = FALSE,message = FALSE)
 ```
 
 # Compresión del audio
@@ -32,7 +36,7 @@ source("funciones_audio.R",echo=F)
 #sep_audio_video()
 ```
 
-La compresión del audio se ha realizado en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal aplicada el umbral. Se busca un equilibrio entre reducir la redundancia y la compresión del archivo, eliminando componentes sin afectar a la integridad estructural de la señal.
+La compresión del audio se va a realizar en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal umbralizada [@mallat2009]. Se busca un equilibrio entre maximizar la redundancia y la compresión del archivo sin perder información relevante.
 
 La compresión se realiza mediante un umbralado global basado en la energía acumulada. Primero se ordenan todos los coeficientes wavelet de mayor a menor energía para identificar su peso en la señal. Posteriormente se define un porcentaje de preservación energética determinado por un valor umbral $\lambda$ y se establecen a cero todos aquellos coeficientes cuya contribución queda por debajo del valor umbral.
 
@@ -43,49 +47,50 @@ audio <- readWave("data/audio.wav")
 n.levels <- 6
 ```
 
-El audio a estudiar es estéreo, la amplitud del audio para ambos canales se puede observar en la siguiente figura.
+El audio a estudiar está en estéreo, la amplitud del audio para ambos canales se puede observar en la siguiente figura.
 
-```{r}
+```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
+
 N <- length(audio@left)
 freq <- audio@samp.rate
 tiempo <- (0:(N-1)) / freq
 
 
-par(mfrow = c(2, 1), mar = c(4, 4, 2, 1)) 
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1)) 
 
 
 plot(tiempo, audio@left, type = "l",
      main = "Canal Izquierdo",
-     xlab = "", ylab = "Amplitud")
+     xlab = "Tiempo (segundos)", ylab = "Amplitud")
 
 
 plot(tiempo, audio@right, type = "l",
      main = "Canal Derecho",
-     xlab = "Tiempo (segundos)", ylab = "Amplitud")
+     xlab = "Tiempo (segundos)", ylab = "")
 
 par(mfrow = c(1, 1))
 ```
 
 El parámetro fundamental en este estudio es la energía, definida como la amplitud al cuadrado de la señal. En la siguiente figura se representa la energía de la señal, donde se observa que ambos canales presentan picos pronunciados. Esta concentración de energía indica una baja entropía, mientras que una distribución de energía uniforme dificultaría la compresión, una señal con picos de energía concentrado permite un umbralado más eficiente en el dominio wavelet.
 
-```{r}
+```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
 
 N <- length(audio@left)
 freq <- audio@samp.rate
 tiempo <- (0:(N-1)) / freq
 
 
-par(mfrow = c(2, 1), mar = c(4, 4, 2, 1)) 
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1)) 
 
 
 plot(tiempo, (audio@left)^2, type = "l",
      main = "Canal Izquierdo",
-     xlab = "", ylab = "Energía")
+     xlab = "Tiempo (segundos)", ylab = "Energía")
 
 
 plot(tiempo, (audio@right)^2, type = "l",
      main = "Canal Derecho",
-     xlab = "Tiempo (segundos)", ylab = "Energía")
+     xlab = "Tiempo (segundos)", ylab = "")
 
 par(mfrow = c(1, 1))
 
@@ -101,7 +106,7 @@ Para analizar de forma cuantitativa este efecto, se estudia la entropía de Shan
 
 $$R(\lambda)=1-\frac{H(\lambda)}{H_{max}}$$
 
-Donde $H(\lambda)$ es la entropía de la distribución de energía de los coeficientes wavelet tras umbralizar y $H_{max}=\log_2(N_{bins})$. Una redundancia elevada indica que la entropía de la señal está concentrada en un número reducido de estados, lo que indica que la señal presenta una alta compresibilidad. El análisis de la redundancia en función del parámetro $\lambda$ eprmite identificar el régimen en el que se elimina principalmente la redundancia estadística sin introducir una degradación significativa a la señal.
+Donde $H(\lambda)$ es la entropía de la distribución de energía de los coeficientes wavelet tras umbralizar y $H_{max}=\log_2(N_{bins})$. Una redundancia elevada indica que la entropía de la señal está concentrada en un número reducido de estados, lo que indica que la señal presenta una alta compresibilidad. 
 
 
 ```{r}
@@ -123,12 +128,19 @@ Donde $H(\lambda)$ es la entropía de la distribución de energía de los coefic
 # grid()
 ```
 
-## Tamaño del archivo
+Se ha seleccionado el formato `.rds` para el análisis del almacenamiento debido a su capacidad para preservar la estructura de los coeficientes wavelet, incluyendo los valores nulos generados por el umbralado. A diferencia del formato `.wav`, que almacena la señal reconstruida en el dominio temporal sin tener en cuenta la presencia de ceros. 
+El porcentaje de archivo comprimido se calcula como el tamaño relativo del archivo `.rds` normalizado respecto al tamaño máximo obtenido para $\lambda=0$, correspondiene al caso sin compresión. De esta manera, esta magnitud refleja la reducción de información estructural debida al umbralado.
 
-El objetivo principal es encontrar la máxima tasa de compresión con la menor pérdida de información posible. En la siguiente figura se representa el porcentaje de reducción del archivo en memoria frente a su redundancia. 
+Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet.
 
-```{r}
+```{r,fig.width=6, fig.height=4}
 lambda_vals <- seq(0, 1, by = 0.1)
+lambda_vals_2<-seq(0, 0.3, by = 0.1)
+red_data <- redundancy_vs_lambda(
+  audio,
+  n.levels,
+  lambda_vals = lambda_vals
+)
 
 size_data <- size_vs_lambda(
   audio     = audio,
@@ -145,7 +157,13 @@ plot(
   ylab = "Porcentaje de archivo comprimido",
   main = "Porcentaje de archivo comprimido vs redundancia"
 )
-
+text(
+  red_data$redundancy[1:3],
+  (size_data$size_bytes / max(size_data$size_bytes))[1:3],
+  labels = paste0(expression(lambda =), lambda_vals[1:3]),
+  pos = 4,
+  cex = 0.75
+)
 grid()
 
 ```
@@ -155,7 +173,6 @@ Se observa que el valor óptimo, que logra un equilibrio entre una alta redundan
 
 ## Análisis de la señal comprimida
 
-Se ha seleccionado el formato .rds para el análisis de almacenamiento debido a su capacidad de contabilizar de manera eficiente los coeficientes nulos generados por el umbralado, una característica de la que carece el formato estándar .wav
 
 ```{r}
 # Parámetros
@@ -184,16 +201,18 @@ size_bytes <- save_compressed(
 
 ```
 
-El mapa de calor de los coeficientes de detalle permite visualizar la distribución de la energía de la señal a través de las seis escalas wavelet. Las áreas en rojo representan coeficientes con valores cercanos a cero, mientras que las zonas amarillas y blancas indican la presencia de componentes de alta energía. Tras aplicar el umbral se observa una escasez estructural, especialmente en los niveles más finos $d_1$ y $d_2$.
+El mapa de calor de los coeficientes de detalle permite visualizar la distribución de la energía de la señal a través de las seis escalas wavelet. Las áreas en rojo representan coeficientes con valores cercanos a cero, mientras que las zonas amarillas y blancas indican la presencia de componentes de alta energía. Tras aplicar el umbral se observa una escasez estructural, especialmente en los niveles más finos $d_1$ y $d_2$. En la siguiente figura se ha representado únicamente el canal izquierdo por simplicidad, pero sería análogo con el canal derecho.
 
-```{r}
+```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
+par(mfrow = c(1, 2))
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
+par(mfrow = c(1, 1))
 ```
 
-Se ha aplicado una función de expansión para compensar el submuestreo intrínseco de la DWT, donde los niveles más profundos como $d_6$ contienen menos coeficientes que los niveles finos. Esta replicación alinea todas las escalas con la longitud original de la señal, permitiendo una comparación visual directa de la energía en cada instante de tiempo.
+Se ha aplicado una función de expansión para compensar el submuestreo intrínseco de la DWT, donde los niveles más profundos como $d_6$ contienen menos coeficientes que los niveles finos. Permite alinear todas las escalas con la longitud original de la señal, facilitando una comparación visual directa de la energía en cada instante de tiempo.
 
-```{r}
+```{r,fig.width=6, fig.height=4}
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
@@ -223,14 +242,14 @@ writeWave(audio_wav, "data_comp/audio2comp.wav")
 mse_left  <- mean((audio@left  - signal_left_rec)^2)
 mse_right <- mean((audio@right - signal_right_rec)^2)
 
-cat("MSE Left :", mse_left, "\n")
-cat("MSE Right:", mse_right, "\n")
+# cat("MSE Left :", mse_left, "\n")
+# cat("MSE Right:", mse_right, "\n")
 
 ```
 
 Para ver el efecto de la señal comprimida se va a comprar la amplitud de la señal original (rojo) y la señal comprimida (negro). A pesar de haber eliminado solo un $10\%$ de la energía hay un efecto importante en la señal como se puede ver en la figura.
 
-```{r}
+```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
 audio_comp <- readWave("data_comp/audio2comp.wav")
 
 
@@ -240,14 +259,14 @@ freq <- audio_comp@samp.rate
 tiempo <- (0:(N-1)) / freq
 
 
-par(mfrow = c(2, 1), mar = c(4, 4, 2, 1)) 
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1)) 
 
 
-plot(tiempo,audio@left,type="l",col="red",main = "Canal Izquierdo",xlab = "", ylab = "Amplitud")
+plot(tiempo,audio@left,type="l",col="red",main = "Canal Izquierdo",xlab = "Tiempo (segundos)", ylab = "Amplitud")
 lines(tiempo, audio_comp@left, type = "l", col = "black")
 
 
-plot(tiempo,audio@right,type="l",col="red",main = "Canal Derecho",xlab = "Tiempo (segundos)", ylab = "Amplitud")
+plot(tiempo,audio@right,type="l",col="red",main = "Canal Derecho",xlab = "Tiempo (segundos)", ylab = "")
 lines(tiempo, audio_comp@right, type = "l", col = "black")
 
 par(mfrow = c(1, 1))
