@@ -28,9 +28,13 @@ plot_heatmap_wavelet_coef <- function(audio, n.levels, lambda,
   vals <- dwt_values(audio, n.levels, lambda)
   
   wt <- if (!threshold) {
+    main = "Heatmap coeficientes wavelet (detalle) original"
     if (plot == "left") vals$wt_left else vals$wt_right
+    
   } else {
+    main = "Heatmap coeficientes wavelet (detalle) umbralado"
     if (plot == "left") vals$thr_left else vals$thr_right
+    
   }
   
   L <- length(audio@left)
@@ -44,8 +48,8 @@ plot_heatmap_wavelet_coef <- function(audio, n.levels, lambda,
   
   image(
     x = 1:L, y = 1:n.levels, z = coef_matrix,
-    main = "Heatmap coeficientes wavelet (detalle)",
-    xlab = "Tiempo", ylab = "Nivel wavelet",
+    main = main,
+    xlab = "Coeficientes", ylab = "Nivel wavelet",
     yaxt = "n", col = heat.colors(100)
   )
   axis(2, at = 1:n.levels, labels = paste0("d", 1:n.levels))
