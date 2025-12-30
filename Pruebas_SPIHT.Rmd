@@ -1,0 +1,142 @@
+---
+title: "Pruebas para SPIHT"
+author: "Juan Alcaraz Otón"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list=ls())
+source("compresion_SPIHT.R")
+source("Codificacion_SPIHT.R")
+# source("Decodificacion_SPIHT.R")
+```
+
+
+## Función para recortar imágenes
+
+```{r Recortando imágenes}
+img <- grayscale(boats)
+img_recortada <- recorte(img)
+plot(img_recortada)
+```
+
+
+## Función para codificar
+
+```{r Codificacion}
+# x <- CodificacionSPITH(boats, 1)
+# y <- Ensamblar(x)
+x <- dwt.2d(img_recortada, wf="haar", J=log2(nrow(img_recortada)))
+y <- Ensamblar(x)
+z <- Desensamblar(y)
+```
+
+## EJEMPLO COMPLETO
+
+```{r}
+##############################################
+# LIBRERÍAS
+##############################################
+library(imager)
+library(waveslim)
+
+##############################################
+# 1. Cargar imagen boats y recortarla
+##############################################
+
+data(boats)
+img <- boats
+
+# Usamos tu función recortar() para dejarla lista
+img <- grayscale(img)
+img_mat <- recorte(img)[,,1,1]
+
+##############################################
+# 2. Transformada wavelet 2D
+##############################################
+
+J <- 8        # niveles de descomposición
+wf <- "haar"  # wavelet
+
+dwt_obj <- dwt.2d(img_mat, wf = wf, J = J)
+
+##############################################
+# 3. Ensamblar matriz wavelet completa
+#    (usando tu función Ensamble)
+##############################################
+
+W <- Ensamblar(dwt_obj)
+
+##############################################
+# 4. Codificar con SPIHT
+##############################################
+
+max_bits <- NULL
+max_iter <- 500
+bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+
+##############################################
+# 5. Tamaño en memoria del bitstream
+##############################################
+
+tamanno_bytes <- object.size(bitstream)
+tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+
+##############################################
+# 6. Decodificar SPIHT
+##############################################
+
+n_inicial <- floor(log2(max(abs(W))))
+W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+
+##############################################
+# 7. Desensamblar matriz wavelet reconstruida
+#    (usando tu función Desensamblar)
+##############################################
+
+dwt_rec <- Desensamblar(W_rec)
+
+##############################################
+# 8. Reconstruir imagen con IDWT
+##############################################
+
+attributes(dwt_rec) <- attributes(dwt_obj)
+dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+
+img_rec <- idwt.2d(dwt_rec)
+save.image(as.cimg(img_rec), file = paste("Reconstruccion_", max_iter, "_iter.jpeg",sep=""))
+##############################################
+# 9. Mostrar original y reconstruida
+##############################################
+
+par(mfrow = c(1,2), mar = c(2,2,2,2))
+plot(as.cimg(img_mat), main = "Original")
+plot(as.cimg(img_rec), main = "Reconstruida SPIHT")
+par(mfrow = c(1,1))
+
+##############################################
+# 10. (Opcional) Calcular PSNR
+##############################################
+
+PSNR <- function(orig, rec) {
+  mse <- mean((orig - rec)^2)
+  10 * log10(1 / mse)
+}
+
+orig_n <- (img_mat - min(img_mat)) / (max(img_mat) - min(img_mat))
+rec_n  <- (img_rec - min(img_rec)) / (max(img_rec) - min(img_rec))
+
+psnr_val <- PSNR(orig_n, rec_n)
+cat("PSNR aproximado:", psnr_val, "dB\n")
+
+```
+

@@ -59,84 +59,28 @@ Ensamblar <- function(dwt){
   return(LL_actual)
 }
 
-# ------------------------------------------------------------------------------
+Desensamblar <- function(W){
+  n <- dim(W)[1]
+  i <- 1
+  Bandas <- list()
 
-# ------------------------------------------------------------------------------
-# Vamos a necesitar una función que dado un coeficiente (i,j) nos devuelva una
-# lista con sus hijos, en caso de tenerlos
-
-Hijos <- function(i, j, size) {
-  # Hijos en la siguiente escala
-  # Cada padre tiene 4 hijos: (2i,2j), (2i,2j+1), (2i+1,2j), (2i+1,2j+1)
-  if ((2*i+1 < size) & (2*j+1 < size) & (2*i<size) & (2*j<size)){
-    c1 <- c(2*i,   2*j)
-    c2 <- c(2*i,   2*j+1)
-    c3 <- c(2*i+1, 2*j)
-    c4 <- c(2*i+1, 2*j+1)
-    return(rbind(c1, c2, c3, c4))
-  }else{
-    return(rbind())
-  }
-}
-
-# Ahora una función para obtener todos los descendientes
-Descendientes <- function(i, j, size) {
-  queue <- Hijos(i, j, size)
+  LL_actual <- W
   
-  # Si no tiene hijos, no hay descendientes
-  if (is.null(queue) || nrow(queue) == 0) {
-    return(matrix(numeric(0), ncol = 2))
-  }
-  
-  all_desc <- queue
-  
-  while (!is.null(queue) && nrow(queue) > 0) {
-    new_queue <- NULL
+  while (!is.null(n) && n > 1){
     
-    for (k in 1:nrow(queue)) {
-      ch <- Hijos(queue[k,1], queue[k,2], size)
-      
-      if (!is.null(ch) && nrow(ch) > 0) {
-        new_queue <- rbind(new_queue, ch)
-      }
-    }
+    Bandas[[paste0("LH",i)]] <- LL_actual[((n/2)+1):n, 1:(n/2)]
+    Bandas[[paste0("HL",i)]] <- LL_actual[1:(n/2), ((n/2)+1):n]
+    Bandas[[paste0("HH",i)]] <- LL_actual[((n/2)+1):n, ((n/2)+1):n]
+    LL_actual <- LL_actual[1:(n/2), 1:(n/2)]
     
-    queue <- new_queue
-    
-    if (!is.null(new_queue) && nrow(new_queue) > 0) {
-      all_desc <- rbind(all_desc, new_queue)
-    }
+    n <- dim(LL_actual)[1]
+    i <- i +1
   }
-  
-  all_desc
+  Bandas[[paste0("LL",i-1)]] <- LL_actual
+  return(Bandas)
 }
 
 # ------------------------------------------------------------------------------
-# Para comprobar la significancia
-Es_significativo <- function(valor, cota) {
-  return(abs(valor) >= cota)
-}
-
-Es_conjunto_significativo <- function(W, coords, cota) {
-  if (is.null(coords) || nrow(coords) == 0) return(FALSE)
-  
-  # Se recorre el conjunto de las posiciones dadas, si se encuentra una posición
-  # con un elemento significativo se para y se devuelve TRUE, si no FALSE
-  for (k in 1:nrow(coords)) {
-    if (abs(W[coords[k,1] + 1, coords[k,2] + 1]) >= cota) {
-      return(TRUE)
-    }
-  }
-  return(FALSE)
-}
-
-# ------------------------------------------------------------------------------
-# Para obtener la cota inicial
-Cota_inicial <- function(W){
-  return(floor(log2(max(abs(W)))))
-}
-# ------------------------------------------------------------------------------
-
 
 # ------------------------------------------------------------------------------
 ################################################################################
@@ -158,5 +102,7 @@ CodificacionSPITH <- function(img, max_bits){
   wt <- dwt.2d(img_mat, wf=wavelet, J=levels)
   
   matriz <- Ensamblar(wt)
+  
+  cod <- Codificar_Transformada(matriz, max_bits = max_bits, max_iter=1000000)
 }
 ################################################################################
