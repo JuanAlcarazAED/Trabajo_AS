@@ -1,0 +1,71 @@
+---
+title: "Pruebas_Adrian"
+author: "Adrián Carrasco Alcalá"
+date: "2026-01-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(imager)
+load.image('IMAGENES/foto_de_prueba.jpg')
+```
+
+```{r}
+obtener_potencia_2 <- function(x) {
+  return(2^round(log2(x)))
+}
+```
+
+```{r}
+ruta_imagen <- 'IMAGENES/foto_de_prueba.jpg'
+img <- load.image(ruta_imagen)
+
+plot(img)
+```
+
+```{r}
+nuevo_tamaño <- obtener_potencia_2(max(width(img), height(img))) #se le asigna el nuevo tamaño a la imagen
+  
+img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
+
+plot(img)
+```
+
+```{r}
+canales <- imsplit(img, "c")
+
+  procesar_canal <- function(canal) {
+
+    matriz <- as.matrix(canal)
+
+    lwd <- imwd(matriz)
+    
+    lwdT <- threshold(lwd, policy = "universal", type = "hard")
+
+# political_umbral se define como "universal" que lo que hace es que dependiendo de la imagen
+# si tiene mucho ruido o no elimina/comprime más o menos la imagen
+# en el método de DCt está establecido en 95%
+    
+    recuperado <- imwr(lwdT)
+    
+    img_rec <- as.cimg(recuperado)
+    img_rec <- (img_rec + abs(img_rec)) / 2 
+    img_rec <- (img_rec - (img_rec - 1) * (img_rec > 1))
+    
+    return(img_rec)
+  }
+  
+canales_comprimidos <- lapply(canales, procesar_canal)
+img_final <- imappend(canales_comprimidos, axis = "c")
+  
+plot(img_final)
+```
+
+```{r}
+resta <- img - img_final
+
+canales <- imsplit(resta, "c")
+
+matriz <- as.matrix(canales)
+```
+

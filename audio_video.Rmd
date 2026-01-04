@@ -32,7 +32,7 @@ source("funciones_audio.R",echo=F)
 
 
 ```{r}
-# Para separar auido-iamgen
+# Para separar audio-iamgen
 #sep_audio_video()
 ```
 
