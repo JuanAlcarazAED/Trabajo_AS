@@ -14,6 +14,7 @@ comprobacion_dim <- function(imagen_orig, imagen_comprimida){
   return(imagen_comprimida)
 }
 
+# Mean Squared Error
 MSE <- function(imagen_orig, imagen_comprimida){
   
   imagen_comprimida <- comprobacion_dim(imagen_orig, imagen_comprimida)
@@ -40,6 +41,7 @@ MSE <- function(imagen_orig, imagen_comprimida){
 # errores de redondeo. Esta métrica no refleja bien la calidad percibida por el
 # ojo humano.
 
+# Mean Absolute Error
 MAE <- function(imagen_orig, imagen_comprimida){
   
   imagen_comprimida <- comprobacion_dim(imagen_orig, imagen_comprimida)
@@ -61,6 +63,7 @@ MAE <- function(imagen_orig, imagen_comprimida){
   return(mae)
 }
 
+# Root Mean Squared Error
 RMSE <- function(imagen_orig, imagen_comprimida){
   
   mse <- MSE(imagen_orig, imagen_comprimida)
@@ -72,12 +75,17 @@ RMSE <- function(imagen_orig, imagen_comprimida){
 
 # Esta métrica es útil para interpretar el error en términos de magnitud de píxeles.
 
-
-
-MAPE <- function(imagen, imagen_comprimida){
+# Peak Signal-to-Noise Ratio
+PSNR <- function(imagen_orig, imagen_comprimida){
   
   imagen_comprimida <- comprobacion_dim(imagen_orig, imagen_comprimida)
   
+  mse <- MSE(imagen_orig, imagen_comprimida) 
   
-  return(mape)
+  psnr <- 10*log10(1^2/mse)
+  
+  return(psnr)
 }
+
+# Se mide en decibelios. A mayor PSNR mayor calidad. Tiene la misma limitación que
+# el MSE: no refleja bien la calidad percibida por el ojo humano.
