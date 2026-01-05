@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # ALGORITMO DCT
 
-Basado en PDF "DCT para la compresión de imágenes con perdida de calidad" de Ángel Luis Perales Gómez de la Universidad de Murcia
+Basado en PDF "DCT para la compresión de imágenes con pérdida de calidad" de Ángel Luis Perales Gómez de la Universidad de Murcia.
 
 La DCT es una operación matemática relacionada con la Transformada de Fourier, pero trabaja solo con números reales (cosenos). Su función principal no es comprimir por sí misma, sino traducir la información de la imagen. Pasa de píxeles de colores (dominio espacial) a frecuencias (dominio de la frecuencia).
 
@@ -23,8 +23,8 @@ Con este método la imagen se divide en bloques de 8x8 píxeles. Al aplicar la f
   
 Dicha matriz de frecuencias se divide por una "Matriz de Cuantización" predefinida (Q).
   •	El objetivo es que los valores de las frecuencias altas (los detalles que el ojo casi no ve) se conviertan en ceros o números muy bajos al dividirse por números grandes.
-•	Es el único paso donde realmente se pierde información irrecuperable.
-•	La "Calidad" del JPG (ej. 50% vs 80%) depende de qué tan agresiva sea esta matriz.
+  •	Es el único paso donde realmente se pierde información irrecuperable.
+  •	La "Calidad" del JPG (ej. 50% vs 80%) depende de qué tan agresiva sea esta matriz.
 
 Finalmente, se aplica el algoritmo de Huffman. Se asignan códigos binarios muy cortos a los valores que se repiten mucho y códigos más largos a los poco frecuentes. Esto comprime aún más el archivo final sin perder datos adicionales.
 

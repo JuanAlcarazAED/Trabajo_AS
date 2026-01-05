@@ -151,3 +151,26 @@ PSNR(img, img_final_baja)
 PSNR(img, img_final_alta)
 ```
 
+```{r}
+file.size('im_2/acantilado.jpg')
+file.size('data_comp/acantilado_IDWT.jpg')
+```
+
+```{r}
+save.image(img_final_baja, 'data_comp/img_final_baja.jpg', quality = 0.8)
+save.image(img_final_alta, 'data_comp/img_final_alta.jpg', quality = 0.8)
+```
+
+
+```{r}
+CR <- function(ruta_imagen_orig, ruta_imagen_comprimida){
+  
+  cr <- file.size(ruta_imagen_orig)/file.size(ruta_imagen_comprimida)
+  
+  return(cr)
+}
+
+CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_baja.jpg')
+CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_alta.jpg')
+```
+
