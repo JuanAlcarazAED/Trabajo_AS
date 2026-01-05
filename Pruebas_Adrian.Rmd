@@ -29,21 +29,21 @@ plot(img)
 ```{r}
 nuevo_tamaño <- obtener_potencia_2(max(width(img), height(img))) #se le asigna el nuevo tamaño a la imagen
   
-img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
+img_re <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
 
-plot(img)
+plot(img_re)
 ```
 
 ```{r}
-canales <- imsplit(img, "c")
+canales <- imsplit(img_re, "c")
 
-  procesar_canal <- function(canal) {
+  procesar_canal <- function(canal, value = 0.5) {
 
     matriz <- as.matrix(canal)
 
-    lwd <- imwd(matriz, filter.number = 5)
+    lwd <- imwd(matriz)
     
-    lwdT <- threshold(lwd, policy = "universal", type = "hard")
+    lwdT <- threshold(lwd, policy = "manual", value = value)
 
 # political_umbral se define como "universal" que lo que hace es que dependiendo de la imagen
 # si tiene mucho ruido o no elimina/comprime más o menos la imagen
@@ -52,38 +52,66 @@ canales <- imsplit(img, "c")
     recuperado <- imwr(lwdT)
     
     img_rec <- as.cimg(recuperado)
-    img_rec <- (img_rec + abs(img_rec)) / 2 
+    img_rec <- (img_rec + abs(img_rec)) / 2
     img_rec <- (img_rec - (img_rec - 1) * (img_rec > 1))
     
     return(img_rec)
   }
   
-canales_comprimidos <- lapply(canales, procesar_canal)
-img_final <- imappend(canales_comprimidos, axis = "c")
+canales_comprimidos_baja <- lapply(canales, procesar_canal)
+canales_comprimidos_alta <- lapply(canales, procesar_canal, value = 25)
+img_final_baja <- imappend(canales_comprimidos_baja, axis = "c")
+img_final_alta <- imappend(canales_comprimidos_alta, axis = "c")
 
-plot(img_final)
+plot(img_final_baja)
+plot(img_final_alta)
 ```
 
 ```{r}
-img_final <- resize(img_final, size_x = ancho, size_y = alto)
+img_final_baja <- resize(img_final_baja, size_x = ancho, size_y = alto)
+img_final_alta <- resize(img_final_alta, size_x = ancho, size_y = alto)
 
-plot(img_final)
+plot(img_final_baja)
+plot(img_final_alta)
 ```
 
-
 ```{r}
-resta <- img - img_final
-
-canales <- imsplit(resta, "c")
-
-mse_canales <- c()
-
-for (canal in canales){
-  matriz <- as.matrix(canal)
-  mse_canales <- c(mse_canales, c(1/(ancho*alto)*sum(matriz^2)))
+MSE <- function(imagen_orig, imagen_comprimida){
+  
+  diferencia <- imagen_orig - imagen_comprimida
+  
+  canales <- imsplit(diferencia, "c")
+  
+  mse_canales <- c()
+  
+  for (canal in canales){
+    matriz <- as.matrix(canal)
+    mse_canales <- c(mse_canales, c(1/(ancho*alto)*sum(matriz^2)))
+  }
+  
+  mse <- sum(mse_canales)/3
+  # print(paste('MSE:', mse))
+  
+  return(mse)
 }
 
-mse <- sum(mse_canales)/3
-print(paste('MSE:', mse))
+MSE(img, img_final_baja)
+MSE(img, img_final_alta)
+```
+
+```{r}
+  diferencia <- img - img_final
+  
+  canales <- imsplit(diferencia, "c")
+  
+  mae_canales <- c()
+  
+  for (canal in canales){
+    matriz <- as.matrix(canal)
+    mae_canales <- c(mae_canales, c(1/(ancho*alto)*sum(abs(matriz))))
+  }
+  
+  mae <- sum(mae_canales)/3
+  print(paste('MAE:', mae))
 ```
 
