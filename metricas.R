@@ -21,6 +21,9 @@ MSE <- function(imagen_orig, imagen_comprimida){
   
   imagen_comprimida <- comprobacion_dim(imagen_orig, imagen_comprimida)
   
+  ancho <- width(imagen_orig)
+  alto <- height(imagen_orig)
+  
   diferencia <- imagen_orig - imagen_comprimida
   
   canales <- imsplit(diferencia, "c")
@@ -47,6 +50,9 @@ MSE <- function(imagen_orig, imagen_comprimida){
 MAE <- function(imagen_orig, imagen_comprimida){
   
   imagen_comprimida <- comprobacion_dim(imagen_orig, imagen_comprimida)
+  
+  ancho <- width(imagen_orig)
+  alto <- height(imagen_orig)
   
   diferencia <- imagen_orig - imagen_comprimida
   
@@ -109,4 +115,5 @@ CR <- function(ruta_imagen_orig, ruta_imagen_comprimida){
   
   return(cr)
 }
+
 
