@@ -3,8 +3,8 @@ comprobacion_dim <- function(imagen_orig, imagen_comprimida){
   ancho_orig <- width(imagen_orig)
   alto_orig <- height(imagen_orig)
   
-  ancho_comp <- width(imagen_comp)
-  alto_comp <- height(imagen_comp)
+  ancho_comp <- width(imagen_comprimida)
+  alto_comp <- height(imagen_comprimida)
   
   if ((ancho_orig != ancho_comp) || (alto_orig != alto_comp)){
     imagen_comprimida <- resize(imagen_comprimida, size_x = ancho_orig,
@@ -13,6 +13,8 @@ comprobacion_dim <- function(imagen_orig, imagen_comprimida){
   
   return(imagen_comprimida)
 }
+
+## Métricas Basadas en el Error de Píxeles
 
 # Mean Squared Error
 MSE <- function(imagen_orig, imagen_comprimida){
@@ -89,3 +91,7 @@ PSNR <- function(imagen_orig, imagen_comprimida){
 
 # Se mide en decibelios. A mayor PSNR mayor calidad. Tiene la misma limitación que
 # el MSE: no refleja bien la calidad percibida por el ojo humano.
+
+## Métricas Perceptuales
+
+# Structural Similarity Index
