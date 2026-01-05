@@ -100,7 +100,9 @@ MSE(img, img_final_alta)
 ```
 
 ```{r}
-  diferencia <- img - img_final
+MAE <- function(imagen_orig, imagen_comprimida){
+  
+  diferencia <- imagen_orig - imagen_comprimida
   
   canales <- imsplit(diferencia, "c")
   
@@ -112,6 +114,40 @@ MSE(img, img_final_alta)
   }
   
   mae <- sum(mae_canales)/3
-  print(paste('MAE:', mae))
+  # print(paste('MAE:', mae))
+  
+  return(mae)
+}
+
+MAE(img, img_final_baja)
+MAE(img, img_final_alta)
+```
+
+```{r}
+RMSE <- function(imagen_orig, imagen_comprimida){
+  
+  mse <- MSE(imagen_orig, imagen_comprimida)
+
+  rsme <- sqrt(mse)
+  
+  return(rsme)
+}
+
+RMSE(img, img_final_baja)
+RMSE(img, img_final_alta)
+```
+
+```{r}
+PSNR <- function(imagen_orig, imagen_comprimida){
+  
+  mse <- MSE(imagen_orig, imagen_comprimida) 
+  
+  psnr <- 10*log10(1^2/mse)
+  
+  return(psnr)
+}
+
+PSNR(img, img_final_baja)
+PSNR(img, img_final_alta)
 ```
 
