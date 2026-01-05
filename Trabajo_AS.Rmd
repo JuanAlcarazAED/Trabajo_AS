@@ -53,6 +53,10 @@ language:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+require("imager", quietly = TRUE)
+require("wavethresh", quietly = TRUE)
+require("waveslim", quietly = TRUE)
+require("magick", quietly = TRUE)
 ```
 
 # Introducción
@@ -63,7 +67,58 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Descripción de los datos
 
+```{r, include=FALSE}
+ruta_acantilado<-"im_2/acantilado.jpg"
+ruta_flores<-"im_2/flores.jpg"
+ruta_noche<-"im_2/noche.jpg"
+ruta_dibujo<-"im_2/dibujo.PNG"
+
+acantilado<-load.image(ruta_acantilado)
+flores<-load.image(ruta_flores)
+noche<-load.image(ruta_noche)
+dibujo<-load.image(ruta_dibujo)
+```
+
+
+```{r}
+plot(acantilado)
+plot(flores)
+plot(noche)
+plot(dibujo)
+```
+
+
+
+
 # Metodología
+
+
+```{r, include=FALSE}
+source("compresion_IDWT.R")
+source("compresion_DCT.R")
+source("metricas.R")
+```
+
+```{r}
+acantilado_IDWT<-compresion_IDWT(ruta_acantilado)
+flores_IDWT<-compresion_IDWT(ruta_flores)
+noche_IDWT<-compresion_IDWT(ruta_noche)
+dibujo_IDWT<-compresion_IDWT(ruta_dibujo)
+```
+
+```{r}
+acantilado_IDWT<-comprobacion_dim(acantilado, acantilado_IDWT)
+flores_IDWT<-comprobacion_dim(flores, flores_IDWT)
+noche_IDWT<-comprobacion_dim(noche, noche_IDWT)
+dibujo_IDWT<-comprobacion_dim(dibujo, dibujo_IDWT)
+```
+
+```{r}
+plot(acantilado_IDWT)
+plot(flores_IDWT)
+plot(noche_IDWT)
+plot(dibujo_IDWT)
+```
 
 # Resultados
 
