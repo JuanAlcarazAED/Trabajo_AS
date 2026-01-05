@@ -4,15 +4,15 @@ subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco, Clara Montalvá, Javier Herrero, Fabián Calvo y Juan Alcaraz"
 date: "Curso 2025-2026"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     echo: true
     number_sections: true
     theme: lumen
     toc: true
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   bookdown::html_document2:
     echo: true
     number_sections: true
@@ -81,14 +81,24 @@ dibujo<-load.image(ruta_dibujo)
 
 
 ```{r}
-plot(acantilado)
-plot(flores)
-plot(noche)
-plot(dibujo)
+par(mfrow = c(2, 2), mar = c(1, 1, 1, 1)) 
+
+plot(acantilado, axes=F, xaxs = "i", yaxs = "i")
+plot(flores, axes=F, xaxs = "i", yaxs = "i")
+plot(noche, axes=F, xaxs = "i", yaxs = "i")
+plot(dibujo, axes=F, xaxs = "i", yaxs = "i")
 ```
 
 
 
+```{r}
+par(mfrow = c(2, 2), mar = c(0.5, 0.5, 0.5, 0.5))
+
+plot(acantilado_IDWT, axes=F, xaxs="i", yaxs="i")
+plot(flores_IDWT, axes=F, xaxs="i", yaxs="i")
+plot(noche_IDWT, axes=F, xaxs="i", yaxs="i")
+plot(dibujo_IDWT, axes=F, xaxs="i", yaxs="i")
+```
 
 # Metodología
 
@@ -114,13 +124,82 @@ dibujo_IDWT<-comprobacion_dim(dibujo, dibujo_IDWT)
 ```
 
 ```{r}
-plot(acantilado_IDWT)
-plot(flores_IDWT)
-plot(noche_IDWT)
-plot(dibujo_IDWT)
+par(mar = c(0,0,0,0)) 
+
+plot(acantilado_IDWT, axes=F, xaxs = "i", yaxs = "i")
+plot(flores_IDWT, axes=F, xaxs = "i", yaxs = "i")
+plot(noche_IDWT, axes=F, xaxs = "i", yaxs = "i")
+plot(dibujo_IDWT, axes=F, xaxs = "i", yaxs = "i")
+```
+```{r}
+acantilado_DCT<-compresion_DCT(ruta_acantilado)
+flores_DCT<-compresion_DCT(ruta_flores)
+noche_DCT<-compresion_DCT(ruta_noche)
+dibujo_DCT<-compresion_DCT(ruta_dibujo)
+```
+
+```{r}
+#plot(acantilado_DCT, axes=F)
 ```
 
 # Resultados
+
+```{r}
+MSE(acantilado, acantilado_IDWT)
+MSE(acantilado, acantilado_DCT)
+```
+```{r}
+MSE(flores, flores_IDWT)
+MSE(flores, flores_DCT)
+```
+
+```{r}
+MSE(noche, noche_IDWT)
+MSE(noche, noche_DCT)
+```
+
+```{r}
+MSE(dibujo, dibujo_IDWT)
+MSE(dibujo, dibujo_DCT)
+```
+
+```{r}
+PSNR(acantilado, acantilado_IDWT)
+PSNR(acantilado, acantilado_DCT)
+```
+```{r}
+PSNR(flores, flores_IDWT)
+PSNR(flores, flores_DCT)
+```
+
+```{r}
+PSNR(noche, noche_IDWT)
+PSNR(noche, noche_DCT)
+```
+
+```{r}
+PSNR(dibujo, dibujo_IDWT)
+PSNR(dibujo, dibujo_DCT)
+```
+
+```{r}
+CR(ruta_acantilado, "data_comp/acantilado_IDWT.jpg")
+CR(ruta_acantilado, "data_comp/acantilado_DCT.jpg")
+```
+```{r}
+CR(ruta_flores, "data_comp/flores_IDWT.jpg")
+CR(ruta_flores, "data_comp/flores_DCT.jpg")
+```
+
+```{r}
+CR(ruta_noche, "data_comp/noche_IDWT.jpg")
+CR(ruta_noche, "data_comp/noche_DCT.jpg")
+```
+
+```{r}
+CR(ruta_dibujo, "data_comp/dibujo_IDWT.jpg")
+CR(ruta_dibujo, "data_comp/dibujo_DCT.jpg")
+```
 
 # Conclusiones
 
