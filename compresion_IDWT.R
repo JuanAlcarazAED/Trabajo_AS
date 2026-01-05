@@ -57,4 +57,6 @@ compresion_IDWT <- function(ruta_imagen, politica_umbral = "universal") {
   save.image(img_final, ruta_salida, quality = 0.8)
   
   invisible(img_final)
+  
+  return(img_final)
 }
