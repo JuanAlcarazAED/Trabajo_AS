@@ -95,3 +95,18 @@ PSNR <- function(imagen_orig, imagen_comprimida){
 ## Métricas Perceptuales
 
 # Structural Similarity Index
+SSMI <- function(imagen_orig, imagen_comprimida){
+  return(ssmi)
+}
+
+
+## Métricas Específicas de Compresión
+
+# Razón de Compresión (Compression Ratio)
+CR <- function(ruta_imagen_orig, ruta_imagen_comprimida){
+  
+  cr <- file.size(ruta_imagen_orig)/file.size(ruta_imagen_comprimida)
+  
+  return(cr)
+}
+
