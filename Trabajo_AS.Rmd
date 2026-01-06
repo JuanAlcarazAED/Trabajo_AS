@@ -384,11 +384,9 @@ audio_wav <- Wave(
 writeWave(audio_wav, "data_comp/audio2comp.wav")
 
 
-mse_left  <- mean((audio@left  - signal_left_rec)^2)
-mse_right <- mean((audio@right - signal_right_rec)^2)
+mse_left  <- sqrt(mean((audio@left - signal_left_rec)^2)) /sqrt(mean(audio@left^2))
+mse_right <- sqrt(mean((audio@right - signal_right_rec)^2))/sqrt(mean(audio@right^2))
 
-# cat("MSE Left :", mse_left, "\n")
-# cat("MSE Right:", mse_right, "\n")
 
 ```
 
@@ -417,7 +415,7 @@ lines(tiempo, audio_comp@right, type = "l", col = "black")
 par(mfrow = c(1, 1))
 ```
 
-
+Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras comprimir en el canal izquierdo es `r round(mse_left,2)` y para el canal derecho `r round(mse_right, 2)`. Esto indica una pérdida apreciable pero concentrada en coeficientes de baja energía, manteniendo una estructura perceptualmente reconocible de la señal.
 
 
 # Conclusiones
