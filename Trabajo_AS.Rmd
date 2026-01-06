@@ -213,44 +213,6 @@ Donde $H(\lambda)$ es la entropía de la distribución de energía de los coefic
 Se ha seleccionado el formato `.rds` para el análisis del almacenamiento debido a su capacidad para preservar la estructura de los coeficientes wavelet, incluyendo los valores nulos generados por el umbralado. A diferencia del formato `.wav`, que almacena la señal reconstruida en el dominio temporal sin tener en cuenta la presencia de ceros. 
 El porcentaje de archivo comprimido se calcula como el tamaño relativo del archivo `.rds` normalizado respecto al tamaño máximo obtenido para $\lambda=0$, correspondiene al caso sin compresión. De esta manera, esta magnitud refleja la reducción de información estructural debida al umbralado.
 
-Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet.
-
-```{r,fig.width=6, fig.height=4}
-lambda_vals <- seq(0, 1, by = 0.1)
-lambda_vals_2<-seq(0, 0.3, by = 0.1)
-red_data <- redundancy_vs_lambda(
-  audio,
-  n.levels,
-  lambda_vals = lambda_vals
-)
-
-size_data <- size_vs_lambda(
-  audio     = audio,
-  n.levels  = n.levels,
-  lambda_vals = lambda_vals
-)
-
-plot(
-  red_data$redundancy,
-  size_data$size_bytes/max(size_data$size_bytes),
-  type = "b", pch = 19,
-  col = "darkred",
-  xlab = "Redundancia",
-  ylab = "Porcentaje de archivo comprimido",
-  main = "Porcentaje de archivo comprimido vs redundancia"
-)
-text(
-  red_data$redundancy[1:3],
-  (size_data$size_bytes / max(size_data$size_bytes))[1:3],
-  labels = paste0(expression(lambda =), lambda_vals[1:3]),
-  pos = 4,
-  cex = 0.75
-)
-grid()
-
-```
-
-Se observa que el valor óptimo, que logra un equilibrio entre una alta redundancia y la preservación de la información de la señal, corresponde a un umbral de $\lambda=0.1$. Por tanto, este será el valor utilizado para la compresión definitiva del audio.
 
 # Resultados
 
@@ -316,6 +278,46 @@ CR(ruta_dibujo, "data_comp/dibujo_DCT.jpg")
 ### Compresión imagen
 
 ### Compresión del audio
+
+Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet.
+
+```{r,fig.width=6, fig.height=4}
+lambda_vals <- seq(0, 1, by = 0.1)
+lambda_vals_2<-seq(0, 0.3, by = 0.1)
+red_data <- redundancy_vs_lambda(
+  audio,
+  n.levels,
+  lambda_vals = lambda_vals
+)
+
+size_data <- size_vs_lambda(
+  audio     = audio,
+  n.levels  = n.levels,
+  lambda_vals = lambda_vals
+)
+
+plot(
+  red_data$redundancy,
+  size_data$size_bytes/max(size_data$size_bytes),
+  type = "b", pch = 19,
+  col = "darkred",
+  xlab = "Redundancia",
+  ylab = "Porcentaje de archivo comprimido",
+  main = "Porcentaje de archivo comprimido vs redundancia"
+)
+text(
+  red_data$redundancy[1:3],
+  (size_data$size_bytes / max(size_data$size_bytes))[1:3],
+  labels = paste0(expression(lambda =), lambda_vals[1:3]),
+  pos = 4,
+  cex = 0.75
+)
+grid()
+
+```
+
+Se observa que el valor óptimo, que logra un equilibrio entre una alta redundancia y la preservación de la información de la señal, corresponde a un umbral de $\lambda=0.1$. Por tanto, este será el valor utilizado para la compresión definitiva del audio.
+
 
 ```{r}
 # Parámetros
