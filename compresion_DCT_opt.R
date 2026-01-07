@@ -17,12 +17,12 @@ compresion_DCT_opt <- function(ruta_imagen, nivel_compresion = 0.95) {
   procesar_canal <- function(canal) {
     matriz <- as.matrix(canal)
     
-    coeficientes <- dct2(matriz)
+    coeficientes <- gsignal::dct2(matriz)
     
     umbral <- quantile(abs(coeficientes), nivel_compresion)
     coeficientes[abs(coeficientes) < umbral] <- 0
     
-    recuperado <- idct2(coeficientes)
+    recuperado <- gsignal::idct2(coeficientes)
     
     img_recuperada <- as.cimg(recuperado)
     
