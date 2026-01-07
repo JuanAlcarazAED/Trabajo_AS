@@ -176,7 +176,7 @@ resize_SPIHT <- function(img){
 ```
 
 ```{r}
-compresion_SPIHT(imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
+compresion_SPIHT <- function(imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
   
   # Redimensionar la imagen y pasarla a escala de grises
   
@@ -186,7 +186,7 @@ compresion_SPIHT(imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
   
   # Transformada wavelet 2D
   
-  dwt_obj <- dwt.2d(img_gray, wf = wf, J = J)
+  dwt_obj <- dwt.2d(imagen_gray, wf = wf, J = J)
   # J: niveles de descomposición
   # wf: wavelet
   
@@ -213,7 +213,7 @@ compresion_SPIHT(imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
   
   dwt_rec <- Desensamblar(W_rec)
   
-  # 8. Reconstruir imagen con IDWT
+  # Reconstruir imagen con IDWT
   
   attributes(dwt_rec) <- attributes(dwt_obj)
   dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
@@ -226,6 +226,10 @@ compresion_SPIHT(imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
   
   return(img_rec)
 }
+```
+
+```{r}
+acantilado_SPIHT<-compresion_SPIHT(acantilado)
 ```
 
 
