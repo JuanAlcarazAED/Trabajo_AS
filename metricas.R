@@ -105,6 +105,7 @@ SSMI <- function(imagen_orig, imagen_comprimida){
   return(ssmi)
 }
 
+# 
 
 ## Métricas Específicas de Compresión
 

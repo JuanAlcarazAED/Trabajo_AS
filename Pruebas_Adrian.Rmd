@@ -101,6 +101,18 @@ MSE(img, img_final_alta)
 ```
 
 ```{r}
+img = img / max( img )
+img_final_alta = img_final_alta / max( img_final_alta )
+
+mean ( ( img - img_final_alta )^2 )
+```
+
+```{r}
+
+```
+
+
+```{r}
 MAE <- function(imagen_orig, imagen_comprimida){
   
   diferencia <- imagen_orig - imagen_comprimida
@@ -153,6 +165,13 @@ PSNR(img, img_final_alta)
 ```
 
 ```{r}
+x = x / max( x )
+y = y / max( y )
+20 * log10( max( x ) ) - 10 * log10( MSE( x, y ) ) 
+```
+
+
+```{r}
 file.size('im_2/acantilado.jpg')
 file.size('data_comp/acantilado_IDWT.jpg')
 ```
@@ -174,6 +193,90 @@ CR <- function(ruta_imagen_orig, ruta_imagen_comprimida){
 CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_baja.jpg')
 CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_alta.jpg')
 ```
+
+```{r}
+library(SpatialPack)
+
+SpatialPack::SSIM(img, img_final_alta)
+
+SpatialPack::SSIM(img, img_final_baja)
+```
+
+```{r}
+# Obtenida del repositorio de la librería SPUTNIK
+SSIM <- function(x, y, numBreaks = 256) {
+  x <- c(x)
+  y <- c(y)
+
+  x <- x / max(x)
+  y <- y / max(y)
+  x.dig <- cut(as.numeric(x), numBreaks, labels = F) - 1
+  y.dig <- cut(as.numeric(y), numBreaks, labels = F) - 1
+  rm(x, y)
+
+  C1 <- (0.01 * (numBreaks - 1))^2
+  C2 <- (0.03 * (numBreaks - 1))^2
+
+  mux <- mean(x.dig)
+  muy <- mean(y.dig)
+  sigxy <- cov(x.dig, y.dig)
+  sigx <- var(x.dig)
+  sigy <- var(y.dig)
+
+  ssim <- ((2 * mux * muy + C1) * (2 * sigxy + C2)) / ((mux**2 + muy**2 + C1) * (sigx + sigy + C2))
+  stopifnot(ssim >= -1 && ssim <= 1)
+
+  return(ssim)
+}
+
+SSIM(img, img_final_alta)
+
+SSIM(img, img_final_baja)
+```
+
+```{r}
+SSIM <- function( x, y, K = c( 0.01, 0.03 ) )
+{
+  x = x / max( x )
+  y = y / max( y )
+  globalMax <- max( max( x ), max( y ) )
+  globalMin <- abs( min( min( x ), min( y ) ) )
+  L <- globalMax - globalMin
+
+  C1 <- ( K[1] * L )^2
+  C2 <- ( K[2] * L )^2
+  C3 <- C2 / 2
+
+  mu_x <- mean( x )
+  mu_y <- mean( y )
+
+  mu_x_sq <- mu_x * mu_x
+  mu_y_sq <- mu_y * mu_y
+  mu_xy <- mu_x * mu_y
+
+  sigma_x_sq <- mean( x * x ) - mu_x_sq
+  sigma_y_sq <- mean( y * y ) - mu_y_sq
+  sigma_xy <- mean( x * y ) - mu_xy
+
+  numerator <- ( 2 * mu_xy + C1 ) * ( 2 * sigma_xy + C2 )
+  denominator <- ( mu_x_sq + mu_y_sq + C1 ) * ( sigma_x_sq + sigma_y_sq + C2 )
+
+  SSI <- numerator / denominator
+
+  return( SSI )
+}
+```
+
+
+
+```{r}
+
+
+SSMI <- function(imagen_orig, imagen_comprimida){
+  return(ssmi)
+}
+```
+
 
 ```{r, echo = FALSE}
 library(gsignal)
@@ -238,5 +341,10 @@ toc()
 ```{r}
 ruta_flores <- 'im_2/flores.jpg'
 flores_dct <- compresion_DCT_opt(ruta_flores)
+```
+
+```{r}
+source("compresion_SPIHT.R")
+source("Codificacion_SPIHT.R")
 ```
 
