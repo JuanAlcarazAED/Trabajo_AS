@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(imager)
+library(wavethresh)
 load.image('IMAGENES/foto_de_prueba.jpg')
 ```
 
@@ -37,26 +38,26 @@ plot(img_re)
 ```{r}
 canales <- imsplit(img_re, "c")
 
-  procesar_canal <- function(canal, value = 0.5) {
+procesar_canal <- function(canal, value = 0.5) {
 
-    matriz <- as.matrix(canal)
+  matriz <- as.matrix(canal)
 
-    lwd <- imwd(matriz)
-    
-    lwdT <- threshold(lwd, policy = "manual", value = value)
+  lwd <- imwd(matriz)
+  
+  lwdT <- threshold(lwd, policy = "manual", value = value)
 
 # political_umbral se define como "universal" que lo que hace es que dependiendo de la imagen
 # si tiene mucho ruido o no elimina/comprime más o menos la imagen
 # en el método de DCt está establecido en 95%
-    
-    recuperado <- imwr(lwdT)
-    
-    img_rec <- as.cimg(recuperado)
-    img_rec <- (img_rec + abs(img_rec)) / 2
-    img_rec <- (img_rec - (img_rec - 1) * (img_rec > 1))
-    
-    return(img_rec)
-  }
+  
+  recuperado <- imwr(lwdT)
+  
+  img_rec <- as.cimg(recuperado)
+  img_rec <- (img_rec + abs(img_rec)) / 2
+  img_rec <- (img_rec - (img_rec - 1) * (img_rec > 1))
+  
+  return(img_rec)
+}
   
 canales_comprimidos_baja <- lapply(canales, procesar_canal)
 canales_comprimidos_alta <- lapply(canales, procesar_canal, value = 25)
@@ -172,5 +173,70 @@ CR <- function(ruta_imagen_orig, ruta_imagen_comprimida){
 
 CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_baja.jpg')
 CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_alta.jpg')
+```
+
+```{r, echo = FALSE}
+library(gsignal)
+
+compresion_DCT_opt <- function(ruta_imagen, nivel_compresion = 0.95) {
+  
+  img <- load.image(ruta_imagen)
+  
+  canales <- imsplit(img, "c")
+  
+  procesar_canal <- function(canal) {
+    matriz <- as.matrix(canal)
+    
+    coeficientes <- dct2(matriz)
+    
+    umbral <- quantile(abs(coeficientes), nivel_compresion)
+    coeficientes[abs(coeficientes) < umbral] <- 0
+    
+    recuperado <- idct2(coeficientes)
+    
+    img_recuperada <- as.cimg(recuperado)
+    
+    img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+    img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+    
+    return(img_recuperada)
+  }
+
+  canales_comprimidos <- lapply(canales, procesar_canal)
+  img_final <- imappend(canales_comprimidos, axis = "c")
+  
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+  
+  ruta_salida <- file.path("data_comp", paste0(nombre_archivo, "_DCT.jpg"))
+  
+  save.image(img_final, ruta_salida, quality = 0.8) 
+
+  invisible(img_final)
+  
+  return(img_final)
+}
+```
+
+```{r}
+library(tictoc)
+tic()
+ruta_acantilado <- 'im_2/acantilado.jpg'
+acantilado_dct <- compresion_DCT(ruta_acantilado)
+toc()
+```
+
+```{r}
+source('compresion_DCT.R')
+```
+
+```{r}
+tic()
+acantilado_dct <- compresion_DCT(ruta_acantilado)
+toc()
+```
+
+```{r}
+ruta_flores <- 'im_2/flores.jpg'
+flores_dct <- compresion_DCT_opt(ruta_flores)
 ```
 
