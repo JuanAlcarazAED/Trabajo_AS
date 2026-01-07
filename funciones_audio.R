@@ -158,8 +158,8 @@ dwt_values <- function(audio, n.levels, lambda) {
   signal_left  <- as.numeric(audio@left)
   signal_right <- as.numeric(audio@right)
   
-  wt_left  <- dwt(signal_left,  filter = "la8", n.levels = n.levels)
-  wt_right <- dwt(signal_right, filter = "la8", n.levels = n.levels)
+  wt_left  <- wavelets::dwt(signal_left, n.levels = n.levels)
+  wt_right <- wavelets::dwt(signal_right, n.levels = n.levels)
   
   thr_left  <- wt_left
   thr_right <- wt_right

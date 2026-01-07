@@ -227,8 +227,8 @@ wt_left_rec <- decode_wt(enc_left, vals$thr_left)
 wt_right_rec <- decode_wt(enc_right, vals$thr_right)
 
 # Señal final
-signal_left_rec  <- idwt(wt_left_rec)
-signal_right_rec <- idwt(wt_right_rec)
+signal_left_rec  <- wavelets::idwt(wt_left_rec)
+signal_right_rec <- wavelets::idwt(wt_right_rec)
 
 audio_wav <- Wave(
     left = signal_left_rec,
