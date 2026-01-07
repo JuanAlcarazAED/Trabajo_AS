@@ -34,7 +34,7 @@ recorte <- function(imagen_grises){
 
 Ensamblar <- function(dwt){
   
-  # Debemos saber cuantos niveles o subbandas tiene las matriz transformada, para
+  # Debemos saber cuántos niveles o subbandas tiene la matriz transformada, para
   # ello tomamos ventaja de la estructura del objeto que devuelve la función 
   # dwt.2d, en la cual los nombres son de la forma LLi o LHi, así que hacemos una
   # lista con los números i que aparecen en los nombres
