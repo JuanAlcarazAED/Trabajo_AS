@@ -426,4 +426,6 @@ Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras compr
 
 # Link del repositorio
 
+
+# Referencias
 https://github.com/JuanAlcarazAED/Trabajo_AS.git
