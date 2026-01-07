@@ -4,15 +4,15 @@ subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
 author: "Adrián Carrasco, Clara Montalvá, Javier Herrero, Fabián Calvo y Juan Alcaraz"
 date: "Curso 2025-2026"
 output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   html_document:
     echo: true
     number_sections: true
     theme: lumen
     toc: true
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   bookdown::html_document2:
     echo: true
     number_sections: true
@@ -54,15 +54,11 @@ csl: ieee.csl
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-require("imager", quietly = TRUE)
-require("wavethresh", quietly = TRUE)
-require("waveslim", quietly = TRUE)
-require("magick", quietly = TRUE)
-require("av", quietly = TRUE)
-require("wavelets", quietly = TRUE)
-require("tuneR", quietly = TRUE)
-require("RColorBrewer", quietly = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+
+if (!require("pacman")) install.packages("pacman")
+
+pacman::p_load(imager, wavethresh, waveslim, magick, av, wavelets, tuneR, RColorBrewer, gsignal)
 ```
 
 # Introducción
@@ -84,7 +80,7 @@ La tercera fotografía se trata de una imagen nocturna de una avenida, utilizada
 Por último, se escogió una imagen generada mediante Inteligencia Artificial recreando a los cinco miembros del grupo al estilo de Estudio Ghibli. Al no estar capturada por una cámara real, sino generada digitalmente, posee bordes definidos y colores planos que nos sirven para comparar cómo se comporta la compresión en creación digital.
 
 
-```{r, include=FALSE}
+```{r}
 ruta_acantilado<-"im_2/acantilado.jpg"
 ruta_flores<-"im_2/flores.jpg"
 ruta_noche<-"im_2/noche.jpg"
@@ -97,7 +93,7 @@ dibujo<-load.image(ruta_dibujo)
 ```
 
 
-```{r, include=FALSE}
+```{r}
 par(mfrow = c(2, 2), mar = c(0.25, 0.25, 0.25, 0.25)) 
 
 plot(acantilado, axes=F)
@@ -112,12 +108,15 @@ Para el estudio de la compresión de vídeo se ha utilizado un úncio vídeo ela
 # Metodología
 
 
-```{r, include=FALSE}
+```{r}
 source("compresion_IDWT.R")
 source("compresion_DCT.R")
+source("compresion_DCT_opt.R")
 source("metricas.R")
 source("funciones_audio.R",echo=F)
 ```
+
+## Compresión IDWT
 
 ```{r}
 acantilado_IDWT<-compresion_IDWT(ruta_acantilado)
@@ -142,11 +141,13 @@ plot(noche_IDWT, axes=F)
 plot(dibujo_IDWT, axes=F)
 ```
 
+## Compresión DCT
+
 ```{r}
-acantilado_DCT<-compresion_DCT(ruta_acantilado)
-flores_DCT<-compresion_DCT(ruta_flores)
-noche_DCT<-compresion_DCT(ruta_noche)
-dibujo_DCT<-compresion_DCT(ruta_dibujo)
+acantilado_DCT<-compresion_DCT_opt(ruta_acantilado)
+flores_DCT<-compresion_DCT_opt(ruta_flores)
+noche_DCT<-compresion_DCT_opt(ruta_noche)
+dibujo_DCT<-compresion_DCT_opt(ruta_dibujo)
 ```
 
 ```{r}
@@ -220,6 +221,7 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 MSE(acantilado, acantilado_IDWT)
 MSE(acantilado, acantilado_DCT)
 ```
+
 ```{r}
 MSE(flores, flores_IDWT)
 MSE(flores, flores_DCT)
@@ -239,6 +241,7 @@ MSE(dibujo, dibujo_DCT)
 PSNR(acantilado, acantilado_IDWT)
 PSNR(acantilado, acantilado_DCT)
 ```
+
 ```{r}
 PSNR(flores, flores_IDWT)
 PSNR(flores, flores_DCT)
@@ -258,6 +261,7 @@ PSNR(dibujo, dibujo_DCT)
 CR(ruta_acantilado, "data_comp/acantilado_IDWT.jpg")
 CR(ruta_acantilado, "data_comp/acantilado_DCT.jpg")
 ```
+
 ```{r}
 CR(ruta_flores, "data_comp/flores_IDWT.jpg")
 CR(ruta_flores, "data_comp/flores_DCT.jpg")
