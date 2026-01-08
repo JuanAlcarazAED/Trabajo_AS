@@ -446,8 +446,13 @@ save.image(img, 'IMAGENES/foto_de_prueba_guardada.jpg', quality = 0.8)
 ```{r}
 # Probemos formato .png
 img <- load.image('IMAGENES/dibujo.PNG')
-save.image(img, 'IMAGENES/dibujo.jpg', quality = 1)
-# Partiendo de una foto .png sí
+save.image(img, 'IMAGENES/dibujo_guardado.png', quality = 1)
+# Partiendo de una foto .png ocupa menos
+```
+
+```{r}
+img_ya_guardada <- load.image('IMAGENES/dibujo_guardado.png')
+save.image(img_ya_guardada, 'IMAGENES/dibujo_guardado_2.png', quality = 1)
 ```
 
 
@@ -479,7 +484,7 @@ data(boats)
 save.image(boats, 'IMAGENES/boats.png', quality = 1)
 
 tic()
-compresion_SPIHT('IMAGENES/boats.png')
+compresion_SPIHT('IMAGENES/boats.png', J = 8, max_iter = 500)
 toc()
 ```
 
