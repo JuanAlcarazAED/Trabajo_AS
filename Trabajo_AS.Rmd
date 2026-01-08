@@ -138,12 +138,17 @@ La DCT es una operación matemática relacionada con la Transformada de Fourier,
 Esto se realiza porque el ojo humano es muy sensible a las frecuencias bajas (cambios suaves de color) pero muy poco sensible a las frecuencias altas (detalles finos o ruido). Al separar estas frecuencias, podemos eliminar las que el ojo no ve bien sin que se note demasiado.
 
 Con este método la imagen se divide en bloques de 8x8 píxeles. Al aplicar la fórmula matemática a cada bloque, se obtiene una matriz de frecuencias donde:
+
   •	Esquina superior izquierda (Componente DC): Contiene la información más importante (el color promedio del bloque).
+  
   •	Esquina inferior derecha (Componentes AC): Contienen las frecuencias altas (detalles finos). Aquí es donde se acumulan valores pequeños o prescindibles.
   
 Dicha matriz de frecuencias se divide por una "Matriz de Cuantización" predefinida (Q).
+
   •	El objetivo es que los valores de las frecuencias altas (los detalles que el ojo casi no ve) se conviertan en ceros o números muy bajos al dividirse por números grandes.
+  
   •	Es el único paso donde realmente se pierde información irrecuperable.
+  
   •	La "Calidad" del JPG (ej. 50% vs 80%) depende de qué tan agresiva sea esta matriz.
 
 Finalmente, se aplica el algoritmo de Huffman. Se asignan códigos binarios muy cortos a los valores que se repiten mucho y códigos más largos a los poco frecuentes. Esto comprime aún más el archivo final sin perder datos adicionales.
@@ -180,7 +185,9 @@ Mientras que la DWT descompone la señal en diferentes niveles de resolución, l
 El proceso de reconstrucción se basa en iteraciones que invierten el Algoritmo de Mallat:
 
 1. Proceso Iterativo: La reconstrucción comienza desde el nivel más bajo de resolución, que corresponde a las frecuencias más bajas y avanza nivel por nivel hacia arriba.
+
 2. Combinación de Coeficientes: En cada nivel, la señal se reconstruye combinando los coeficientes de aproximación y los coeficientes de detalle del nivel siguiente.
+
 3. Filtrado y Desplazamiento: Matemáticamente, esto implica aplicar filtros de reconstrucción y operaciones de desplazamiento sobre los coeficientes. 
 
 En imágenes, la IDWT combina los coeficientes verticales, horizontales y diagonales procesados para recuperar la imagen visualizable. Si se han alterado los coeficientes (por ejemplo, para comprimir), la imagen reconstruida tendrá diferencias respecto a la original.
