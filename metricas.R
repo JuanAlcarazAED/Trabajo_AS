@@ -102,17 +102,18 @@ PSNR <- function(imagen_orig, imagen_comprimida){
 
 # Structural Similarity Index
 # Obtenida del repositorio de la librería SPUTNIK
-SSIM <- function(imagen_orig, imagen_comprimida) {
+SSIM <- function(x, y, numBreaks = 256) {
+  x <- c(x)
+  y <- c(y)
   
-  x <- c(imagen_orig)
-  y <- c(imagen_orig)
-  
-  x.dig <- cut(as.numeric(x), numBreaks = 256, labels = F) - 1
-  y.dig <- cut(as.numeric(y), numBreaks = 256, labels = F) - 1
+  x <- x / max(x)
+  y <- y / max(y)
+  x.dig <- cut(as.numeric(x), numBreaks, labels = F) - 1
+  y.dig <- cut(as.numeric(y), numBreaks, labels = F) - 1
   rm(x, y)
   
-  C1 <- (0.01 * (256 - 1))^2
-  C2 <- (0.03 * (256 - 1))^2
+  C1 <- (0.01 * (numBreaks - 1))^2
+  C2 <- (0.03 * (numBreaks - 1))^2
   
   mux <- mean(x.dig)
   muy <- mean(y.dig)
@@ -125,7 +126,6 @@ SSIM <- function(imagen_orig, imagen_comprimida) {
   
   return(ssim)
 }
-
 # 
 
 ## Métricas Específicas de Compresión
