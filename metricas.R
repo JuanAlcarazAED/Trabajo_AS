@@ -102,14 +102,13 @@ PSNR <- function(imagen_orig, imagen_comprimida){
 
 # Structural Similarity Index
 # Obtenida del repositorio de la librería SPUTNIK
-SSIM <- function(x, y, numBreaks = 256) {
-  x <- c(x)
-  y <- c(y)
+SSIM <- function(imagen_orig, imagen_comprimida) {
   
-  x <- x / max(x)
-  y <- y / max(y)
-  x.dig <- cut(as.numeric(x), numBreaks, labels = F) - 1
-  y.dig <- cut(as.numeric(y), numBreaks, labels = F) - 1
+  x <- c(imagen_orig)
+  y <- c(imagen_orig)
+  
+  x.dig <- cut(as.numeric(x), numBreaks = 256, labels = F) - 1
+  y.dig <- cut(as.numeric(y), numBreaks = 256, labels = F) - 1
   rm(x, y)
   
   C1 <- (0.01 * (numBreaks - 1))^2
