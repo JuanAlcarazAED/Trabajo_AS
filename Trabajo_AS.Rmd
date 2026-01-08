@@ -63,9 +63,19 @@ pacman::p_load(imager,  gsignal, wavethresh, magick, av, wavelets, tuneR, RColor
 
 # Introducción
 
+La capacidad de almacenar y compartir archivos multimedia de forma eficiente es hoy una necesidad fundamental. Debido al gran tamaño de las imágenes y vídeos actuales, es imprescindible utilizar técnicas de compresión que reduzcan el peso de los archivos sin que la pérdida de calidad sea demasiado evidente para el usuario.
+
+Históricamente, el método más utilizado ha sido la Transformada Coseno Discreta (DCT), que es la base del formato JPEG. Aunque este método es eficaz, suele generar distorsiones visuales cuando se busca una compresión muy alta. Como alternativa, surgió la Transformada Wavelet Discreta (DWT), que analiza la información en diferentes niveles de detalle y permite una reconstrucción más limpia. 
+
 # Revisión bibliográfica
 
 # Objetivos
+
+Este proyecto tiene como objetivo evaluar y comparar la eficacia de los algoritmos de compresión IDWT, DCT y SPIHT aplicados a un conjunto de datos. Para ello, se han seleccionado cuatro imágenes con diferentes propiedades. Esta selección permite observar cómo cada algoritmo gestiona conceptos como la entropía, la retención de nitidez y el ruido.
+
+También se pretende aplicar este objetivo de compresión al vídeo y audio. En el caso del audio, se explora el dominio wavelet mediante el mejor valor umbral de energía, analizando la redundancia de la señal a través de la entropía de Shannon. Este enfoque busca no solo aplicar las fórmulas matemáticas, sino comprender la relación entre la concentración de energía de una señal y su capacidad para ser comprimida.
+
+A través del análisis de métricas de error como el MSE (Mean Squared Error) y el PSNR (Peak Signal-to-Noise Ratio), se pretende demostrar por qué las wavelets se han convertido en la base de estándares actuales como el JPEG 2000. El análisis final se centra en determinar qué método ofrece el equilibrio óptimo entre la reducción del peso del archivo y la mayor reconstrucción visual posible de la imagen.
 
 # Descripción de los datos
 
