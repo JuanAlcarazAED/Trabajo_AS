@@ -63,23 +63,25 @@ pacman::p_load(imager,  gsignal, wavethresh, magick, av, wavelets, tuneR, RColor
 
 # Introducción
 
-La capacidad de almacenar y compartir archivos multimedia de forma eficiente es hoy una necesidad fundamental. Debido al gran tamaño de las imágenes y vídeos actuales, es imprescindible utilizar técnicas de compresión que reduzcan el peso de los archivos sin que la pérdida de calidad sea demasiado evidente para el usuario.
+En la era de la información en la que vivimos, la capacidad de almacenar y compartir archivos multimedia de forma eficiente es una necesidad fundamental. Debido al gran tamaño de las imágenes y vídeos actuales, es imprescindible utilizar técnicas de compresión que reduzcan el peso de los archivos sin que la pérdida de calidad sea demasiado evidente para el usuario.
 
-Históricamente, el método más utilizado ha sido la Transformada Coseno Discreta (DCT), que es la base del formato JPEG. Aunque este método es eficaz, suele generar distorsiones visuales cuando se busca una compresión muy alta. Como alternativa, surgió la Transformada Wavelet Discreta (DWT), que analiza la información en diferentes niveles de detalle y permite una reconstrucción más limpia. 
+Históricamente, el método de compresión más utilizado ha sido el de la Transformada de Coseno Discreta (DCT), que es la base del formato JPEG. Aunque este método es eficaz, suele generar distorsiones visuales cuando se busca una compresión muy alta. Como alternativa, surgió la Transformada de Wavelet Discreta (DWT), que analiza la información en diferentes niveles de detalle y permite una reconstrucción más limpia.
 
 # Revisión bibliográfica
 
 # Objetivos
 
-Este proyecto tiene como objetivo evaluar y comparar la eficacia de los algoritmos de compresión IDWT, DCT y SPIHT aplicados a un conjunto de datos. Para ello, se han seleccionado cuatro imágenes con diferentes propiedades. Esta selección permite observar cómo cada algoritmo gestiona conceptos como la entropía, la retención de nitidez y el ruido.
+El objetivo de este proyecto es evaluar y comparar la eficacia de los algoritmos de compresión DWT (Discrete Wavelet Transform), DCT (Discrete Cosine Transform) y SPIHT (Set Partitioning in Hierarchical Trees) aplicados a imágenes y a vídeos.
 
-También se pretende aplicar este objetivo de compresión al vídeo y audio. En el caso del audio, se explora el dominio wavelet mediante el mejor valor umbral de energía, analizando la redundancia de la señal a través de la entropía de Shannon. Este enfoque busca no solo aplicar las fórmulas matemáticas, sino comprender la relación entre la concentración de energía de una señal y su capacidad para ser comprimida.
+Para las imágenes, seleccionaremos cuatro imágenes con características diversas. Esta selección nos permitirá observar cómo cada algoritmo gestiona conceptos como la entropía, la retención de nitidez y el ruido.
 
-A través del análisis de métricas de error como el MSE (Mean Squared Error) y el PSNR (Peak Signal-to-Noise Ratio), se pretende demostrar por qué las wavelets se han convertido en la base de estándares actuales como el JPEG 2000. El análisis final se centra en determinar qué método ofrece el equilibrio óptimo entre la reducción del peso del archivo y la mayor reconstrucción visual posible de la imagen.
+Para la aplicación a la compresión de vídeos, necesitaremos comprimir también el audio. Para ello, exploraremos el dominio wavelet mediante el mejor valor umbral de energía, analizando la redundancia de la señal a través de la entropía de Shannon. Esto nos permitirá comprender la relación entre la concentración de energía de una señal y su capacidad para ser comprimida.
+
+Para la evaluación de los diferentes algoritmos haremos un análisis de métricas de error como el MSE (Mean Squared Error) y el PSNR (Peak Signal-to-Noise Ratio), el SSIM (Structural similarity index measure) o el CR (Compression Rate). Trataremos de determinar qué método ofrece el mayor  equilibrio entre la reducción del peso de la imagen y la mejor reconstrucción visual posible de la misma, buscando entender el motivo por el que las wavelets se han convertido en la base de estándares actuales como el JPEG 2000.
 
 # Descripción de los datos
 
-Para evaluar la eficacia de los algoritmos de compresión, hemos seleccionado un conjunto de cuatro imágenes realizadas por nosotros mismos con características visuales distintas para observar cómo responden los métodos ante diferentes niveles de entropía, detalle y origen de los datos.
+Para evaluar la eficacia de los algoritmos de compresión, hemos seleccionado un conjunto de cuatro imágenes propias con características visuales y tamaños distintos, lo que nos permitirá observar cómo responden los diferentes métodos de compresión y sus parámetros ante diferentes niveles de entropía, detalle y dimensiones de los datos.
 
 La primera fotografía escogida es de un acantilado, que al ser dominada por el azul del mar y el cielo, cuenta con grandes zonas de color uniforme. Esto nos permite evaluar la eficiencia de la compresión en imágenes con "poca información" aparente o redundancia, donde los algoritmos deberían optimizar mejor el peso del archivo.
 
@@ -321,6 +323,16 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 
 
 # Resultados
+
+```{r}
+kable(c('mse', 'psnr', 'ssim', 'cr'), 
+      caption = "Métricas de error",
+      align = "c",
+      col.names = c('MSE', 'PSNR', 'SSIM', 'CR'),
+      digits = 5,
+      escape = FALSE)
+```
+
 
 ```{r}
 MSE(acantilado, acantilado_IDWT)
