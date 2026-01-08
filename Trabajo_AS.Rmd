@@ -325,12 +325,18 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 # Resultados
 
 ```{r}
-kable(c('mse', 'psnr', 'ssim', 'cr'), 
-      caption = "Métricas de error",
-      align = "c",
-      col.names = c('MSE', 'PSNR', 'SSIM', 'CR'),
-      digits = 5,
-      escape = FALSE)
+crear_tabla_errores <- function(imagen_orig, imagen_comprimida, ruta_orig, ruta_comprimida)
+  mse <- MSE(imagen_orig, imagen_comprimida)
+  psnr <- PSNR(imagen_orig, imagen_comprimida)
+  ssim <- SSIM(imagen_orig, imagen_comprimida)
+  cr <- CR(ruta_orig, ruta_comprimida)
+
+  kable(c(mse, psnr, ssim, cr), 
+        caption = "Métricas de error",
+        align = "c",
+        col.names = c('MSE', 'PSNR', 'SSIM', 'CR'),
+        digits = 5,
+        escape = FALSE)
 ```
 
 
