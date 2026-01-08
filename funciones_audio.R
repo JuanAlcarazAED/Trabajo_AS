@@ -2,10 +2,7 @@ library(av)
 library(wavelets)
 library(tuneR)
 library(RColorBrewer)
-# Página que voy a usar de referencia
-#https://stackoverflow.com/questions/36756500/visualization-of-wavelets-coefficients-for-different-deconstruction-levels 
-# Apuntes del tema 3 de compresión de una onda
-# Referencia de cómo se umbraliza y redundancia: https://www.di.ens.fr/~mallat/papiers/WaveletTourChap1-6.pdf
+
 
 # --------------- FUNCIÓN SEPARAR AUDIO-FRAME DE VIDEO-----------------------
 
@@ -15,6 +12,27 @@ sep_audio_video<-function(main="data/video.mp4",audio="data/audio.wav",video="da
   av_audio_convert(main,audio)
   frames<-av_video_images(main,destdir=video,fps=fps)
 }
+
+rebuild_video_comp <- function(
+    audio_path  = "data_comp/audio2comp.wav",
+    frames_dir  = "data_comp/frames_comp",
+    output_path = "data_comp/video_comp.mp4",
+    fps = 30
+) {
+  # Función para juntar imagenes y audios comprimidos en un video
+  
+  # imágenes ordenadas
+  frames <- list.files(
+    frames_dir,
+    pattern = "^image_.*\\.(png|jpg|jpeg)$",
+    full.names = TRUE
+  )
+  
+  frames <- sort(frames)
+  av::av_encode_video(input  = frames,output = output_path,framerate = fps,audio = audio_path)
+}
+
+
 # --------------- FUNCIONES GRÁFICAS-----------------------
 expand_to_length <- function(coefs, target_len) {
   coefs <- as.vector(coefs)

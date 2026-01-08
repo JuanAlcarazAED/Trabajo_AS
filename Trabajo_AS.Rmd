@@ -301,6 +301,14 @@ resize_SPIHT <- function(img){
 
 ## Compresión de vídeo
 
+```{r}
+# Separar imagen y audio del vídeo para la compresión separada (funciones_auido.R)
+sep_audio_video()
+
+```
+
+
+
 ### Compresión de imagen
 
 ### Compresión de audio
@@ -554,6 +562,13 @@ par(mfrow = c(1, 1))
 ```
 
 Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras comprimir en el canal izquierdo es `r round(mse_left,2)` y para el canal derecho `r round(mse_right, 2)`. Esto indica una pérdida apreciable pero concentrada en coeficientes de baja energía, manteniendo una estructura perceptualmente reconocible de la señal.
+
+
+
+```{r}
+# Juntar imagen y video comprimido (funciones_audio.R)
+rebuild_video_comp() 
+```
 
 
 # Conclusiones
