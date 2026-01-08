@@ -237,7 +237,7 @@ SSIM(img, img_final_baja)
 ```
 
 ```{r}
-SSIM <- function( x, y, K = c( 0.01, 0.03 ) )
+SSIM_2 <- function( x, y, K = c( 0.01, 0.03 ) )
 {
   x = x / max( x )
   y = y / max( y )
@@ -267,6 +267,10 @@ SSIM <- function( x, y, K = c( 0.01, 0.03 ) )
 
   return( SSI )
 }
+
+SSIM_2(img, img_final_alta)
+
+SSIM_2(img, img_final_baja)
 ```
 
 
@@ -292,12 +296,12 @@ compresion_DCT_opt <- function(ruta_imagen, nivel_compresion = 0.95) {
   procesar_canal <- function(canal) {
     matriz <- as.matrix(canal)
     
-    coeficientes <- dct2(matriz)
+    coeficientes <- gsignal::dct2(matriz)
     
     umbral <- quantile(abs(coeficientes), nivel_compresion)
     coeficientes[abs(coeficientes) < umbral] <- 0
     
-    recuperado <- idct2(coeficientes)
+    recuperado <- gsignal::idct2(coeficientes)
     
     img_recuperada <- as.cimg(recuperado)
     
@@ -326,7 +330,7 @@ compresion_DCT_opt <- function(ruta_imagen, nivel_compresion = 0.95) {
 library(tictoc)
 tic()
 ruta_acantilado <- 'im_2/acantilado.jpg'
-acantilado_dct <- compresion_DCT(ruta_acantilado)
+acantilado_dct <- compresion_DCT_opt(ruta_acantilado)
 toc()
 ```
 
@@ -439,7 +443,7 @@ compresion_SPIHT <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NULL, m
 ```{r}
 # ¿Cambia el tamaño de la imagen original si tan solo la abrimos y la guardamos de vuelta?
 img <- load.image('IMAGENES/foto_de_prueba.jpg')
-save.image(img, 'IMAGENES/foto_de_prueba_guardada.jpg', quality = 0.8)
+save.image(img, 'IMAGENES/foto_de_prueba_guardada.jpg', quality = 1)
 # Partiendo de una foto .jpg sí
 ```
 
@@ -485,6 +489,81 @@ save.image(boats, 'IMAGENES/boats.png', quality = 1)
 
 tic()
 compresion_SPIHT('IMAGENES/boats.png', J = 8, max_iter = 500)
+toc()
+```
+
+```{r}
+compresion_SPIHT_gray <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 100){
+  
+  # Cargar la imagen, redimensionarla y separarla en canales
+  
+  img <- load.image(ruta_imagen)
+  
+  ancho <- width(img)
+  alto <- height(img)
+  
+  img_re4 <- resize_SPIHT(img)
+  imagen_gray <- grayscale(img_re4)
+  
+  # Transformada wavelet 2D
+
+  dwt_obj <- dwt.2d(img_mat, wf = wf, J = J)
+  # J: niveles de descomposición
+  # wf: wavelet
+  
+  # Ensamblar matriz wavelet completa
+  
+  W <- Ensamblar(dwt_obj)
+  
+  # Codificar con SPIHT
+  
+  bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+  
+  # Tamaño en memoria del bitstream
+  
+  tamanno_bytes <- object.size(bitstream)
+  tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+  cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+  
+  # Decodificar SPIHT
+  
+  n_inicial <- floor(log2(max(abs(W))))
+  W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+  
+  # Desensamblar matriz wavelet reconstruida
+  
+  dwt_rec <- Desensamblar(W_rec)
+  
+  # Reconstruir imagen con IDWT
+  
+  attributes(dwt_rec) <- attributes(dwt_obj)
+  dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+  dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+  dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+  dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+  
+  img_rec <- idwt.2d(dwt_rec)
+  
+  img_recuperada <- as.cimg(img_rec)
+  
+  img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+  img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+  
+  img_recuperada <- resize(img_recuperada, size_x = ancho, size_y = alto)
+  
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+  
+  ruta_salida <- file.path("data_comp", paste0(nombre_archivo, "_SPIHT.jpg"))
+  
+  save.image(img_recuperada, ruta_salida, quality = 1)
+  
+  return(img_recuperada)
+}
+```
+
+```{r}
+tic()
+compresion_SPIHT_gray('IMAGENES/boats.png', J = 8, max_iter = 500)
 toc()
 ```
 
