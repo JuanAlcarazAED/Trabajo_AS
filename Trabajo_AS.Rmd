@@ -325,80 +325,58 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 # Resultados
 
 ```{r}
-crear_tabla_errores <- function(imagen_orig, imagen_comprimida, ruta_orig, ruta_comprimida)
+crear_tabla_errores <- function(imagen_orig, imagen_comprimida, ruta_orig, ruta_comprimida, titulo){
   mse <- MSE(imagen_orig, imagen_comprimida)
   psnr <- PSNR(imagen_orig, imagen_comprimida)
   ssim <- SSIM(imagen_orig, imagen_comprimida)
   cr <- CR(ruta_orig, ruta_comprimida)
 
-  kable(c(mse, psnr, ssim, cr), 
-        caption = "Métricas de error",
+  knitr::kable(data.frame(mse, psnr, ssim, cr), 
+        caption = titulo,
         align = "c",
         col.names = c('MSE', 'PSNR', 'SSIM', 'CR'),
-        digits = 5,
+        digits = 4,
         escape = FALSE)
+}
+```
+
+```{r}
+crear_tabla_errores(acantilado, acantilado_IDWT, ruta_acantilado, "data_comp/acantilado_IDWT.jpg", "Compresión acantilado IDWT")
 ```
 
 
 ```{r}
-MSE(acantilado, acantilado_IDWT)
-MSE(acantilado, acantilado_DCT)
+crear_tabla_errores(acantilado, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_DCT.jpg", "Compresión acantilado DCT")
+
+```
+```{r}
+crear_tabla_errores(flores, flores_IDWT, ruta_flores, "data_comp/flores_IDWT.jpg", "Compresión flores IDWT")
+```
+
+
+```{r}
+crear_tabla_errores(flores, flores_DCT, ruta_flores, "data_comp/flores_DCT.jpg", "Compresión flores DCT")
 ```
 
 ```{r}
-MSE(flores, flores_IDWT)
-MSE(flores, flores_DCT)
+crear_tabla_errores(noche, noche_IDWT, ruta_noche, "data_comp/noche_IDWT.jpg", "Compresión noche IDWT")
+```
+
+
+```{r}
+crear_tabla_errores(noche, noche_DCT, ruta_noche, "data_comp/noche_DCT.jpg", "Compresión noche DCT")
 ```
 
 ```{r}
-MSE(noche, noche_IDWT)
-MSE(noche, noche_DCT)
+crear_tabla_errores(dibujo, dibujo_IDWT, ruta_dibujo, "data_comp/dibujo_IDWT.jpg", "Compresión dibujo IDWT")
 ```
 
-```{r}
-MSE(dibujo, dibujo_IDWT)
-MSE(dibujo, dibujo_DCT)
-```
 
 ```{r}
-PSNR(acantilado, acantilado_IDWT)
-PSNR(acantilado, acantilado_DCT)
+crear_tabla_errores(dibujo, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_DCT.jpg", "Compresión dibujo DCT")
 ```
 
-```{r}
-PSNR(flores, flores_IDWT)
-PSNR(flores, flores_DCT)
-```
 
-```{r}
-PSNR(noche, noche_IDWT)
-PSNR(noche, noche_DCT)
-```
-
-```{r}
-PSNR(dibujo, dibujo_IDWT)
-PSNR(dibujo, dibujo_DCT)
-```
-
-```{r}
-CR(ruta_acantilado, "data_comp/acantilado_IDWT.jpg")
-CR(ruta_acantilado, "data_comp/acantilado_DCT.jpg")
-```
-
-```{r}
-CR(ruta_flores, "data_comp/flores_IDWT.jpg")
-CR(ruta_flores, "data_comp/flores_DCT.jpg")
-```
-
-```{r}
-CR(ruta_noche, "data_comp/noche_IDWT.jpg")
-CR(ruta_noche, "data_comp/noche_DCT.jpg")
-```
-
-```{r}
-CR(ruta_dibujo, "data_comp/dibujo_IDWT.jpg")
-CR(ruta_dibujo, "data_comp/dibujo_DCT.jpg")
-```
 
 ## Compresión de vídeo
 
