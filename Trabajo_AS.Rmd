@@ -222,6 +222,7 @@ compresion_SPIHT <- function(imagen, J = 8, wf = "haar", max_bits = NULL, max_it
   dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
   
   img_rec <- idwt.2d(dwt_rec)
+  
   save.image(as.cimg(img_rec), file = paste("Reconstruccion_", max_iter, "_iter.jpeg",sep=""))
   
   return(img_rec)
@@ -229,118 +230,17 @@ compresion_SPIHT <- function(imagen, J = 8, wf = "haar", max_bits = NULL, max_it
 ```
 
 ```{r}
-acantilado_SPIHT<-compresion_SPIHT(acantilado)
-```
-
-
-
-```{r}
-acantilado_re4<-resize_SPIHT(acantilado)
-flores_re4<-resize_SPIHT(flores)
-noche_re4<-resize_SPIHT(noche)
-dibujo_re4<-resize_SPIHT(dibujo)
-
-acantilado_gray <- grayscale(acantilado_re4)
-flores_gray <- grayscale(flores_re4)
-noche_gray <- grayscale(noche_re4)
-dibujo_gray <- grayscale(dibujo_re4)
+# acantilado_SPIHT<-compresion_SPIHT(acantilado)
 ```
 
 ```{r}
-# Transformada wavelet 2D
-
-J <- 8        # niveles de descomposición
-wf <- "haar"  # wavelet
-
-acantilado_dwt <- dwt.2d(acantilado_gray, wf = wf, J = J)
-flores_dwt <- dwt.2d(flores_gray, wf = wf, J = J)
-noche_dwt <- dwt.2d(noche_gray, wf = wf, J = J)
-dibujo_dwt <- dwt.2d(dibujo_gray, wf = wf, J = J)
-
-# Ensamblar matriz wavelet completa
-W_acantilado <- Ensamblar(acantilado_dwt)
-W_flores <- Ensamblar(flores_dwt)
-W_noche <- Ensamblar(noche_dwt)
-W_dibujo <- Ensamblar(dibujo_dwt)
-```
-
-```{r}
-
-img <- grayscale(acantilado_re4)
-
-
-##############################################
-# 2. Transformada wavelet 2D
-##############################################
-
-J <- 8        # niveles de descomposición
-wf <- "haar"  # wavelet
-
-dwt_obj <- dwt.2d(img_mat, wf = wf, J = J)
-
-##############################################
-# 3. Ensamblar matriz wavelet completa
-#    (usando tu función Ensamble)
-##############################################
-
-W <- Ensamblar(dwt_obj)
-
-##############################################
-# 4. Codificar con SPIHT
-##############################################
-
-max_bits <- NULL
-max_iter <- 500
-bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
-
-##############################################
-# 5. Tamaño en memoria del bitstream
-##############################################
-
-tamanno_bytes <- object.size(bitstream)
-tamanno_kb <- as.numeric(tamanno_bytes) / 1024
-cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
-
-##############################################
-# 6. Decodificar SPIHT
-##############################################
-
-n_inicial <- floor(log2(max(abs(W))))
-W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
-
-##############################################
-# 7. Desensamblar matriz wavelet reconstruida
-#    (usando tu función Desensamblar)
-##############################################
-
-dwt_rec <- Desensamblar(W_rec)
-
-##############################################
-# 8. Reconstruir imagen con IDWT
-##############################################
-
-attributes(dwt_rec) <- attributes(dwt_obj)
-dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
-dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
-dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
-dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
-
-img_rec <- idwt.2d(dwt_rec)
-save.image(as.cimg(img_rec), file = paste("Reconstruccion_", max_iter, "_iter.jpeg",sep=""))
-
-##############################################
-# 9. Mostrar original y reconstruida
-##############################################
-
 par(mfrow = c(1,2), mar = c(2,2,2,2))
 plot(as.cimg(img_mat), main = "Original")
 plot(as.cimg(img_rec), main = "Reconstruida SPIHT")
 par(mfrow = c(1,1))
+```
 
-##############################################
-# 10. (Opcional) Calcular PSNR
-##############################################
-
+```{r}
 PSNR <- function(orig, rec) {
   mse <- mean((orig - rec)^2)
   10 * log10(1 / mse)
@@ -351,8 +251,6 @@ rec_n  <- (img_rec - min(img_rec)) / (max(img_rec) - min(img_rec))
 
 psnr_val <- PSNR(orig_n, rec_n)
 cat("PSNR aproximado:", psnr_val, "dB\n")
-
-```
 ```
 
 
