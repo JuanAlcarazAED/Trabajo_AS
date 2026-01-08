@@ -111,8 +111,8 @@ SSIM <- function(imagen_orig, imagen_comprimida) {
   y.dig <- cut(as.numeric(y), numBreaks = 256, labels = F) - 1
   rm(x, y)
   
-  C1 <- (0.01 * (numBreaks - 1))^2
-  C2 <- (0.03 * (numBreaks - 1))^2
+  C1 <- (0.01 * (256 - 1))^2
+  C2 <- (0.03 * (256 - 1))^2
   
   mux <- mean(x.dig)
   muy <- mean(y.dig)
