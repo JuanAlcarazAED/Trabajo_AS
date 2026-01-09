@@ -59,7 +59,7 @@ compresion_IDWT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", politic
   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
   ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_IDWT.jpg"))
   
-  save.image(img_final, ruta_salida, quality = 0.8)
+  save.image(img_final, ruta_salida, quality = 1)
   
   invisible(img_final)
   

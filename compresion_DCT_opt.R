@@ -39,7 +39,7 @@ compresion_DCT_opt <- function(ruta_imagen, ruta_imagen_comp = "data_comp", nive
   
   ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_DCT.jpg"))
   
-  save.image(img_final, ruta_salida, quality = 0.8) 
+  save.image(img_final, ruta_salida, quality = 1) 
   
   invisible(img_final)
   
