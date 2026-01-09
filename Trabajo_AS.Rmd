@@ -227,8 +227,8 @@ resize_SPIHT <- function(img){
 }
 ```
 
-```{r, comment = TRUE}
-compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 100){
+```{r}
+compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
   
   # Cargar la imagen, redimensionarla y separarla en canales
   
@@ -298,7 +298,7 @@ compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8,
   
   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
   
-  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.jpg"))
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.png"))
   
   save.image(img_final, ruta_salida, quality = 1)
   
@@ -307,7 +307,16 @@ compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8,
 ```
 
 ```{r}
-# acantilado_SPIHT<-compresion_SPIHT(acantilado)
+data(boats)
+ruta_barcos <- 'im_2/boats.png'
+
+save.image(boats, ruta_barcos, quality = 1)
+
+barcos <- load.image(ruta_barcos)
+
+tic()
+dibujo_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 50000)
+toc()
 ```
 
 ```{r, comment = TRUE}
