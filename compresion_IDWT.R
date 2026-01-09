@@ -21,6 +21,9 @@ compresion_IDWT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", politic
   
   img <- load.image(ruta_imagen)
   
+  ancho <- width(img)
+  alto <- height(img)
+  
   nuevo_tamaño <- obtener_potencia_2(max(width(img), height(img))) #se le asigna el nuevo tamaño a la imagen
   
   img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
@@ -50,6 +53,8 @@ compresion_IDWT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", politic
   
   canales_comprimidos <- lapply(canales, procesar_canal)
   img_final <- imappend(canales_comprimidos, axis = "c")
+  
+  img_final <- resize(img_final, size_x = ancho, size_y = alto)
   
   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
   ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_IDWT.jpg"))
