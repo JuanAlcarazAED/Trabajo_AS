@@ -373,6 +373,9 @@ compresion_SPIHT <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NULL, m
   
   img <- load.image(ruta_imagen)
   
+  ancho <- width(img)
+  alto <- height(img)
+  
   img_re4 <- resize_SPIHT(img)
   
   canales <- imsplit(img_re4, "c")
@@ -421,14 +424,16 @@ compresion_SPIHT <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NULL, m
     
     img_recuperada <- as.cimg(img_rec)
     
-    img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
-    img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+    # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+    # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
     
     return(img_recuperada)
   }
   
   canales_comprimidos <- lapply(canales, procesar_canal)
   img_final <- imappend(canales_comprimidos, axis = "c")
+  
+  img_final <- resize(img_final, size_x = ancho, size_y = alto)
   
   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
   
@@ -502,7 +507,7 @@ compresion_SPIHT_gray <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NU
   ancho <- width(img)
   alto <- height(img)
   
-  img_re4 <- resize_SPIHT(img)
+  # img_re4 <- resize_SPIHT(img)
   imagen_gray <- grayscale(img_re4)
   
   # Transformada wavelet 2D
@@ -546,8 +551,8 @@ compresion_SPIHT_gray <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NU
   
   img_recuperada <- as.cimg(img_rec)
   
-  img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
-  img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+  #img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+  #img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
   
   img_recuperada <- resize(img_recuperada, size_x = ancho, size_y = alto)
   
@@ -567,3 +572,8 @@ compresion_SPIHT_gray('IMAGENES/boats.png', J = 8, max_iter = 500)
 toc()
 ```
 
+```{r}
+tic()
+compresion_SPIHT('IMAGENES/boats.png', J = 8, max_iter = 500)
+toc()
+```
