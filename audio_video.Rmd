@@ -97,6 +97,74 @@ par(mfrow = c(1, 1))
 ```
 
 
+```{r}
+# Energía
+energy_left <- (audio@left)^2
+energy_right <- (audio@right)^2
+
+# Ordenar de mayor a menor
+energy_left_sorted  <- sort(energy_left, decreasing = TRUE)
+energy_right_sorted <- sort(energy_right, decreasing = TRUE)
+
+k_left  <- seq_along(energy_left_sorted)
+k_right <- seq_along(energy_right_sorted)
+
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+
+plot(k_left, energy_left_sorted, type = "l",
+     main = "Canal Izquierdo (energía ordenada)",
+     xlab = "Coeficientes ordenados por energía",
+     ylab = "Energía")
+
+plot(k_right, energy_right_sorted, type = "l",
+     main = "Canal Derecho (energía ordenada)",
+     xlab = "Coeficientes ordenados por energía",
+     ylab = "")
+
+par(mfrow = c(1, 1))
+
+```
+
+```{r}
+# Energía normalizada
+energy_left  <- (audio@left)^2 / max((audio@left)^2)
+energy_right <- (audio@right)^2 / max((audio@right)^2)
+
+nbins <- 100
+lambda <- 0.1
+x_thr <- log(lambda)
+
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+
+# Canal izquierdo
+hist(
+  log(energy_left),
+  breaks = nbins,
+  main = "Histograma de energía (Canal Izquierdo)",
+  xlab = "log(Energía normalizada)",
+  ylab = "Frecuencia",
+  col = "gray",
+  border = "black"
+)
+abline(v = x_thr, col = "red", lwd = 2, lty = 2)
+
+# Canal derecho
+hist(
+  log(energy_right),
+  breaks = nbins,
+  main = "Histograma de energía (Canal Derecho)",
+  xlab = "log(Energía normalizada)",
+  ylab = "",
+  col = "gray",
+  border = "black"
+)
+abline(v = x_thr, col = "red", lwd = 2, lty = 2)
+
+par(mfrow = c(1, 1))
+
+```
+
+
 ## Redundancia de la señal
 
 

@@ -466,7 +466,7 @@ crear_tabla_errores(dibujo, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_DCT.jpg",
 
 ### Compresión del audio
 
-Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet.
+Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilziar un número de bins fijo a 100 por conveniencia.
 
 ```{r,fig.width=6, fig.height=4}
 lambda_vals <- seq(0, 1, by = 0.1)
@@ -503,7 +503,7 @@ grid()
 
 ```
 
-Se observa que el valor óptimo, que logra un equilibrio entre una alta redundancia y la preservación de la información de la señal, corresponde a un umbral de $\lambda=0.1$. Por tanto, este será el valor utilizado para la compresión definitiva del audio.
+Se observa que el valor óptimo, que logra un equilibrio entre una baja redundancia y la preservación de la información de la señal, corresponde a un umbral de $\lambda=0.1$. Por tanto, este será el valor utilizado para la compresión definitiva del audio.
 
 
 ```{r}

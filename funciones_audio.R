@@ -297,7 +297,7 @@ size_vs_lambda <- function(audio, n.levels, lambda_vals,
 }
 
 entropy_redundancy <-function(x){
-  nbins<-1000
+  nbins<-100
   energia <- x^2
   
   min_e <- min(energia, na.rm = TRUE)
