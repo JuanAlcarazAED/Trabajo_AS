@@ -58,7 +58,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
 if (!require("pacman")) install.packages("pacman")
 
-pacman::p_load(imager,  gsignal, wavethresh, magick, av, wavelets, tuneR, RColorBrewer, waveslim)
+pacman::p_load(imager,  gsignal, wavethresh, magick, av, wavelets, tuneR, RColorBrewer, waveslim, tictoc)
 ```
 
 # Introducción
@@ -93,11 +93,26 @@ Por último, se escogió una imagen generada mediante Inteligencia Artificial re
 
 
 ```{r}
+# Cargamos inicialmente todas las imágenes y las guardamos desde R, para que las
+# métricas basadas en el tamaño de los archivos sean consistentes
 ruta_acantilado<-"im_2/acantilado.jpg"
 ruta_flores<-"im_2/flores.jpg"
 ruta_noche<-"im_2/noche.jpg"
-ruta_dibujo<-"im_2/dibujo.PNG"
+ruta_dibujo<-"im_2/dibujo.png"
 
+acantilado<-load.image(ruta_acantilado)
+flores<-load.image(ruta_flores)
+noche<-load.image(ruta_noche)
+dibujo<-load.image(ruta_dibujo)
+
+save.image(acantilado, ruta_acantilado, quality = 1)
+save.image(flores, ruta_flores, quality = 1)
+save.image(noche, ruta_noche, quality = 1)
+save.image(dibujo, ruta_dibujo, quality = 1)
+```
+
+```{r}
+# Volvemos a cargar las imágenes
 acantilado<-load.image(ruta_acantilado)
 flores<-load.image(ruta_flores)
 noche<-load.image(ruta_noche)
@@ -128,7 +143,6 @@ source("metricas.R")
 source("funciones_audio.R")
 source("Codificacion_SPIHT.R")
 source("compresion_SPIHT.R")
-
 ```
 
 ## Compresión IDWT
@@ -151,13 +165,6 @@ acantilado_IDWT<-compresion_IDWT(ruta_acantilado)
 flores_IDWT<-compresion_IDWT(ruta_flores)
 noche_IDWT<-compresion_IDWT(ruta_noche)
 dibujo_IDWT<-compresion_IDWT(ruta_dibujo)
-```
-
-```{r}
-acantilado_IDWT<-comprobacion_dim(acantilado, acantilado_IDWT)
-flores_IDWT<-comprobacion_dim(flores, flores_IDWT)
-noche_IDWT<-comprobacion_dim(noche, noche_IDWT)
-dibujo_IDWT<-comprobacion_dim(dibujo, dibujo_IDWT)
 ```
 
 ```{r}
@@ -221,57 +228,82 @@ resize_SPIHT <- function(img){
 ```
 
 ```{r, comment = TRUE}
-# compresion_SPIHT <- function(imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
-#   
-#   # Redimensionar la imagen y pasarla a escala de grises
-#   
-#   imagen_re4<-resize_SPIHT(imagen)
-#   
-#   imagen_gray <- grayscale(imagen_re4)
-#   
-#   # Transformada wavelet 2D
-#   
-#   dwt_obj <- dwt.2d(imagen_gray, wf = wf, J = J)
-#   # J: niveles de descomposición
-#   # wf: wavelet
-#   
-#   # Ensamblar matriz wavelet completa
-#   
-#   W <- Ensamblar(dwt_obj)
-#   
-#   # Codificar con SPIHT
-#   
-#   bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
-#   
-#   # Tamaño en memoria del bitstream
-#   
-#   tamanno_bytes <- object.size(bitstream)
-#   tamanno_kb <- as.numeric(tamanno_bytes) / 1024
-#   cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
-#   
-#   # Decodificar SPIHT
-#   
-#   n_inicial <- floor(log2(max(abs(W))))
-#   W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
-#   
-#   # Desensamblar matriz wavelet reconstruida
-#   
-#   dwt_rec <- Desensamblar(W_rec)
-#   
-#   # Reconstruir imagen con IDWT
-#   
-#   attributes(dwt_rec) <- attributes(dwt_obj)
-#   dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
-#   dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
-#   dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
-#   dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
-#   
-#   img_rec <- idwt.2d(dwt_rec)
-#   
-#   save.image(as.cimg(img_rec), file = paste("Reconstruccion_", max_iter, "_iter.jpeg",sep=""))
-#   
-#   return(img_rec)
-# }
+compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 100){
+  
+  # Cargar la imagen, redimensionarla y separarla en canales
+  
+  img <- load.image(ruta_imagen)
+  
+  ancho <- width(img)
+  alto <- height(img)
+  
+  img_re4 <- resize_SPIHT(img)
+  
+  canales <- imsplit(img_re4, "c")
+  
+  procesar_canal <- function(canal) {
+    # matriz <- as.matrix(canal)
+    
+    # Transformada wavelet 2D
+  
+    dwt_obj <- dwt.2d(canal, wf = wf, J = J)
+    # J: niveles de descomposición
+    # wf: wavelet
+    
+    # Ensamblar matriz wavelet completa
+    
+    W <- Ensamblar(dwt_obj)
+    
+    # Codificar con SPIHT
+    
+    bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+    
+    # Tamaño en memoria del bitstream
+    
+    tamanno_bytes <- object.size(bitstream)
+    tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+    cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+    
+    # Decodificar SPIHT
+    
+    n_inicial <- floor(log2(max(abs(W))))
+    W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+    
+    # Desensamblar matriz wavelet reconstruida
+    
+    dwt_rec <- Desensamblar(W_rec)
+    
+    # Reconstruir imagen con IDWT
+    
+    attributes(dwt_rec) <- attributes(dwt_obj)
+    dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+    dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+    dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+    dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+    
+    img_rec <- idwt.2d(dwt_rec)
+    
+    img_recuperada <- as.cimg(img_rec)
+    
+    # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+    # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+    
+    return(img_recuperada)
+  }
+  
+  canales_comprimidos <- lapply(canales, procesar_canal)
+  img_final <- imappend(canales_comprimidos, axis = "c")
+  
+  img_final <- resize(img_final, size_x = ancho, size_y = alto)
+  
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+  
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.jpg"))
+  
+  save.image(img_final, ruta_salida, quality = 1)
+  
+  return(img_final)
+}
 ```
 
 ```{r}
@@ -566,9 +598,20 @@ Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras compr
 
 
 ```{r}
-# Juntar imagen y video comprimido (funciones_audio.R)
-rebuild_video_comp() 
+# Comprimimos los frames del video con cada algoritmo
+# frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
+# 
+# for (frame in frames_orig){
+#   compresion_DCT_opt(frame, "data_comp/frames_comp")
+# }
 ```
+
+
+```{r}
+# Juntar imagen y video comprimido (funciones_audio.R)
+rebuild_video_comp()
+```
+
 
 
 # Conclusiones
