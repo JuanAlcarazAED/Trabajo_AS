@@ -214,7 +214,29 @@ plot(noche_DCT, axes=F)
 plot(dibujo_DCT, axes=F)
 ```
 
-## Compresión SPIHT
+## Compresión EZW y SPIHT
+
+A parte de los algoritmos ya mencionados, para dar una visión algo más amplia del campo de la compresión de imágenes de las herramientas disponibles hemos decidido incluir dos algoritmos más que también se basan en la transformada wavelet.
+
+Estos dos algoritmos llamados EZW (_Embedded Zerotree Wavelet_) y SPIHT (_Set Partitioning in Hierachical Trees_) tienen la misma idea base, tomar la transformada wavelet de una imagen y hacer una selección de los coeficientes más importantes y aproximar su valor. Después esa información sobre la posición de los coeficientes con más información y el valor aproximado codificarla en una cola de _bits_, la cual ocupa mucho menos espacio que la imagen original, y gracias puede transmitirse por cualquier canal o almacenarse más eficientemente. Con esa cola de _bits_ se puede usar un decodificador para extraer la información y recuperar la aproximada.
+
+Dado que el funcionamiento detallado de los dos algoritmos es muy extenso haremos aquí un pequeño resumen del funcionamiento y las ideas principales.
+
+### Funcionamiento básico de los algoritmos
+
+Los dos algoritmos tienen un funcionamiento base muy similar, se recorren las posiciones de la matriz de coeficientes wavelet en busca de los coeficientes con más información o los más importantes.
+
+Se hace un bucle y cada iteración tiene dos fases, la primera es el llamado paso dominante que resumidamente trata de encontrar los coeficientes wavelet que son significativos, si un coeficiente es significativo o no se decide en función de si es mayor o menor que una cierta cota $T$; luego está el paso subordinado que trata de encontrar la mejor aproximación para el valor de los coeficientes que se han señalado como significativos en el paso dominante anterior.
+
+Después de cada iteración se reduce a la mitad la cota usada para medir la significancia y se repite el proceso con la nueva cota. El algoritmo finaliza cuando la cota toma un valor menos o igual a $1$.
+
+Sin dar muchos detalles, la idea básica consiste en darle una estructura de árbol a la matriz de coeficientes, se establece que el coeficiente en la posición $(i,j)$ tiene hijos, que son $(2i, 2j)$, $(2i+1, 2j)$, $(2i, 2j+1)$ y $(2i+1, 2j+1)$. Con este convenio se forma una estructura que permite analizar los coeficientes, pues en general si el coeficiente padre no es significativo, lo hijos es muy probable que no lo sean, aunque no siempre es cierto, esto se puede aprovechar para analizar todos los coeficientes de forma eficaz.
+
+La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada. En EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT que es una versión más refinada de EZW se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
+
+Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd`.
+
+También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se ha implementado EZW por falta de tiempo y porque SPIHT es claramente mejor. Hemos elegido implementarlo nosotros mismos porque no hemos conseguido encontrar ninguna librería de R que ya lo implemente. Si bien es cierto que encontramos una librería de Python que podríamos haber llamado desde R, esta era muy compleja de usar y además era necesario tener nociones del lenguaje de programación Rust, lenguaje que el autor de la librería mencionada emplea para la implementación del método, y que no es nada sencillo.
 
 ```{r}
 obtener_potencia_4 <- function(x) {

@@ -15,27 +15,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Vamos a explicar el funcionamiento del algoritmo EZW, uno de los más importantes pues además sirve de base para uno de los algoritmos de compresión más exitosos que es en realidad una versión más refinada del que vamos a describir.
 
-La idea inicial, es que partiendo de una imagen cualquiera (cuadrada), que representamos como una función discreta $I[n,m]$ con $n,m \in \{1, \dots, N\}$, aunque es más fácil imaginarla como una matriz:
-$$
-\begin{pmatrix}
-I[1,1] & I[1,2] & I[1,3] & \cdots & I[1,N] \\
-I[2,1] & I[2,2] & I[2,3] & \cdots & I[2,N] \\
-I[3,1] & I[3,2] & I[3,3] & \cdots & I[3,N] \\
-\vdots & \vdots & \vdots & \ddots & \vdots \\
-I[N,1] & I[N,2] & I[N,3] & \cdots & I[N,N]
-\end{pmatrix}
-$$
-
 Le aplicamos una transformada wavelet a la imagen, con una wavelet madre de nuestra elección $\psi$. Entonces se obtiene la transformada discreta, que es otra matriz $W[n,m]$ de la misma dimensión que la imagen original.
 
-Ahora, si recordamos la matriz de la transformada puede dividirse en cuatro zonas. Recordemos que al hacer la transformada hemos cambiado de dominio, de un dominio espacial hemos pasado al dominio frecuencia, y tenemos dos frecuencias, $\mu$ y $\nu$. Entonces las cuatro zonas son las siguientes:
+Ahora, si recordamos la matriz de la transformada puede dividirse en cuatro zonas. Recordemos que al hacer la transformada hemos cambiado de dominio, de un dominio espacial hemos pasado al dominio frecuencia, y tenemos dos frecuencias, $\mu$ y $\nu$. Las cuatro zonas son HH(_High High_) valores de $\mu$ altos y de $\nu$ son altos, HL(_High Low_) valores de $\mu$ altos y de $\nu$ son bajos, LH(_Low High_) que sería al revés del anterior, LL(_Low Low_) donde ambas frecuencias son bajas.
 
-- HH(_High High_) es la parte de la matriz donde los valores de $\mu$ son **altos** y de $\nu$ son **altos**.
-- HL(_High Low_) es la parte de la matriz donde los valores de $\mu$ son **altos** y de $\nu$ son **bajos**.
-- LH(_Low High_) es la parte de la matriz donde los valores de $\mu$ son **bajos** y de $\nu$ son **altos**.
-- LL(_Low Low_) es la parte de la matriz donde los valores de $\mu$ son **bajos**y de $\nu$ son **bajos**.
-
-En general para una imagen la información más importante se encuentra en la zona LL de la matriz, las demás zonas también pueden contener información relevante aunque lo que contienen esos coeficientes wavelet está más relacionado con los detalles de la imagen como los bordes de los objetos etc. Por tanto es posible prescindir de algunos de los coeficientes de las bandas más altas sin perder mucha información de la imagen original, lo cual nos permitirá almacenar la transformada en menos espacio.
+Como se ha dicho antes, para una imagen la información más importante se encuentra en la zona LL de la matriz, las demás zonas también pueden contener información relevante aunque lo que contienen esos coeficientes wavelet está más relacionado con los detalles poco apreciables. Por tanto es posible prescindir de algunos de estos coeficientes sin perder mucha información de la imagen original, permitiendo comprimir.
 
 Entonces, según cómo hayamos centrado la matriz (_shift_) los coeficientes o la banda LL se encontrará en la esquina superior izquierda o en la esquina inferior izquierda. Nosotros supondremos que los coeficientes LL se encuentran en la esquina superior izquierda.
 
@@ -47,9 +31,11 @@ La idea para comprimir una imagen es tomar su transformada wavelet y codificarla
 
 Y almacenaremos una aproximación de los coeficientes en vez del valor original.
 
-Así con los coeficientes restantes haremos la transformada inversa y obtendremos una imagen que si elegimos bien los coeficientes que deseamos guardar y lo que no, será casi igual a la original y ocupará mucho menos espacio.
+Así con los coeficientes restantes haremos la transformada inversa y obtendremos una imagen que si elegimos bien los coeficientes que deseamos guardar y los que no, será casi igual a la original y ocupará mucho menos espacio.
 
 El algoritmo EZW nos dirá cuales son los coeficientes que debemos guardar y la aproximación que hacemos de estos.
+
+Para que este proceso sea eficiente la clave está en codificar la información. Lo cual consiste en guardar la información que hemos mencionado antes sobre los valores relevantes en forma de _bits_, que nos permitirá enviar la imagen por cualquier canal. Depués se decodificará la información a partir de la cual podremos reconstruir la imagen aproximada.
 
 ### Árboles
 
@@ -60,15 +46,17 @@ Lo primero que tenemos es la matriz de coeficientes que podemos llamar $LL_0$, l
 Entonces, vamos a definir un árbol con los coeficientes de la siguiente manera:
 
 - **La raíz del árbol es el coeficiente presente en $LL_0$**
-- Dado un coeficiente (que será un nodo del árbol) sus descendientes serán $4$. Si tenemos un coeficiente que se encuentra en la casilla $(i,j)$ de la matriz, sus descendientes directos son los coeficientes que se encuentran en las posiciones $(2i,2j)$, $(2i+1, 2j+1)$, $(2i+1, 2j)$ y $(2i, 2j+1)$. 
+- Dado un coeficiente (que será un nodo del árbol) sus descendientes serán $4$. Si tenemos un coeficiente que se encuentra en la casilla $(i,j)$ de la matriz, sus descendientes directos son los coeficientes que se encuentran en las posiciones $(2i,2j)$, $(2i+1, 2j+1)$, $(2i+1, 2j)$ y $(2i, 2j+1)$. Es decir, el coeficiente $W[i,j]$ tiene como descendientes a los coeficientes $W[2i, 2j]$, $W[2i+1, 2j+1]$, $W[2i+1, 2j]$, $W[2i, 2j+1]$.
 
-Es decir, el coeficiente $W[i,j]$ tiene como descendientes a los coeficientes $W[2i, 2j]$, $W[2i+1, 2j+1]$, $W[2i+1, 2j]$, $W[2i, 2j+1]$.
-
-Si resulta que los coeficientes $W[2i, 2j]$, $W[2i+1, 2j+1]$, $W[2i+1, 2j]$ o $W[2i, 2j+1]$ no existen, porque caen fuera de nuestra matriz, eso significa que nuestro nodo no tiene hijos, es decir es lo que se llama una hoja del árbol.
+Si resulta que esos coeficientes no existen, porque las posiciones especificadas caen fuera de los límites, entonces el nodo sería un nodo hoja, sin hijos.
 
 ### Barrido de Morton
 
-_Falta explicar_
+Es un método que sirve para recorrer todos los coeficientes wavelet de forma coherente con la estructura de padres e hijos que hemos explicado. De forma que un coeficiente no es analizado nunca antes que sus descendientes ni antes que sus padres.
+
+Para verlo claramente tenemos la siguiente imagen:
+
+
 
 ### Algoritmo:
 
