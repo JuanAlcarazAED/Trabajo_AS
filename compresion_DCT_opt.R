@@ -8,7 +8,7 @@ if (!require("gsignal", quietly = TRUE)) {
   library(gsignal)
 }
 
-compresion_DCT_opt <- function(ruta_imagen, nivel_compresion = 0.95) {
+compresion_DCT_opt <- function(ruta_imagen, ruta_imagen_comp = "data_comp", nivel_compresion = 0.95) {
   
   img <- load.image(ruta_imagen)
   
@@ -37,7 +37,7 @@ compresion_DCT_opt <- function(ruta_imagen, nivel_compresion = 0.95) {
   
   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
   
-  ruta_salida <- file.path("data_comp", paste0(nombre_archivo, "_DCT.jpg"))
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_DCT.jpg"))
   
   save.image(img_final, ruta_salida, quality = 0.8) 
   

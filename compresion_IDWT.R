@@ -17,7 +17,7 @@ obtener_potencia_2 <- function(x) {
 # Esta función existe porque se necesita que la imagen que se ingresa sea potencia de 2 (256, 512, 1024...)
 # porque idwt funciona con imágenes cuadradas
 
-compresion_IDWT <- function(ruta_imagen, politica_umbral = "universal") {
+compresion_IDWT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", politica_umbral = "universal") {
   
   img <- load.image(ruta_imagen)
   
@@ -52,7 +52,7 @@ compresion_IDWT <- function(ruta_imagen, politica_umbral = "universal") {
   img_final <- imappend(canales_comprimidos, axis = "c")
   
   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
-  ruta_salida <- file.path("data_comp", paste0(nombre_archivo, "_IDWT.jpg"))
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_IDWT.jpg"))
   
   save.image(img_final, ruta_salida, quality = 0.8)
   
