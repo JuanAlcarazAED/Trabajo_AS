@@ -69,12 +69,13 @@ Históricamente, el método de compresión más utilizado ha sido el de la Trans
 
 # Revisión bibliográfica
 
-La compresión de imágenes se fundamenta en la premisa de que los archivos digitales de las imágenes contienen una cantidad importante de datos que no necesariamente aportan información relevante. Como se establece en el libro “Digital Image Processing” de González y Woods (2018), los datos son el medio a través del cual se transporta la información y la cantidad de datos utilizados usualmente excede la cantidad de información real contenido, a este exceso se le conoce como redundancia.
+La compresión de imágenes se fundamenta en la premisa de que los archivos digitales de las imágenes contienen una cantidad importante de datos que no necesariamente aportan información relevante. Como se establece en el libro “Digital Image Processing” de González y Woods (2018) [@gonzalez2018], los datos son el medio a través del cual se transporta la información y la cantidad de datos utilizados usualmente excede la cantidad de información real contenido, a este exceso se le conoce como redundancia.
 El objetivo central de los algoritmos de compresión utilizados en este proyecto es la reducción de dicha redundancia.
 
-Según la literatura de González y Woods, existen distintos tipos de redundancia, y dos son muy importantes para el funcionamiento de las transformadas DCT y Wavelets.
+Según la literatura de González y Woods [@gonzalez2018], existen distintos tipos de redundancia, y dos son muy importantes para el funcionamiento de las transformadas DCT y Wavelets.
 
 Redundancia Interpixel: Es una redundancia estadística, y surge debido a las correlaciones existentes entre píxeles vecinos. Implica que el valor de un píxel puede predecirse bien a partir de píxeles vecinos.
+
 Redundancia Psicovisual: Es una redundancia asociada a la percepción que tiene el humano de las imágenes. No toda la información visual que contiene una imagen es percibida con la misma importancia, por eso en compresión con pérdida se puede eliminar redundancia en una imagen y para el ojo humano la imagen sigue siendo perceptible.
 
 Históricamente la compresión de imágenes ha dependido de transformadas ortogonales para concentrar la energía de la señal en pocos coeficientes. El estándar se ha basado en la Transformada de Coseno Discreta (DCT), por su capacidad de compactación y debido a que el costo computacional no es muy alto. Este método divide la imagen en bloques de 8x8 píxeles y proceso cada uno de estos bloques.
@@ -83,7 +84,7 @@ La investigación ha llevado a distintas alternativas en lugar de la DCT, una de
 
 Otra alternativa es el “Set Partitioning in Hierarchical Trees”  (SPIHT) que a diferencia de los métodos tradicionales que tratan los coeficientes de manera aislada, SPIHT organiza los coeficientes en árboles de orientación espacial y clasifica los coeficientes por magnitud, transmitiendo primero los bits más significativos de los coeficientes más grandes.
 
-Estos métodos utilizados para la compresión de imágenes se pueden utilizar para la compresión de video, entendiendo que un video es una secuencia de frames que se pueden comprimir. Con el añadido que, además de la redundancia espacial y psicovisual presente en cada frame, el video introduce también la redundancia temporal. Como explican Sullivan y Wiegand (2005) en su revisión sobre los estándares de video, los cuadros adyacentes en una secuencia de video suelen exhibir una alta correlación, ya que el movimiento entre un instante y el siguiente suele ser suave.
+Estos métodos utilizados para la compresión de imágenes se pueden utilizar para la compresión de video, entendiendo que un video es una secuencia de frames que se pueden comprimir. Con el añadido que, además de la redundancia espacial y psicovisual presente en cada frame, el video introduce también la redundancia temporal. Como explican Sullivan y Wiegand (2005) [@sullivan2005] en su revisión sobre los estándares de video, los cuadros adyacentes en una secuencia de video suelen exhibir una alta correlación, ya que el movimiento entre un instante y el siguiente suele ser suave.
 
 
 # Objetivos
@@ -195,7 +196,7 @@ plot(dibujo_IDWT, axes=F)
 
 ## Compresión DCT
 
-La DCT es una operación matemática relacionada con la Transformada de Fourier, pero trabaja solo con números reales (cosenos). Su función principal no es comprimir por sí misma, sino traducir la información de la imagen. Pasa de píxeles de colores (dominio espacial) a frecuencias (dominio de la frecuencia).
+La DCT es una operación matemática relacionada con la Transformada de Fourier, pero trabaja solo con números reales (cosenos). Su función principal no es comprimir por sí misma, sino traducir la información de la imagen. Pasa de píxeles de colores (dominio espacial) a frecuencias (dominio de la frecuencia) [@perales_dct].
 
 Esto se realiza porque el ojo humano es muy sensible a las frecuencias bajas (cambios suaves de color) pero muy poco sensible a las frecuencias altas (detalles finos o ruido). Al separar estas frecuencias, podemos eliminar las que el ojo no ve bien sin que se note demasiado.
 
