@@ -218,9 +218,9 @@ plot(dibujo_DCT, axes=F)
 
 A parte de los algoritmos ya mencionados, para dar una visión algo más amplia del campo de la compresión de imágenes de las herramientas disponibles hemos decidido incluir dos algoritmos más que también se basan en la transformada wavelet.
 
-Estos dos algoritmos llamados EZW (_Embedded Zerotree Wavelet_) y SPIHT (_Set Partitioning in Hierachical Trees_) tienen la misma idea base, tomar la transformada wavelet de una imagen y hacer una selección de los coeficientes más importantes y aproximar su valor. Después esa información sobre la posición de los coeficientes con más información y el valor aproximado codificarla en una cola de _bits_, la cual ocupa mucho menos espacio que la imagen original, y gracias puede transmitirse por cualquier canal o almacenarse más eficientemente. Con esa cola de _bits_ se puede usar un decodificador para extraer la información y recuperar la aproximada.
+Estos dos algoritmos llamados EZW (_Embedded Zerotree Wavelet_) y SPIHT (_Set Partitioning in Hierachical Trees_) tienen la misma idea base, tomar la transformada wavelet de una imagen y hacer una selección de los coeficientes más importantes y aproximar su valor. Después esa información sobre la posición de los coeficientes con más información y el valor aproximado codificarla en una cola de _bits_, la cual ocupa mucho menos espacio que la imagen original, y gracias a ello puede transmitirse por cualquier canal o almacenarse más eficientemente. Con esa cola de _bits_ se puede usar un decodificador para extraer la información y recuperar la aproximada.
 
-Dado que el funcionamiento detallado de los dos algoritmos es muy extenso haremos aquí un pequeño resumen del funcionamiento y las ideas principales.
+Dado que el funcionamiento detallado de los dos algoritmos es muy extenso, haremos aquí un pequeño resumen del mismo y de sus ideas principales.
 
 ### Funcionamiento básico de los algoritmos
 
@@ -228,11 +228,11 @@ Los dos algoritmos tienen un funcionamiento base muy similar, se recorren las po
 
 Se hace un bucle y cada iteración tiene dos fases, la primera es el llamado paso dominante que resumidamente trata de encontrar los coeficientes wavelet que son significativos, si un coeficiente es significativo o no se decide en función de si es mayor o menor que una cierta cota $T$; luego está el paso subordinado que trata de encontrar la mejor aproximación para el valor de los coeficientes que se han señalado como significativos en el paso dominante anterior.
 
-Después de cada iteración se reduce a la mitad la cota usada para medir la significancia y se repite el proceso con la nueva cota. El algoritmo finaliza cuando la cota toma un valor menos o igual a $1$.
+Después de cada iteración se reduce a la mitad la cota usada para medir la significancia y se repite el proceso con la nueva cota. El algoritmo finaliza cuando la cota toma un valor menor o igual a $1$.
 
 Sin dar muchos detalles, la idea básica consiste en darle una estructura de árbol a la matriz de coeficientes, se establece que el coeficiente en la posición $(i,j)$ tiene hijos, que son $(2i, 2j)$, $(2i+1, 2j)$, $(2i, 2j+1)$ y $(2i+1, 2j+1)$. Con este convenio se forma una estructura que permite analizar los coeficientes, pues en general si el coeficiente padre no es significativo, lo hijos es muy probable que no lo sean, aunque no siempre es cierto, esto se puede aprovechar para analizar todos los coeficientes de forma eficaz.
 
-La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada. En EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT que es una versión más refinada de EZW se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
+La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada. En EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT, que es una versión más refinada de EZW, se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
 
 Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd`.
 
@@ -488,7 +488,7 @@ crear_tabla_errores(dibujo, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_DCT.jpg",
 
 ### Compresión del audio
 
-Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilziar un número de bins fijo a 100 por conveniencia.
+Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilizar un número de bins fijo a 100 por conveniencia.
 
 ```{r,fig.width=6, fig.height=4}
 lambda_vals <- seq(0, 1, by = 0.1)
