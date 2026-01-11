@@ -256,6 +256,20 @@ Una explicación más detallada de ambos algoritmos se puede encontrar en el rep
 
 También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se ha implementado EZW por falta de tiempo y porque SPIHT es claramente mejor. Hemos elegido implementarlo nosotros mismos porque no hemos conseguido encontrar ninguna librería de R que ya lo implemente. Si bien es cierto que encontramos una librería de Python que podríamos haber llamado desde R, esta era muy compleja de usar y además era necesario tener nociones del lenguaje de programación Rust, lenguaje que el autor de la librería mencionada emplea para la implementación del método, y que no es nada sencillo.
 
+### Resultados obtenidos y posibles mejoras
+
+Sobre el desempeño de la implementación realizada se puede ver con detalle en el archivo `Pruebas_SPIHT.Rmd`, pero en resumen se observa que el algoritmo agota todas las iteraciones posibles que puede hacer (que en el ejemplo son 7 y lo hace en un tiempo de entre 10 y 15 minutos, en el caso de la imagen de ejemplo empleada), por tanto en teoría la imagen se ha comprimido completamente y el decodificador debería obtener una imagen muy parecida a la original. Sin embargo nada más lejos de la realidad la imagen que se obtiene es de una calidad nefasta.
+
+Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se trata de un fallo en el código, y hay una gran cantidad de factores que pueden causar los pobres resultados obtenidos, entre los cuales destacamos:
+
+- La aproximación de los coeficientes wavelet hecha en el paso subordinado. En el algoritmo no se codifican los valores reales de los coeficientes wavelet si no una aproximación que en algunos casos pensamos puede ser muy burda y es la causa de los malos resultados.
+
+- La wavelet madre usada no es la adecuada, puede ser que usando alguna wavelet específica los resultados mejoren. En nuestro caso tras hacer pruebas con las wavelets de `haar`, `d8` y `d4` no se han obtenido resultados de mejor calidad.
+
+- El rango de coeficientes wavelet de la imagen escogida es desafortunadamente bajo. Es posible que los coeficientes wavelet para la imagen estén repartidos en un rango de valores muy pequeños y eso cause una mala aproximación. Una posible solución sería multiplicar por una constante, lo cual produciría como efecto secundario un aumento en el tiempo de ejecución, sin embargo se han hecho pruebas y los resultados a penas mejoran.
+
+Es posible que con más tiempo y usando herramientas más avanzadas se podría hacer una mejor implementación del algoritmo, consiguiendo mayor precisión y rapidez, sin embargo no disponemos de ese tiempo.
+
 ```{r}
 obtener_potencia_4 <- function(x) {
   return(4^round(log(x,4)))
