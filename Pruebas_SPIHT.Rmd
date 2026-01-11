@@ -61,7 +61,7 @@ img_mat <- recorte(img)[,,1,1]
 ##############################################
 
 J <- 8        # niveles de descomposición
-wf <- "haar"  # wavelet
+wf <- "d8"  # wavelet
 
 dwt_obj <- dwt.2d(img_mat, wf = wf, J = J)
 
@@ -77,8 +77,9 @@ W <- Ensamblar(dwt_obj)
 ##############################################
 
 max_bits <- NULL
-max_iter <- 500
-bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+max_iter <- 20
+factor <- 1
+bitstream <- SPIHT_Codificar(W * factor, max_bits = max_bits, max_iter = max_iter)
 
 ##############################################
 # 5. Tamaño en memoria del bitstream
@@ -100,7 +101,7 @@ W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
 #    (usando tu función Desensamblar)
 ##############################################
 
-dwt_rec <- Desensamblar(W_rec)
+dwt_rec <- Desensamblar(W_rec / factor)
 
 ##############################################
 # 8. Reconstruir imagen con IDWT
@@ -113,7 +114,7 @@ dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
 dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
 
 img_rec <- idwt.2d(dwt_rec)
-save.image(as.cimg(img_rec), file = paste("Reconstruccion_", max_iter, "_iter.jpeg",sep=""))
+save.image(as.cimg(img_rec), file = paste("Reconstruccion_d8_j8_19it.jpeg",sep=""))
 ##############################################
 # 9. Mostrar original y reconstruida
 ##############################################
