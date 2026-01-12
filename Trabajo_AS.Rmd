@@ -408,9 +408,11 @@ sep_audio_video()
 
 ### Compresión de audio
 
-La compresión del audio se va a realizar en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal umbralizada [@mallat2009]. Se busca un equilibrio entre maximizar la redundancia y la compresión del archivo sin perder información relevante.
+La compresión del audio se va a realizar en el dominio wavelet mediante el umbralado selectivo de la energía de los coeficientes, aplicándose exclusivamente sobre las componentes de detalle. Esta elección se debe a que los coeficientes de detalle presentan una mayor dispersión energética. El planteamiento se centra en estudiar la redundancia de la señal, utilizando la entropía de Shannon calculada a partir de la distribución de energías de la señal umbralizada [@mallat2009]. Se busca un equilibrio entre maximizar la redundancia y la compresión del archivo sin perder información relevante.
 
-La compresión se realiza mediante un umbralado global basado en la energía acumulada. Primero se ordenan todos los coeficientes wavelet de mayor a menor energía para identificar su peso en la señal. Posteriormente se define un porcentaje de preservación energética determinado por un valor umbral $\lambda$ y se establecen a cero todos aquellos coeficientes cuya contribución queda por debajo del valor umbral.
+La compresión se realiza mediante un umbralado global basado en la energía acumulada de los coeficientes wavelet. Sea $c_i$ con $i=1,...N$ el conjunto de coeficientes de la señal. La energía asociada a cada coeficiente es $E_i=|c_i|^2$. En primer lugar, los coeficientes se ordenan de mayor a menor energía $|c_1|^2\geq |c_2|^2 \geq ... \geq |c_N|^2$ con el objetivo de indentificar la contribución relativa a la señal. La energía total se define como $E_{total}=\sum_{i=1}^N |c_i|^2$ y la energía acumulada $E_{cap}(k)=\sum^k_{i=1} E_{(i)}$ donde $E_{(i)}$ es la energía del i-éseimo coeficiente en el orden descendente.
+
+Dado un parámetro $\lambda \in [0,1]$, que representa la fracción de energía total que se desea eliminar, se anulan todos aquellos coeficientes cuya energía acumulada verifique $E_{cap}(k) \leq \lambda E_{total}$.
 
 La frecuencia de muestreo del audio es de 44100 Hz, dado que cada nivel de descomposición divide el espectro a la mitad, elegir 6 niveles es razonable ya que se llega a cubrir las frecuencias medias y bajas donde se concentra energías. 
 
@@ -442,8 +444,6 @@ plot(tiempo, audio@right, type = "l",
 
 par(mfrow = c(1, 1))
 ```
-
-El parámetro fundamental en este estudio es la energía, definida como la amplitud al cuadrado de la señal. En la siguiente figura se representa la energía de la señal, donde se observa que ambos canales presentan picos pronunciados. Esta concentración de energía indica una baja entropía, mientras que una distribución de energía uniforme dificultaría la compresión. Una señal con picos de energía concentrado permite un umbralado más eficiente en el dominio wavelet.
 
 
 La compresión de una señal mediante umbralizado de energía en el dominio wavelet busca concentrar la energía de la señal en un número reducido de coeficientes, eliminando aquellos que aportan poca contribución energética. Este proceso modifica la distribución estadística de la energía, haciendo que esta se concentre en menos estados. Como consecuencia la señal resultante presenta una distribución menos uniforme, lo que conlleva a una reducción de la entropía.
@@ -520,7 +520,7 @@ crear_tabla_errores(dibujo, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_DCT.jpg",
 
 ### Compresión del audio
 
-Para buscar el mejor valor umbral se va a buscar aquel valor que tiene una alta reducción del archivo maximizando el valor de la redundancia sin eliminar información relevante. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilizar un número de bins fijo a 100 por conveniencia.
+Para buscar el mejor parámetro umbral se va a buscar aquel valor que tiene una alta reducción del archivo y un bajo valor de la redundancia, debido a que cuanto más se acerque a la redundancia de la señal sin comprimir menos información pierde. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilizar un número de bins fijo a 100 por conveniencia.
 
 ```{r,fig.width=6, fig.height=4}
 lambda_vals <- seq(0, 1, by = 0.1)
@@ -602,7 +602,7 @@ Se ha aplicado una función de expansión para compensar el submuestreo intríns
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
-En la representación de la energía capturada frente a coeficientes se observa que una fracción mínima de los coeficientes logra capturar el $90\%$ de la energía total del audio, en torno a los 25000 primeros coeficientes. Esto permite eliminar la gran mayoría de los coeficientes con menor energía sin generar una pérdida de información significativa.
+En la representación de la energía capturada frente al número de coeficientes se observa que una fracción reducida de los coeficientes wavelet es capaz de concentrar la mayor parte de la energía de la señal. De los casi $3\cdot 10^5$ coeficientes, aproximadamente $2.5 \cdot 10^4$ coeficientes son suficientes para capturar alrededor del $90\%$ de la energía total del audio.
 
 
 
@@ -678,6 +678,12 @@ rebuild_video_comp()
 
 
 # Conclusiones
+
+
+La compresión del audio en el domino wavelet permite concentrar la mayor parte de la energía del audio en un número reducido de coeficientes de detalle, haciendo posible eliminar la mayoría de ellos mediante un umbralado energético sin pérdida significativa de información y logrando así una compresión eficiente.
+
+El resultado del vídeo comprimido se puede observar en el siguiente enlace https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data_comp/video_comp.mp4
+
 
 # Link del repositorio
 https://github.com/JuanAlcarazAED/Trabajo_AS.git
