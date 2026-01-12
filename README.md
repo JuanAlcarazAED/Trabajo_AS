@@ -86,3 +86,8 @@ Para reproducir el trabajo, ejecute el archivo `Trabajo_AS.Rmd`
 
 ## Referencias
 
+* **Mallat, S. (2009).** *A Wavelet Tour of Signal Processing: The Sparse Way* (3rd ed.). Academic Press. (Capítulos 1–6).
+* **Gonzalez, R. C., & Woods, R. E. (2018).** *Digital Image Processing* (4th ed.). Pearson. (Capítulo 8: Image Compression).
+* **Sullivan, G. J., & Wiegand, T. (2005).** Video compression—from concepts to the H.264/AVC standard. *Proceedings of the IEEE*, 93(1), 18–31.
+* **Perales Gómez, Á. L.** *DCT para la compresión de imágenes con perdida de calidad*. Documento Técnico. Universidad de Murcia, Facultad de Informática.
+
