@@ -402,11 +402,20 @@ sep_audio_video()
 
 ```
 
-
+Para abordar la compresión del vídeo, separaremos sus imágenes o fotogramas (frames) del audio y realizaremos las compresiones de ambas partes por separado.
 
 ### Compresión de imagen
 
+Para la compresión de los fotogramas, le aplicaremos el algoritmo DCT a cada uno de ellos.
 
+```{r}
+# Comprimimos los frames del video con cada algoritmo
+# frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
+# 
+# for (frame in frames_orig){
+#   compresion_DCT_opt(frame, "data_comp/frames_comp")
+# }
+```
 
 ### Compresión de audio
 
@@ -668,15 +677,6 @@ par(mfrow = c(1, 1))
 ```
 
 Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras comprimir en el canal izquierdo es `r round(mse_left,2)` y para el canal derecho `r round(mse_right, 2)`. Esto indica una pérdida apreciable pero concentrada en coeficientes de baja energía, manteniendo una estructura perceptualmente reconocible de la señal.
-
-```{r}
-# Comprimimos los frames del video con cada algoritmo
-# frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
-# 
-# for (frame in frames_orig){
-#   compresion_DCT_opt(frame, "data_comp/frames_comp")
-# }
-```
 
 ```{r}
 # Juntar imagen y video comprimido (funciones_audio.R)
