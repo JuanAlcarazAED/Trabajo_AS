@@ -685,9 +685,16 @@ Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras compr
 
 # Conclusiones
 
+En primer lugar, respecto a las métricas, la **DCT** obtuvo mejores resultados de fidelidad matemática (**PSNR** y **SSIM** más altos) en la mayoría de las imágenes probadas. Además, ambas técnicas mantuvieron un **SSIM** superior a 0.99, lo que indica que la estructura visual apenas se degrada tras la compresión.
+Mediante wavelets, se logró capturar el **90% de la energía** del audio utilizando solo el **8% de los coeficientes** totales.
+La imagen generada por IA fue la que mejor se comprimió, alcanzando el PSNR más alto (**49.88 dB**) debido a sus colores planos y bordes definidos.
+
+
+Aunque la DCT tiene mejores métricas, la **DWT (Wavelets)** es preferible en alta compresión porque evita los "bloques" visuales y ofrece una reconstrucción más limpia. El éxito de la compresión reside en eliminar la  información que el ojo y el oído humano no perciben.
 
 
 La compresión del audio en el domino wavelet permite concentrar la mayor parte de la energía del audio en un número reducido de coeficientes de detalle, haciendo posible eliminar la mayoría de ellos mediante un umbralado energético sin pérdida significativa de información y logrando así una compresión eficiente.
+Un umbral de $\lambda = 0.1$ es el punto óptimo para reducir el peso del archivo sin perder la esencia de la señal sonora.
 
 El resultado del vídeo comprimido se puede observar en el siguiente enlace https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data_comp/video_comp.mp4
 
