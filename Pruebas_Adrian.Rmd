@@ -367,7 +367,7 @@ resize_SPIHT <- function(img){
 
 
 ```{r}
-compresion_SPIHT <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 100){
+compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 100){
   
   # Cargar la imagen, redimensionarla y separarla en canales
   
@@ -437,7 +437,7 @@ compresion_SPIHT <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NULL, m
   
   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
   
-  ruta_salida <- file.path("data_comp", paste0(nombre_archivo, "_SPIHT.jpg"))
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.jpg"))
   
   save.image(img_final, ruta_salida, quality = 1)
   
