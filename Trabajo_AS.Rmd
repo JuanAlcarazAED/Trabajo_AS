@@ -603,6 +603,31 @@ plot(barcos, main = "Imagen original", axes = FALSE)
 plot(barcos_SPIHT, main = "Compresión SPIHT", axes = FALSE)
 ```
 
+```{r}
+mse_SPIHT <- MSE(barcos, barcos_SPIHT)
+psnr_SPIHT <- PSNR(barcos, barcos_SPIHT)
+ssim_SPIHT <- SSIM(barcos, barcos_SPIHT)
+cr_SPIHT <- CR(ruta_barcos, "data_comp/boats_SPIHT.png")
+
+df_SPIHT <- data.frame(MSE = mse_SPIHT, PSNR = psnr_SPIHT, SSIM = ssim_SPIHT, CR = cr_SPIHT)
+
+rownames(df_SPIHT) <- "SPIHT"
+
+knitr::kable(df_SPIHT, 
+    caption = "Compresión barcos SPIHT",
+    align = "c",
+    booktabs = TRUE,
+    col.names = c('MSE', 'PSNR', 'SSIM', 'CR'),
+    digits = c(4,2,4,3)) %>%
+  kable_styling(
+  position = "center",
+  full_width = FALSE,
+  bootstrap_options = c("striped", "hover")
+) %>%
+column_spec(1, bold = TRUE)
+```
+
+
 ## Compresión de vídeo
 
 ### Compresión imagen
