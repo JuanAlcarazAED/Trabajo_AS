@@ -102,10 +102,11 @@ MSE(img, img_final_alta)
 ```
 
 ```{r}
-img = img / max( img )
-img_final_alta = img_final_alta / max( img_final_alta )
+# img = img / max( img )
+# img_final_alta = img_final_alta / max( img_final_alta )
 
-mean ( ( img - img_final_alta )^2 )
+mean((img- img_final_baja)^2)
+mean((img - img_final_alta )^2)
 ```
 
 ```{r}
@@ -166,9 +167,10 @@ PSNR(img, img_final_alta)
 ```
 
 ```{r}
-x = x / max( x )
-y = y / max( y )
-20 * log10( max( x ) ) - 10 * log10( MSE( x, y ) ) 
+# img = img / max( img )
+# img_final_baja = img_final_baja / max( img_final_baja )
+20 * log10( max( img ) ) - 10 * log10( MSE( img, img_final_baja ) )
+20 * log10( max( img ) ) - 10 * log10( MSE( img, img_final_alta ) ) 
 ```
 
 
