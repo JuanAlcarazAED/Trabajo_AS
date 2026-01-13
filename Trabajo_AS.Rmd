@@ -69,6 +69,14 @@ Históricamente, el método de compresión más utilizado ha sido el de la Trans
 
 # Revisión bibliográfica
 
+Para comenzar debemos hacer una pequeña mención a la base teórica sobre la que se sustenta todo el trabajo realizado, Esta base la forma principalmente análisis de Fourier que ha sido de una utilidad insólita en lo que se refiere a la ciencia en general y al análisis de señales en particular. Las wavelets constituyen la evolución natural de la transformada de Fourier.
+
+Tras los avances hechos por Fourier y la presentación de este método por parte del matemático y físico francés, posteriormente se vio que la transformada de Fourier podía verse como una especie de producto escalar, concretamente la transformada de Fourier de una función $f$, podía verse como $\mathcal{F}\{f\}(s) = \langle f, e^{isx}\rangle$, donde $\langle, \rangle$ denota un cierto producto escalar entre funciones.
+
+Las wavelet surgieron al pensar que se podía tomar el producto escalar con otras funciones distintas, que son lo que comúnmente se llama wavelets madre. Así dada una wavelet madre $\psi$, la transformada wavelet de una cierta señal $f$ será $\langle f, \psi(\frac{t-a}{b})\rangle$.
+
+Como se ha visto en numerosas ocasiones las wavelets permiten hacer un análisis en el dominio de frecuencias de las señales, obteniendo resultados realmente impresionantes, además de tener cantidad de aplicaciones muy diversas. Para este trabajo como se ha mencionado anteriormente, se usarán para comprimir imágenes y vídeos.
+
 La compresión de imágenes se fundamenta en la premisa de que los archivos digitales de las imágenes contienen una cantidad importante de datos que no necesariamente aportan información relevante. Como se establece en el libro “Digital Image Processing” de González y Woods (2018) [@gonzalez2018], los datos son el medio a través del cual se transporta la información y la cantidad de datos utilizados usualmente excede la cantidad de información real contenido, a este exceso se le conoce como redundancia.
 El objetivo central de los algoritmos de compresión utilizados en este proyecto es la reducción de dicha redundancia.
 
@@ -78,17 +86,17 @@ Redundancia Interpixel: Es una redundancia estadística, y surge debido a las co
 
 Redundancia Psicovisual: Es una redundancia asociada a la percepción que tiene el humano de las imágenes. No toda la información visual que contiene una imagen es percibida con la misma importancia, por eso en compresión con pérdida se puede eliminar redundancia en una imagen y para el ojo humano la imagen sigue siendo perceptible.
 
-Históricamente la compresión de imágenes ha dependido de transformadas ortogonales para concentrar la energía de la señal en pocos coeficientes. El estándar se ha basado en la Transformada de Coseno Discreta (DCT), por su capacidad de compactación y debido a que el costo computacional no es muy alto. Este método divide la imagen en bloques de 8x8 píxeles y proceso cada uno de estos bloques.
+Históricamente la compresión de imágenes ha dependido de transformadas ortogonales para concentrar la energía de la señal en pocos coeficientes. El estándar se ha basado en la Transformada de Coseno Discreta (DCT), por su capacidad de compactación y debido a que el costo computacional no es muy alto. Este método divide la imagen en bloques de 8x8 píxeles y procesa cada uno de estos bloques.
 
 La investigación ha llevado a distintas alternativas en lugar de la DCT, una de ellas la Transformada Discreta de Wavelet (DWT), que utiliza wavelets localizadas tanto en tiempo como en frecuencia. Esto permite la descomposición de la imagen en bandas de aproximación y detalles a distintas escalas.
 
-Otra alternativa es el “Set Partitioning in Hierarchical Trees”  (SPIHT) que a diferencia de los métodos tradicionales que tratan los coeficientes de manera aislada, SPIHT organiza los coeficientes en árboles de orientación espacial y clasifica los coeficientes por magnitud, transmitiendo primero los bits más significativos de los coeficientes más grandes.
+Otra alternativa, son los algoritmos "Embedded Zerotree Wavelet" (EZW) y “Set Partitioning in Hierarchical Trees”  (SPIHT) que a diferencia de los métodos tradicionales que tratan los coeficientes de manera aislada, estos organizan los coeficientes en árboles de orientación espacial y clasifican los coeficientes por magnitud, transmitiendo primero los bits más significativos de los coeficientes más grandes.
 
 Estos métodos utilizados para la compresión de imágenes se pueden utilizar para la compresión de video, entendiendo que un video es una secuencia de frames que se pueden comprimir. Con el añadido que, además de la redundancia espacial y psicovisual presente en cada frame, el video introduce también la redundancia temporal. Como explican Sullivan y Wiegand (2005) [@sullivan2005] en su revisión sobre los estándares de video, los cuadros adyacentes en una secuencia de video suelen exhibir una alta correlación, ya que el movimiento entre un instante y el siguiente suele ser suave.
 
 # Objetivos
 
-El objetivo de este proyecto es evaluar y comparar la eficacia de los algoritmos de compresión DWT (Discrete Wavelet Transform), DCT (Discrete Cosine Transform) y SPIHT (Set Partitioning in Hierarchical Trees) aplicados a imágenes y a vídeos.
+El objetivo de este proyecto es evaluar y comparar la eficacia de los algoritmos de compresión DWT (Discrete Wavelet Transform), DCT (Discrete Cosine Transform), EZW (Embedded Zerotree Wavelet) y SPIHT (Set Partitioning in Hierarchical Trees) aplicados a imágenes y a vídeos.
 
 Para las imágenes, seleccionaremos cinco imágenes con características diversas. Esta selección nos permitirá observar cómo cada algoritmo gestiona conceptos como la entropía, la retención de nitidez y el ruido.
 
@@ -167,9 +175,21 @@ source("compresion_DCT.R")
 source("compresion_DCT_opt.R")
 source("metricas.R")
 source("funciones_audio.R")
-source("Codificacion_SPIHT.R")
+source("Codificacion_SPIHT_funcional.R")
 source("compresion_SPIHT.R")
 ```
+
+## Bases para comprender la compresión de imágenes
+
+### Contexto inicial: codificador y decodificador
+
+Todos los métodos de compresión siguen una forma común de trabajar. La idea sobre la que se sustentan estos métodos consiste en tomar la transformada wavelet de una imagen y mediante un método u otro transformar esa matriz de coeficientes wavelet (o una parte de ella) en una cadena de _bits_, que generalmente se llama _bitstream_. Esta tarea de codificar parte de la información de la matriz en el _bitstream_ la hace un codificador.
+
+Será el _bitstream_ lo que se enviará y/o se almacenará, según el uso que le queramos dar. La razón de esta transformación es doble, primero es lo que permite transmitir la información por un canal binario (en la realidad los ordenadores solo puede transmitir _bits_) y además esta cadena ocupa, en general, menos espacio en memoria (o al menos ese es el objetivo de los algoritmos de compresión).
+
+Sin embargo, cuando el destinatario del mensaje, en el caso de que enviemos la imagen, o cuando se quiera acceder a la imagen tras un tiempo, en el caso de ser almacenada, se necesita realizar el proceso inverso al que hizo el codificador, para así recuperar la imagen a partir del _bitstream_. Este proceso lo realiza el llamado decodificador, que juega un papel tan importante como el codificador, pues sin él no se podría recuperar la información una vez codificada. 
+
+Cada uno de los siguientes algoritmos tiene una forma distinta de codificar la información de los coeficientes wavelet.
 
 ## Compresión IDWT
 
@@ -244,9 +264,9 @@ plot(dibujo_DCT, axes=F)
 
 ## Compresión EZW y SPIHT
 
-A parte de los algoritmos ya mencionados, para dar una visión algo más amplia del campo de la compresión de imágenes de las herramientas disponibles hemos decidido incluir dos algoritmos más que también se basan en la transformada wavelet.
+A parte de los algoritmos ya mencionados, los cuales son los más conocidos, para dar una visión algo más amplia del campo de la compresión de imágenes y de las herramientas disponibles, hemos decidido incluir dos algoritmos más que también se basan en la transformada wavelet.
 
-Estos dos algoritmos llamados EZW (_Embedded Zerotree Wavelet_) y SPIHT (_Set Partitioning in Hierachical Trees_) tienen la misma idea base, tomar la transformada wavelet de una imagen y hacer una selección de los coeficientes más importantes y aproximar su valor. Después esa información sobre la posición de los coeficientes con más información y el valor aproximado codificarla en una cola de _bits_, la cual ocupa mucho menos espacio que la imagen original, y gracias a ello puede transmitirse por cualquier canal o almacenarse más eficientemente. Con esa cola de _bits_ se puede usar un decodificador para extraer la información y recuperar la aproximada.
+Estos dos algoritmos llamados EZW (_Embedded Zerotree Wavelet_) y SPIHT (_Set Partitioning in Hierachical Trees_) tienen la misma idea base, tomar la transformada wavelet de una imagen y hacer una selección de los coeficientes más importantes y aproximar su valor.
 
 Dado que el funcionamiento detallado de los dos algoritmos es muy extenso, haremos aquí un pequeño resumen del mismo y de sus ideas principales.
 
@@ -254,21 +274,23 @@ Dado que el funcionamiento detallado de los dos algoritmos es muy extenso, harem
 
 Los dos algoritmos tienen un funcionamiento base muy similar, se recorren las posiciones de la matriz de coeficientes wavelet en busca de los coeficientes con más información o los más importantes.
 
-Se hace un bucle y cada iteración tiene dos fases, la primera es el llamado paso dominante que resumidamente trata de encontrar los coeficientes wavelet que son significativos, si un coeficiente es significativo o no se decide en función de si es mayor o menor que una cierta cota $T$; luego está el paso subordinado que trata de encontrar la mejor aproximación para el valor de los coeficientes que se han señalado como significativos en el paso dominante anterior.
+Se hace un bucle y cada iteración tiene dos fases, la primera es el llamado paso dominante que resumidamente trata de encontrar los coeficientes wavelet que son significativos, si un coeficiente es significativo o no se decide en función de si es mayor o menor que una cierta cota $T$; luego está el paso subordinado que trata de aproximar el valor de los coeficientes que se han señalado como significativos en el paso dominante anterior.
 
 Después de cada iteración se reduce a la mitad la cota usada para medir la significancia y se repite el proceso con la nueva cota. El algoritmo finaliza cuando la cota toma un valor menor o igual a $1$.
 
-Sin dar muchos detalles, la idea básica consiste en darle una estructura de árbol a la matriz de coeficientes, se establece que el coeficiente en la posición $(i,j)$ tiene hijos, que son $(2i, 2j)$, $(2i+1, 2j)$, $(2i, 2j+1)$ y $(2i+1, 2j+1)$. Con este convenio se forma una estructura que permite analizar los coeficientes, pues en general si el coeficiente padre no es significativo, lo hijos es muy probable que no lo sean, aunque no siempre es cierto, esto se puede aprovechar para analizar todos los coeficientes de forma eficaz.
+Sin dar muchos detalles, la forma en la que se organizan los algoritmos se basa en darle una estructura de árbol a la matriz de coeficientes, se establece que el coeficiente en la posición $(i,j)$ tiene hijos, que son $(2i, 2j)$, $(2i+1, 2j)$, $(2i, 2j+1)$ y $(2i+1, 2j+1)$. Con este convenio se forma una estructura que permite analizar los coeficientes, pues en general si el coeficiente padre no es significativo, lo hijos es muy probable que no lo sean, aunque no siempre es cierto, esto se puede aprovechar para analizar todos los coeficientes de forma eficaz.
 
-La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada. En EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT, que es una versión más refinada de EZW, se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
+La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada pero en EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT, que es una versión más refinada de EZW, se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
 
-Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd`.
+Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd`. Para entender el funcionamiento nos hemos informado en el libro la referencia [@raoKRetall2001].
 
 También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se ha implementado EZW por falta de tiempo y porque SPIHT es claramente mejor. Hemos elegido implementarlo nosotros mismos porque no hemos conseguido encontrar ninguna librería de R que ya lo implemente. Si bien es cierto que encontramos una librería de Python que podríamos haber llamado desde R, esta era muy compleja de usar y además era necesario tener nociones del lenguaje de programación Rust, lenguaje que el autor de la librería mencionada emplea para la implementación del método, y que no es nada sencillo.
 
+Enlace al repositorio donde se encuentra la librería mencionada: [aquí](https://github.com/theAdamColton/spiht.git)
+
 ### Resultados obtenidos y posibles mejoras
 
-Sobre el desempeño de la implementación realizada se puede ver con detalle en el archivo `Pruebas_SPIHT.Rmd`, pero en resumen se observa que el algoritmo agota todas las iteraciones posibles que puede hacer (que en el ejemplo son 7 y lo hace en un tiempo de entre 10 y 15 minutos, en el caso de la imagen de ejemplo empleada), por tanto en teoría la imagen se ha comprimido completamente y el decodificador debería obtener una imagen muy parecida a la original. Sin embargo nada más lejos de la realidad la imagen que se obtiene es de una calidad nefasta.
+Sobre el desempeño de la implementación realizada se puede ver con detalle en el archivo `Pruebas_SPIHT.Rmd`, pero en resumen se observa que el algoritmo agota todas las iteraciones posibles que puede hacer, por tanto, en teoría la imagen se ha comprimido completamente y el decodificador debería obtener una imagen muy parecida a la original. Sin embargo nada más lejos de la realidad la imagen que se obtiene es de una calidad nefasta.
 
 Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se trata de un fallo en el código, y hay una gran cantidad de factores que pueden causar los pobres resultados obtenidos, entre los cuales destacamos:
 
@@ -370,9 +392,13 @@ compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8,
 }
 ```
 
-```{r}
+```{r, results='hide'}
 # tic()
 dibujo_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
+```
+
+```{r}
+plot(dibujo_SPIHT, axes=F)
 # toc()
 ```
 
