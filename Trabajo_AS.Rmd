@@ -53,6 +53,11 @@ bibliography: referencias.bib
 csl: ieee.csl
 ---
 
+<style>
+body {
+text-align: justify}
+</style>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
@@ -519,74 +524,89 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comp
 }
 ```
 
-```{r}
-par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
-plot(acantilado, main = "Imagen acantilado", axes = FALSE)
-plot(acantilado_IDWT, main = "Compresión IDWT", axes = FALSE)
-plot(acantilado_DCT, main = "Compresión DCT", axes = FALSE)
+```{r, fig.width=8, fig.height=4.8}
+par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
+
+plot(acantilado, axes = FALSE)
+title(main = "Imagen acantilado", line = -3.5)
+
+plot(acantilado_IDWT, axes = FALSE)
+title(main = "Compresión IDWT", line = -3.5)
+
+plot(acantilado_DCT, axes = FALSE)
+title(main = "Compresión DCT", line = -3.5)
 ```
 
-
-```{r}
-par(mfrow = c(2, 2), mar = c(0.25, 0.25, 0.25, 0.25)) 
-
-plot(acantilado_IDWT, axes=F)
-plot(flores_IDWT, axes=F)
-plot(noche_IDWT, axes=F)
-plot(dibujo_IDWT, axes=F)
-```
-
-```{r}
-par(mfrow = c(2, 2), mar = c(0.25, 0.25, 0.25, 0.25)) 
-
-plot(acantilado_DCT, axes=F)
-plot(flores_DCT, axes=F)
-plot(noche_DCT, axes=F)
-plot(dibujo_DCT, axes=F)
-```
+A simple vista se observa como la compresión IDWT hace que la imagen sea más borrosa y la de DCT que aparezca ruido. Si calculamos las métricas de error para ambas compresiones obtenemos la siguiente tabla.
 
 ```{r}
 crear_tabla_errores(acantilado, acantilado_IDWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_IDWT.jpg", "data_comp/acantilado_DCT.jpg", "Compresión acantilado")
 ```
 
-```{r}
-par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
-plot(flores, main = "Imagen flores", axes = FALSE)
-plot(flores_IDWT, main = "Compresión IDWT", axes = FALSE)
-plot(flores_DCT, main = "Compresión DCT", axes = FALSE)
+```{r, fig.width=8, fig.height=3.25}
+par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
+
+plot(flores, axes = FALSE)
+title(main = "Imagen flores", line = -3)
+
+plot(flores_IDWT, axes = FALSE)
+title(main = "Compresión IDWT", line = -3)
+
+plot(flores_DCT, axes = FALSE)
+title(main = "Compresión DCT", line = -3)
 ```
 
 ```{r}
 crear_tabla_errores(flores, flores_IDWT, flores_DCT, ruta_flores, "data_comp/flores_IDWT.jpg", "data_comp/flores_DCT.jpg", "Compresión flores")
 ```
 
-```{r}
-par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
-plot(noche, main = "Imagen noche", axes = FALSE)
-plot(noche_IDWT, main = "Compresión IDWT", axes = FALSE)
-plot(noche_DCT, main = "Compresión DCT", axes = FALSE)
+```{r, fig.width=8, fig.height=4.5}
+par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
+
+plot(noche, axes = FALSE)
+title(main = "Imagen noche", line = 0.75)
+
+plot(noche_IDWT, axes = FALSE)
+title(main = "Compresión IDWT", line = 0.75)
+
+plot(noche_DCT, axes = FALSE)
+title(main = "Compresión DCT", line = 0.75)
 ```
+
+De nuevo observamos el mismo efecto que para la imagen del acantilado.
 
 ```{r}
 crear_tabla_errores(noche, noche_IDWT, noche_DCT, ruta_noche, "data_comp/noche_IDWT.jpg", "data_comp/noche_DCT.jpg", "Compresión noche")
 ```
 
-```{r}
-par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
-plot(dibujo, main = "Imagen dibujo", axes = FALSE)
-plot(dibujo_IDWT, main = "Compresión IDWT", axes = FALSE)
-plot(dibujo_DCT, main = "Compresión DCT", axes = FALSE)
+```{r, fig.width=8, fig.height=4.5}
+par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
+
+plot(dibujo, axes = FALSE)
+title(main = "Imagen dibujo", line = -1)
+
+plot(dibujo_IDWT, axes = FALSE)
+title(main = "Compresión IDWT", line = -1)
+
+plot(dibujo_DCT, axes = FALSE)
+title(main = "Compresión DCT", line = -1)
 ```
 
 ```{r}
 crear_tabla_errores(dibujo, dibujo_IDWT, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_IDWT.jpg", "data_comp/dibujo_DCT.jpg", "Compresión dibujo")
 ```
 
-```{r}
-par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
-plot(barcos, main = "Imagen barcos", axes = FALSE)
-plot(barcos_IDWT, main = "Compresión IDWT", axes = FALSE)
-plot(barcos_DCT, main = "Compresión DCT", axes = FALSE)
+```{r, fig.width=8, fig.height=4.5}
+par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
+
+plot(barcos, axes = FALSE)
+title(main = "Imagen barcos", line = -1)
+
+plot(barcos_IDWT, axes = FALSE)
+title(main = "Compresión IDWT", line = -1)
+
+plot(barcos_DCT, axes = FALSE)
+title(main = "Compresión DCT", line = -1)
 ```
 
 ```{r}
@@ -595,7 +615,7 @@ crear_tabla_errores(barcos, barcos_IDWT, barcos_DCT, ruta_barcos, "data_comp/bar
 
 ### Compresión SPIHT
 
-```{r}
+```{r, fig.width=8, fig.height=4.5}
 barcos_SPIHT <- load.image("data_comp/boats_SPIHT.png")
 
 par(mfrow = c(1,2), mar = c(2,2,2,2))
