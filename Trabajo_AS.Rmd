@@ -241,7 +241,6 @@ time <- toc(quiet = TRUE)
 dibujo_IDWT_time <- as.numeric(time$toc - time$tic)
 ```
 
-
 ```{r}
 tic()
 barcos_IDWT <- compresion_IDWT(ruta_barcos)
@@ -271,7 +270,7 @@ Dicha matriz de frecuencias se divide por una "Matriz de Cuantización" predefin
 
 Finalmente, se aplica el algoritmo de Huffman. Se asignan códigos binarios muy cortos a los valores que se repiten mucho y códigos más largos a los poco frecuentes. Esto comprime aún más el archivo final sin perder datos adicionales.
 
-```{r, results = 'hide'}
+```{r}
 tic()
 acantilado_DCT<-compresion_DCT_opt(ruta_acantilado)
 time <- toc(quiet = TRUE)
@@ -571,7 +570,7 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comp
       caption = titulo,
       align = "c",
       booktabs = TRUE,
-      col.names = c('MSE', 'PSNR', 'SSIM', 'CR', 'Tiempo (segundos)'),
+      col.names = c('MSE', 'PSNR', 'SSIM', 'CR', 'Tiempo (s)'),
       digits = c(4,2,4,3,2)) %>%
     kable_styling(
     position = "center",
@@ -582,7 +581,7 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comp
 }
 ```
 
-```{r, fig.width=8, fig.height=4.8, fig.align='center'}
+```{r, fig.width=8, fig.height=4.8, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(acantilado, axes = FALSE)
@@ -601,7 +600,7 @@ A simple vista se observa como la compresión IDWT hace que la imagen sea más b
 crear_tabla_errores(acantilado, acantilado_IDWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_IDWT.jpg", "data_comp/acantilado_DCT.jpg", acantilado_IDWT_time, acantilado_DCT_time, "Compresión acantilado")
 ```
 
-```{r, fig.width=8, fig.height=3.25, fig.align='center'}
+```{r, fig.width=8, fig.height=3.25, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(flores, axes = FALSE)
@@ -618,7 +617,7 @@ title(main = "Compresión DCT", line = -3)
 crear_tabla_errores(flores, flores_IDWT, flores_DCT, ruta_flores, "data_comp/flores_IDWT.jpg", "data_comp/flores_DCT.jpg", flores_IDWT_time, flores_DCT_time, "Compresión flores")
 ```
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center'}
+```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(noche, axes = FALSE)
@@ -637,7 +636,7 @@ De nuevo observamos el mismo efecto que para la imagen del acantilado.
 crear_tabla_errores(noche, noche_IDWT, noche_DCT, ruta_noche, "data_comp/noche_IDWT.jpg", "data_comp/noche_DCT.jpg", noche_IDWT_time, noche_DCT_time, "Compresión noche")
 ```
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center'}
+```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(dibujo, axes = FALSE)
@@ -654,7 +653,7 @@ title(main = "Compresión DCT", line = -1)
 crear_tabla_errores(dibujo, dibujo_IDWT, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_IDWT.jpg", "data_comp/dibujo_DCT.jpg", dibujo_IDWT_time, dibujo_DCT_time, "Compresión dibujo")
 ```
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center'}
+```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(barcos, axes = FALSE)
@@ -673,7 +672,7 @@ crear_tabla_errores(barcos, barcos_IDWT, barcos_DCT, ruta_barcos, "data_comp/bar
 
 ### Compresión SPIHT
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center'}
+```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 barcos_SPIHT <- load.image("data_comp/boats_SPIHT.png")
 
 par(mfrow = c(1,2), mar = c(2,2,2,2))
