@@ -86,7 +86,6 @@ Otra alternativa es el “Set Partitioning in Hierarchical Trees”  (SPIHT) que
 
 Estos métodos utilizados para la compresión de imágenes se pueden utilizar para la compresión de video, entendiendo que un video es una secuencia de frames que se pueden comprimir. Con el añadido que, además de la redundancia espacial y psicovisual presente en cada frame, el video introduce también la redundancia temporal. Como explican Sullivan y Wiegand (2005) [@sullivan2005] en su revisión sobre los estándares de video, los cuadros adyacentes en una secuencia de video suelen exhibir una alta correlación, ya que el movimiento entre un instante y el siguiente suele ser suave.
 
-
 # Objetivos
 
 El objetivo de este proyecto es evaluar y comparar la eficacia de los algoritmos de compresión DWT (Discrete Wavelet Transform), DCT (Discrete Cosine Transform) y SPIHT (Set Partitioning in Hierarchical Trees) aplicados a imágenes y a vídeos.
@@ -154,9 +153,13 @@ plot(dibujo, axes=F)
 
 Para el estudio de la compresión de vídeo se ha utilizado un úncio vídeo elaborado por nosotros. Al vídeo se le ha añadido música de fondo con el objetivo de enriquecer el contenido de audio. Tiene una duración total de 7 segundos y fue grabado a una tasa de 30 fotogramas por segundo. El archivo de vídeo puede consultarse en el siguiente enlace: https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data/video.mp4.
 
-
-
 # Metodología
+
+Las wavelets son funciones matemáticas que permiten descomponer una señal en sus componentes de frecuencia a diferentes escalas, proporcionando una representación conjunta en el dominio del tiempo y la frecuencia.
+
+Debido a que una señal (o función) se puede representar en términos de los coeficientes de una expansión en wavelets, las operaciones de datos se pueden realizar usando solo los coeficientes wavelet correspondientes. Si se eligen las wavelets mejor adaptadas a los datos, o se truncan los coeficientes debajo de un umbral, los datos se pueden representar con un número reducido de coeficientes wavelet.
+
+Esto hace a las wavelets muy útiles en el campo de la compresión de datos y de la reducción de ruido.
 
 ```{r}
 source("compresion_IDWT.R")
