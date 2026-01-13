@@ -379,13 +379,7 @@ Es posible que con más tiempo y usando herramientas más avanzadas se podría h
 ```{r, results='hide'}
 # # tic()
 # barcos_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
-```
-
-```{r}
-barcos_SPIHT <- load.image("data_comp/boats_SPIHT.png")
-plot(barcos, main = "Imagen original", axes = FALSE)
-plot(barcos_SPIHT, main = "Compresión SPIHT", axes = FALSE)
-# toc()
+# # toc()
 ```
 
 ```{r, comment = TRUE}
@@ -486,7 +480,9 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 
 # Resultados
 
-## Compresiones DWT y DCT
+## Compresión de imágenes
+
+### Compresiones DWT y DCT
 
 ```{r}
 crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comprimida_DCT, ruta_orig, ruta_comprimida_IDWT, ruta_comprimida_DCT, titulo){
@@ -523,6 +519,13 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comp
 }
 ```
 
+```{r}
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
+plot(acantilado, main = "Imagen acantilado", axes = FALSE)
+plot(acantilado_IDWT, main = "Compresión IDWT", axes = FALSE)
+plot(acantilado_DCT, main = "Compresión DCT", axes = FALSE)
+```
+
 
 ```{r}
 par(mfrow = c(2, 2), mar = c(0.25, 0.25, 0.25, 0.25)) 
@@ -547,7 +550,21 @@ crear_tabla_errores(acantilado, acantilado_IDWT, acantilado_DCT, ruta_acantilado
 ```
 
 ```{r}
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
+plot(flores, main = "Imagen flores", axes = FALSE)
+plot(flores_IDWT, main = "Compresión IDWT", axes = FALSE)
+plot(flores_DCT, main = "Compresión DCT", axes = FALSE)
+```
+
+```{r}
 crear_tabla_errores(flores, flores_IDWT, flores_DCT, ruta_flores, "data_comp/flores_IDWT.jpg", "data_comp/flores_DCT.jpg", "Compresión flores")
+```
+
+```{r}
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
+plot(noche, main = "Imagen noche", axes = FALSE)
+plot(noche_IDWT, main = "Compresión IDWT", axes = FALSE)
+plot(noche_DCT, main = "Compresión DCT", axes = FALSE)
 ```
 
 ```{r}
@@ -555,11 +572,35 @@ crear_tabla_errores(noche, noche_IDWT, noche_DCT, ruta_noche, "data_comp/noche_I
 ```
 
 ```{r}
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
+plot(dibujo, main = "Imagen dibujo", axes = FALSE)
+plot(dibujo_IDWT, main = "Compresión IDWT", axes = FALSE)
+plot(dibujo_DCT, main = "Compresión DCT", axes = FALSE)
+```
+
+```{r}
 crear_tabla_errores(dibujo, dibujo_IDWT, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_IDWT.jpg", "data_comp/dibujo_DCT.jpg", "Compresión dibujo")
 ```
 
 ```{r}
+par(mfrow = c(1, 3), mar = c(2, 2, 2, 2))
+plot(barcos, main = "Imagen barcos", axes = FALSE)
+plot(barcos_IDWT, main = "Compresión IDWT", axes = FALSE)
+plot(barcos_DCT, main = "Compresión DCT", axes = FALSE)
+```
+
+```{r}
 crear_tabla_errores(barcos, barcos_IDWT, barcos_DCT, ruta_barcos, "data_comp/barcos_IDWT.jpg", "data_comp/barcos_DCT.jpg", "Compresión barcos")
+```
+
+### Compresión SPIHT
+
+```{r}
+barcos_SPIHT <- load.image("data_comp/boats_SPIHT.png")
+
+par(mfrow = c(1,2), mar = c(2,2,2,2))
+plot(barcos, main = "Imagen original", axes = FALSE)
+plot(barcos_SPIHT, main = "Compresión SPIHT", axes = FALSE)
 ```
 
 ## Compresión de vídeo
