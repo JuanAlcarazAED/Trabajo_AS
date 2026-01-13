@@ -119,14 +119,14 @@ La cuarta imagen, se escogió una imagen generada mediante Inteligencia Artifici
 Por último, utilizaremos la imagen `boats` de la librería `imager`, cuyas dimensiones son bastante más pequeñas que las de las otras cuatro. Esto nos permitirá aplicarle el algoritmo SPIHT, ya que para las otras imágenes el tiempo de computación y el espacio en memoria necesario para almacenar las variables internas que se crean es demasiado elevado.
 
 ```{r}
-# # Cargamos inicialmente todas las imágenes y las guardamos desde R, para que las
-# # métricas basadas en el tamaño de los archivos sean consistentes
-# ruta_acantilado<-"im_2/acantilado.jpg"
-# ruta_flores<-"im_2/flores.jpg"
-# ruta_noche<-"im_2/noche.jpg"
-# ruta_dibujo<-"im_2/dibujo.png"
-# ruta_barcos<-"im_2/barcos.png"
-# 
+# Cargamos inicialmente todas las imágenes y las guardamos desde R, para que las
+# métricas basadas en el tamaño de los archivos sean consistentes
+ruta_acantilado<-"im_2/acantilado.jpg"
+ruta_flores<-"im_2/flores.jpg"
+ruta_noche<-"im_2/noche.jpg"
+ruta_dibujo<-"im_2/dibujo.png"
+ruta_barcos<-"im_2/barcos.png"
+
 # acantilado<-load.image(ruta_acantilado)
 # flores<-load.image(ruta_flores)
 # noche<-load.image(ruta_noche)
@@ -149,15 +149,17 @@ dibujo<-load.image(ruta_dibujo)
 barcos<-load.image(ruta_barcos)
 ```
 
-
 ```{r}
-par(mfrow = c(2, 2), mar = c(0.25, 0.25, 0.25, 0.25)) 
+layout(matrix(c(1, 1, 1, 2, 2, 0, 3, 3, 4, 4, 5, 5), nrow = 2, byrow = TRUE))
+par(mar = c(0.25, 0.25, 1.5, 0.25))
 
-plot(acantilado, axes=F)
-plot(flores, axes=F)
-plot(noche, axes=F)
-plot(dibujo, axes=F)
+plot(acantilado, axes=F, main="Acantilado") 
+plot(flores, axes=F, main="Flores")     
+plot(noche, axes=F, main="Noche")      
+plot(dibujo, axes=F, main="Dibujo")
+plot(barcos, axes=F, main="Barcos")
 ```
+
 
 Para el estudio de la compresión de vídeo se ha utilizado un úncio vídeo elaborado por nosotros. Al vídeo se le ha añadido música de fondo con el objetivo de enriquecer el contenido de audio. Tiene una duración total de 7 segundos y fue grabado a una tasa de 30 fotogramas por segundo. El archivo de vídeo puede consultarse en el siguiente enlace: https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data/video.mp4.
 
