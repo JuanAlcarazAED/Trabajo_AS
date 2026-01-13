@@ -4,15 +4,15 @@ subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
 author: "Juan Alcaraz, Adrián Carrasco, Fabián Calvo, Javier Herrero, Clara Montalvá"
 date: "Curso 2025-2026"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     echo: true
     number_sections: true
     theme: lumen
     toc: true
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   bookdown::html_document2:
     echo: true
     number_sections: true
@@ -91,7 +91,7 @@ Estos métodos utilizados para la compresión de imágenes se pueden utilizar pa
 
 El objetivo de este proyecto es evaluar y comparar la eficacia de los algoritmos de compresión DWT (Discrete Wavelet Transform), DCT (Discrete Cosine Transform) y SPIHT (Set Partitioning in Hierarchical Trees) aplicados a imágenes y a vídeos.
 
-Para las imágenes, seleccionaremos cuatro imágenes con características diversas. Esta selección nos permitirá observar cómo cada algoritmo gestiona conceptos como la entropía, la retención de nitidez y el ruido.
+Para las imágenes, seleccionaremos cinco imágenes con características diversas. Esta selección nos permitirá observar cómo cada algoritmo gestiona conceptos como la entropía, la retención de nitidez y el ruido.
 
 Para la aplicación a la compresión de vídeos, necesitaremos comprimir también el audio. Para ello, exploraremos el dominio wavelet mediante el mejor valor umbral de energía, analizando la redundancia de la señal a través de la entropía de Shannon. Esto nos permitirá comprender la relación entre la concentración de energía de una señal y su capacidad para ser comprimida.
 
@@ -99,7 +99,7 @@ Para la evaluación de los diferentes algoritmos haremos un análisis de métric
 
 # Descripción de los datos
 
-Para evaluar la eficacia de los algoritmos de compresión, hemos seleccionado un conjunto de cuatro imágenes propias con características visuales y tamaños distintos, lo que nos permitirá observar cómo responden los diferentes métodos de compresión y sus parámetros ante diferentes niveles de entropía, detalle y dimensiones de los datos.
+Para evaluar la eficacia de los algoritmos de compresión, hemos seleccionado un conjunto de cuatro imágenes propias y una imagen de la librería `imager` de R con características visuales y tamaños distintos, lo que nos permitirá observar cómo responden los diferentes métodos de compresión y sus parámetros ante diferentes niveles de entropía, detalle y dimensiones de los datos.
 
 La primera fotografía escogida es de un acantilado, que al ser dominada por el azul del mar y el cielo, cuenta con grandes zonas de color uniforme. Esto nos permite evaluar la eficiencia de la compresión en imágenes con "poca información" aparente o redundancia, donde los algoritmos deberían optimizar mejor el peso del archivo.
 
@@ -107,8 +107,9 @@ La segunda imagen contiene una gran variedad de colores y tonos a lo largo de to
 
 La tercera fotografía se trata de una imagen nocturna de una avenida, utilizada para analizar qué ocurre en condiciones de poca luz. En estas imágenes suele aparecer ruido digital y sombras, lo que supone un reto donde la pérdida de información suele ser más evidente tras aplicar los procesos de compresión.
 
-Por último, se escogió una imagen generada mediante Inteligencia Artificial recreando a los cinco miembros del grupo al estilo de Estudio Ghibli. Al no estar capturada por una cámara real, sino generada digitalmente, posee bordes definidos y colores planos que nos sirven para comparar cómo se comporta la compresión en creación digital.
+La cuarta imagen, se escogió una imagen generada mediante Inteligencia Artificial recreando a los cinco miembros del grupo al estilo del Estudio Ghibli. Al no estar capturada por una cámara real, sino generada digitalmente, posee bordes definidos y colores planos que nos sirven para comparar cómo se comporta la compresión en creación digital.
 
+Por último, utilizaremos la imagen `boats` de la librería `imager`, cuyas dimensiones son bastante más pequeñas que las de las otras cuatro. Esto nos permitirá aplicarle el algoritmo SPIHT, ya que para las otras imágenes el tiempo de computación y el espacio en memoria necesario para almacenar las variables internas que se crean es demasiado elevado.
 
 ```{r}
 # Cargamos inicialmente todas las imágenes y las guardamos desde R, para que las
@@ -117,16 +118,19 @@ ruta_acantilado<-"im_2/acantilado.jpg"
 ruta_flores<-"im_2/flores.jpg"
 ruta_noche<-"im_2/noche.jpg"
 ruta_dibujo<-"im_2/dibujo.png"
+ruta_barcos<-"im_2/barcos.png"
 
 acantilado<-load.image(ruta_acantilado)
 flores<-load.image(ruta_flores)
 noche<-load.image(ruta_noche)
 dibujo<-load.image(ruta_dibujo)
+barcos<-load.image(ruta_barcos)
 
 save.image(acantilado, ruta_acantilado, quality = 1)
 save.image(flores, ruta_flores, quality = 1)
 save.image(noche, ruta_noche, quality = 1)
 save.image(dibujo, ruta_dibujo, quality = 1)
+save.image(barcos, ruta_barcos, quality = 1)
 ```
 
 ```{r}
@@ -135,6 +139,7 @@ acantilado<-load.image(ruta_acantilado)
 flores<-load.image(ruta_flores)
 noche<-load.image(ruta_noche)
 dibujo<-load.image(ruta_dibujo)
+barcos<-load.image(ruta_barcos)
 ```
 
 
@@ -150,8 +155,8 @@ plot(dibujo, axes=F)
 Para el estudio de la compresión de vídeo se ha utilizado un úncio vídeo elaborado por nosotros. Al vídeo se le ha añadido música de fondo con el objetivo de enriquecer el contenido de audio. Tiene una duración total de 7 segundos y fue grabado a una tasa de 30 fotogramas por segundo. El archivo de vídeo puede consultarse en el siguiente enlace: https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data/video.mp4.
 
 
-# Metodología
 
+# Metodología
 
 ```{r}
 source("compresion_IDWT.R")
@@ -183,6 +188,7 @@ acantilado_IDWT<-compresion_IDWT(ruta_acantilado)
 flores_IDWT<-compresion_IDWT(ruta_flores)
 noche_IDWT<-compresion_IDWT(ruta_noche)
 dibujo_IDWT<-compresion_IDWT(ruta_dibujo)
+barcos_IDWT<-compresion_IDWT(ruta_barcos)
 ```
 
 ```{r}
@@ -221,6 +227,7 @@ acantilado_DCT<-compresion_DCT_opt(ruta_acantilado)
 flores_DCT<-compresion_DCT_opt(ruta_flores)
 noche_DCT<-compresion_DCT_opt(ruta_noche)
 dibujo_DCT<-compresion_DCT_opt(ruta_dibujo)
+barcos_DCT<-compresion_DCT_opt(ruta_barcos)
 ```
 
 ```{r}
@@ -281,7 +288,7 @@ resize_SPIHT <- function(img){
 }
 ```
 
-```{r}
+```{r, results = FALSE}
 compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
   
   # Cargar la imagen, redimensionarla y separarla en canales
@@ -361,16 +368,9 @@ compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8,
 ```
 
 ```{r}
-data(boats)
-ruta_barcos <- 'im_2/boats.png'
-
-save.image(boats, ruta_barcos, quality = 1)
-
-barcos <- load.image(ruta_barcos)
-
-tic()
-dibujo_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 50000)
-toc()
+# tic()
+dibujo_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
+# toc()
 ```
 
 ```{r, comment = TRUE}
@@ -405,6 +405,8 @@ sep_audio_video()
 
 
 ### Compresión de imagen
+
+
 
 ### Compresión de audio
 
@@ -476,47 +478,58 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida, ruta_orig, ruta_
 }
 ```
 
+
 ```{r}
 crear_tabla_errores(acantilado, acantilado_IDWT, ruta_acantilado, "data_comp/acantilado_IDWT.jpg", "Compresión acantilado IDWT")
 ```
-
 
 ```{r}
 crear_tabla_errores(acantilado, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_DCT.jpg", "Compresión acantilado DCT")
 
 ```
+
+
 ```{r}
 crear_tabla_errores(flores, flores_IDWT, ruta_flores, "data_comp/flores_IDWT.jpg", "Compresión flores IDWT")
 ```
-
 
 ```{r}
 crear_tabla_errores(flores, flores_DCT, ruta_flores, "data_comp/flores_DCT.jpg", "Compresión flores DCT")
 ```
 
+
 ```{r}
 crear_tabla_errores(noche, noche_IDWT, ruta_noche, "data_comp/noche_IDWT.jpg", "Compresión noche IDWT")
 ```
-
 
 ```{r}
 crear_tabla_errores(noche, noche_DCT, ruta_noche, "data_comp/noche_DCT.jpg", "Compresión noche DCT")
 ```
 
+
 ```{r}
 crear_tabla_errores(dibujo, dibujo_IDWT, ruta_dibujo, "data_comp/dibujo_IDWT.jpg", "Compresión dibujo IDWT")
 ```
-
 
 ```{r}
 crear_tabla_errores(dibujo, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_DCT.jpg", "Compresión dibujo DCT")
 ```
 
 
+```{r}
+crear_tabla_errores(barcos, barcos_IDWT, ruta_barcos, "data_comp/barcos_IDWT.jpg", "Compresión barcos IDWT")
+```
+
+```{r}
+crear_tabla_errores(barcos, barcos_DCT, ruta_barcos, "data_comp/barcos_DCT.jpg", "Compresión barcos DCT")
+```
+
 
 ## Compresión de vídeo
 
 ### Compresión imagen
+
+
 
 ### Compresión del audio
 
@@ -604,8 +617,6 @@ plot_energy_vs_coeff(audio,n.levels,lambda)
 
 En la representación de la energía capturada frente al número de coeficientes se observa que una fracción reducida de los coeficientes wavelet es capaz de concentrar la mayor parte de la energía de la señal. De los casi $3\cdot 10^5$ coeficientes, aproximadamente $2.5 \cdot 10^4$ coeficientes son suficientes para capturar alrededor del $90\%$ de la energía total del audio.
 
-
-
 ```{r}
 
 wt_left_rec <- decode_wt(enc_left, vals$thr_left)
@@ -658,8 +669,6 @@ par(mfrow = c(1, 1))
 
 Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras comprimir en el canal izquierdo es `r round(mse_left,2)` y para el canal derecho `r round(mse_right, 2)`. Esto indica una pérdida apreciable pero concentrada en coeficientes de baja energía, manteniendo una estructura perceptualmente reconocible de la señal.
 
-
-
 ```{r}
 # Comprimimos los frames del video con cada algoritmo
 # frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
@@ -669,15 +678,13 @@ Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras compr
 # }
 ```
 
-
 ```{r}
 # Juntar imagen y video comprimido (funciones_audio.R)
-rebuild_video_comp()
+# rebuild_video_comp()
 ```
 
-
-
 # Conclusiones
+
 
 
 La compresión del audio en el domino wavelet permite concentrar la mayor parte de la energía del audio en un número reducido de coeficientes de detalle, haciendo posible eliminar la mayoría de ellos mediante un umbralado energético sin pérdida significativa de información y logrando así una compresión eficiente.
@@ -686,6 +693,7 @@ El resultado del vídeo comprimido se puede observar en el siguiente enlace http
 
 
 # Link del repositorio
+
 https://github.com/JuanAlcarazAED/Trabajo_AS.git
 
 # Referencias
