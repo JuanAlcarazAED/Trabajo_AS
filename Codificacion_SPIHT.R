@@ -306,7 +306,7 @@ SPIHT_Codificar <- function(W, max_bits = NULL, max_iter = NULL) {
   bitstream <- c()
   iter <- 0
   
-  cat("n_inicial:", estado$n, "\n")
+  # cat("n_inicial:", estado$n, "\n")
   
   repeat {
     iter <- iter + 1
@@ -321,17 +321,17 @@ SPIHT_Codificar <- function(W, max_bits = NULL, max_iter = NULL) {
     
     estado$n <- estado$n - 1
     
-    cat("Iter:", iter, " n:", estado$n, " bits:", length(bitstream), "\n")
-    
-    if (!is.null(max_bits) && length(bitstream) >= max_bits) { 
-      cat("Parada por max_bits\n"); break 
-    }
-    if (!is.null(max_iter) && iter >= max_iter) { 
-      cat("Parada por max_iter\n"); break 
-    }
-    if (estado$n < 0) { 
-      cat("Parada por n<0\n"); break 
-    }
+    # cat("Iter:", iter, " n:", estado$n, " bits:", length(bitstream), "\n")
+    # 
+    # if (!is.null(max_bits) && length(bitstream) >= max_bits) { 
+    #   cat("Parada por max_bits\n"); break 
+    # }
+    # if (!is.null(max_iter) && iter >= max_iter) { 
+    #   cat("Parada por max_iter\n"); break 
+    # }
+    # if (estado$n < 0) { 
+    #   cat("Parada por n<0\n"); break 
+    # }
   }
   
   bitstream
