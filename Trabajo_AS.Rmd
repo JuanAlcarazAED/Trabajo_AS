@@ -74,30 +74,29 @@ Históricamente, el método de compresión más utilizado ha sido el de la Trans
 
 # Revisión bibliográfica
 
-Para comenzar debemos hacer una pequeña mención a la base teórica sobre la que se sustenta todo el trabajo realizado, Esta base la forma principalmente análisis de Fourier que ha sido de una utilidad insólita en lo que se refiere a la ciencia en general y al análisis de señales en particular. Las wavelets constituyen la evolución natural de la transformada de Fourier.
+Comenzaremos haciendo una pequeña mención a la base teórica sobre la que se sustenta todo el trabajo realizado, el análisis de Fourier. Históricamente, este ha sido de una utilidad insólita en lo que se refiere a la ciencia en general y al análisis de señales en particular, siendo las wavelets la evolución natural de la transformada de Fourier.
 
-Tras los avances hechos por Fourier y la presentación de este método por parte del matemático y físico francés, posteriormente se vio que la transformada de Fourier podía verse como una especie de producto escalar, concretamente la transformada de Fourier de una función $f$, podía verse como $\mathcal{F}\{f\}(s) = \langle f, e^{isx}\rangle$, donde $\langle, \rangle$ denota un cierto producto escalar entre funciones.
+Desde una perspectiva matemática, se vio que la transformada introducida por el matemático y físico francés podía interpretarse como una especie de producto escalar. Más concretamente, la transformada de Fourier de una función $f$, podía verse como $\mathcal{F}\{f\}(s) = \langle f, e^{isx}\rangle$, donde $\langle, \rangle$ denota un cierto producto escalar entre funciones.
 
-Las wavelet surgieron al pensar que se podía tomar el producto escalar con otras funciones distintas, que son lo que comúnmente se llama wavelets madre. Así dada una wavelet madre $\psi$, la transformada wavelet de una cierta señal $f$ será $\langle f, \psi(\frac{t-a}{b})\rangle$.
+Las wavelet surgieron al pensar que se podía tomar el producto escalar con otras funciones distintas, que son lo que comúnmente se llaman wavelets madre. Así, dada una wavelet madre $\psi$, la transformada wavelet de una cierta señal $f$ será $\langle f, \psi(\frac{t-a}{b})\rangle$.
 
-Como se ha visto en numerosas ocasiones las wavelets permiten hacer un análisis en el dominio de frecuencias de las señales, obteniendo resultados realmente impresionantes, además de tener cantidad de aplicaciones muy diversas. Para este trabajo como se ha mencionado anteriormente, se usarán para comprimir imágenes y vídeos.
+Como se ha visto en numerosas ocasiones las wavelets permiten hacer un análisis en el dominio de frecuencias de las señales, obteniendo resultados realmente impresionantes, además de tener cantidad de aplicaciones muy diversas. Para este trabajo, como se ha mencionado anteriormente, se usarán para la compresión de imágenes y vídeos.
 
-La compresión de imágenes se fundamenta en la premisa de que los archivos digitales de las imágenes contienen una cantidad importante de datos que no necesariamente aportan información relevante. Como se establece en el libro “Digital Image Processing” de González y Woods (2018) [@gonzalez2018], los datos son el medio a través del cual se transporta la información y la cantidad de datos utilizados usualmente excede la cantidad de información real contenido, a este exceso se le conoce como redundancia.
-El objetivo central de los algoritmos de compresión utilizados en este proyecto es la reducción de dicha redundancia.
+La compresión de imágenes se fundamenta en la premisa de que los archivos digitales de las imágenes contienen una cantidad importante de datos que no necesariamente aportan información relevante. Como se establece en el libro “Digital Image Processing” de González y Woods (2018) [@gonzalez2018], los datos son el medio a través del cual se transporta la información y la cantidad de datos utilizados usualmente excede la cantidad de información real contenida, siendo este exceso comúnmente conococido como redundancia.
 
-Según la literatura de González y Woods [@gonzalez2018], existen distintos tipos de redundancia, y dos son muy importantes para el funcionamiento de las transformadas DCT y Wavelets.
+El objetivo central de los algoritmos de compresión utilizados en este proyecto es la reducción de dicha redundancia. Según la literatura de González y Woods [@gonzalez2018], existen dos tipos distintos de redundancia, ambos muy importantes para el funcionamiento de las transformadas DCT y Wavelets.
 
-Redundancia Interpixel: Es una redundancia estadística, y surge debido a las correlaciones existentes entre píxeles vecinos. Implica que el valor de un píxel puede predecirse bien a partir de píxeles vecinos.
+- Redundancia Interpixel: Es una redundancia estadística, y surge debido a las correlaciones existentes entre píxeles vecinos. Implica que el valor de un píxel puede predecirse bien a partir de píxeles vecinos.
 
-Redundancia Psicovisual: Es una redundancia asociada a la percepción que tiene el humano de las imágenes. No toda la información visual que contiene una imagen es percibida con la misma importancia, por eso en compresión con pérdida se puede eliminar redundancia en una imagen y para el ojo humano la imagen sigue siendo perceptible.
+- Redundancia Psicovisual: Es una redundancia asociada a la percepción que tiene el humano de las imágenes. No toda la información visual que contiene una imagen es percibida con la misma importancia. Es por ello que en la compresión con pérdida se puede eliminar redundancia en una imagen y que para el ojo humano el cambio en la imagen sea imperceptible.
 
 Históricamente la compresión de imágenes ha dependido de transformadas ortogonales para concentrar la energía de la señal en pocos coeficientes. El estándar se ha basado en la Transformada de Coseno Discreta (DCT), por su capacidad de compactación y debido a que el costo computacional no es muy alto. Este método divide la imagen en bloques de 8x8 píxeles y procesa cada uno de estos bloques.
 
-La investigación ha llevado a distintas alternativas en lugar de la DCT, una de ellas la Transformada Discreta de Wavelet (DWT), que utiliza wavelets localizadas tanto en tiempo como en frecuencia. Esto permite la descomposición de la imagen en bandas de aproximación y detalles a distintas escalas.
+La investigación ha llevado a distintas alternativas a la DCT, una de ellas la Transformada Discreta de Wavelet (DWT), que utiliza wavelets localizadas tanto en tiempo como en frecuencia. Esto permite la descomposición de la imagen en bandas de aproximación y detalles a distintas escalas.
 
-Otra alternativa, son los algoritmos "Embedded Zerotree Wavelet" (EZW) y “Set Partitioning in Hierarchical Trees”  (SPIHT) que a diferencia de los métodos tradicionales que tratan los coeficientes de manera aislada, estos organizan los coeficientes en árboles de orientación espacial y clasifican los coeficientes por magnitud, transmitiendo primero los bits más significativos de los coeficientes más grandes.
+Otra alternativa, son los algoritmos "Embedded Zerotree Wavelet" (EZW) y “Set Partitioning in Hierarchical Trees”  (SPIHT) que, a diferencia de los métodos tradicionales que tratan los coeficientes de manera aislada, organizan los coeficientes en árboles de orientación espacial y clasifican los coeficientes por magnitud, transmitiendo primero los bits más significativos de los coeficientes más grandes.
 
-Estos métodos utilizados para la compresión de imágenes se pueden utilizar para la compresión de video, entendiendo que un video es una secuencia de frames que se pueden comprimir. Con el añadido que, además de la redundancia espacial y psicovisual presente en cada frame, el video introduce también la redundancia temporal. Como explican Sullivan y Wiegand (2005) [@sullivan2005] en su revisión sobre los estándares de video, los cuadros adyacentes en una secuencia de video suelen exhibir una alta correlación, ya que el movimiento entre un instante y el siguiente suele ser suave.
+Estos métodos utilizados para la compresión de imágenes se pueden utilizar también para la compresión de vídeo, entendiendo que un vídeo es una secuencia de frames que se pueden comprimir individualmente, con el añadido de que, además de la redundancia espacial y psicovisual presente en cada frame, el vídeo introduce también la redundancia temporal. Como explican Sullivan y Wiegand (2005) [@sullivan2005] en su revisión sobre los estándares de vídeo, los cuadros adyacentes en una secuencia de vídeo suelen exhibir una alta correlación, ya que el movimiento entre un instante y el siguiente suele ser suave.
 
 # Objetivos
 
@@ -170,11 +169,11 @@ Para el estudio de la compresión de vídeo se ha utilizado un úncio vídeo ela
 
 # Metodología
 
-Las wavelets son funciones matemáticas que permiten descomponer una señal en sus componentes de frecuencia a diferentes escalas, proporcionando una representación conjunta en el dominio del tiempo y la frecuencia.
+Recordemos, en primer lugar, que las wavelets son funciones matemáticas que permiten descomponer una señal en sus componentes de frecuencia a diferentes escalas, proporcionando una representación conjunta en el dominio del tiempo y la frecuencia.
 
-Debido a que una señal (o función) se puede representar en términos de los coeficientes de una expansión en wavelets, las operaciones de datos se pueden realizar usando solo los coeficientes wavelet correspondientes. Si se eligen las wavelets mejor adaptadas a los datos, o se truncan los coeficientes debajo de un umbral, los datos se pueden representar con un número reducido de coeficientes wavelet.
+Debido a que una señal (o función) se puede representar en términos de los coeficientes de una expansión en wavelets, las operaciones de datos se pueden realizar usando solo los coeficientes wavelet correspondientes. Esto permite que, eligiendo las wavelets mejor adaptadas a los datos o truncando los coeficientes debajo de un cierto umbral, los datos se puedan representar con un número reducido de estos coeficientes.
 
-Esto hace a las wavelets muy útiles en el campo de la compresión de datos y de la reducción de ruido.
+Las wavelets son, por tanto, muy útiles en el campo de la compresión de datos y de la reducción de ruido.
 
 ```{r}
 source("compresion_IDWT.R")
@@ -190,7 +189,7 @@ source("compresion_SPIHT.R")
 
 ### Contexto inicial: codificador y decodificador
 
-Todos los métodos de compresión siguen una forma común de trabajar. La idea sobre la que se sustentan estos métodos consiste en tomar la transformada wavelet de una imagen y mediante un método u otro transformar esa matriz de coeficientes wavelet (o una parte de ella) en una cadena de _bits_, que generalmente se llama _bitstream_. Esta tarea de codificar parte de la información de la matriz en el _bitstream_ la hace un codificador.
+Todos los métodos de compresión siguen una forma común de trabajar. La idea sobre la que se sustentan estos métodos consiste en tomar la transformada wavelet de una imagen y mediante un método u otro transformar esa matriz de coeficientes wavelet (o una parte de ella) en una cadena de _bits_, que generalmente se llama _bitstream_. Esta tarea de codificar parte de la información de la matriz en el _bitstream_ y la hace un codificador.
 
 Será el _bitstream_ lo que se enviará y/o se almacenará, según el uso que le queramos dar. La razón de esta transformación es doble, primero es lo que permite transmitir la información por un canal binario (en la realidad los ordenadores solo puede transmitir _bits_) y además esta cadena ocupa, en general, menos espacio en memoria (o al menos ese es el objetivo de los algoritmos de compresión).
 
@@ -346,122 +345,101 @@ Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se
 Es posible que con más tiempo y usando herramientas más avanzadas se podría hacer una mejor implementación del algoritmo, consiguiendo mayor precisión y rapidez, sin embargo no disponemos de ese tiempo.
 
 ```{r}
-# obtener_potencia_4 <- function(x) {
-#   return(4^round(log(x,4)))
-# }
-# 
-# resize_SPIHT <- function(img){
-#   nuevo_tamaño <- obtener_potencia_4(max(width(img), height(img)))
-#   img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
-# }
+obtener_potencia_4 <- function(x) {
+  return(4^round(log(x,4)))
+}
+
+resize_SPIHT <- function(img){
+  nuevo_tamaño <- obtener_potencia_4(max(width(img), height(img)))
+  img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
+}
 ```
 
 ```{r, results = FALSE}
-# compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
-#   
-#   # Cargar la imagen, redimensionarla y separarla en canales
-#   
-#   img <- load.image(ruta_imagen)
-#   
-#   ancho <- width(img)
-#   alto <- height(img)
-#   
-#   img_re4 <- resize_SPIHT(img)
-#   
-#   canales <- imsplit(img_re4, "c")
-#   
-#   procesar_canal <- function(canal) {
-#     # matriz <- as.matrix(canal)
-#     
-#     # Transformada wavelet 2D
-#   
-#     dwt_obj <- dwt.2d(canal, wf = wf, J = J)
-#     # J: niveles de descomposición
-#     # wf: wavelet
-#     
-#     # Ensamblar matriz wavelet completa
-#     
-#     W <- Ensamblar(dwt_obj)
-#     
-#     # Codificar con SPIHT
-#     
-#     bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
-#     
-#     # Tamaño en memoria del bitstream
-#     
-#     tamanno_bytes <- object.size(bitstream)
-#     tamanno_kb <- as.numeric(tamanno_bytes) / 1024
-#     cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
-#     
-#     # Decodificar SPIHT
-#     
-#     n_inicial <- floor(log2(max(abs(W))))
-#     W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
-#     
-#     # Desensamblar matriz wavelet reconstruida
-#     
-#     dwt_rec <- Desensamblar(W_rec)
-#     
-#     # Reconstruir imagen con IDWT
-#     
-#     attributes(dwt_rec) <- attributes(dwt_obj)
-#     dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
-#     dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
-#     dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
-#     dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
-#     
-#     img_rec <- idwt.2d(dwt_rec)
-#     
-#     img_recuperada <- as.cimg(img_rec)
-#     
-#     # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
-#     # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
-#     
-#     return(img_recuperada)
-#   }
-#   
-#   canales_comprimidos <- lapply(canales, procesar_canal)
-#   img_final <- imappend(canales_comprimidos, axis = "c")
-#   
-#   img_final <- resize(img_final, size_x = ancho, size_y = alto)
-#   
-#   nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
-#   
-#   ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.png"))
-#   
-#   save.image(img_final, ruta_salida, quality = 1)
-#   
-#   return(img_final)
-# }
+compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
+
+  # Cargar la imagen, redimensionarla y separarla en canales
+
+  img <- load.image(ruta_imagen)
+
+  ancho <- width(img)
+  alto <- height(img)
+
+  img_re4 <- resize_SPIHT(img)
+
+  canales <- imsplit(img_re4, "c")
+
+  procesar_canal <- function(canal) {
+    # matriz <- as.matrix(canal)
+
+    # Transformada wavelet 2D
+
+    dwt_obj <- dwt.2d(canal, wf = wf, J = J)
+    # J: niveles de descomposición
+    # wf: wavelet
+
+    # Ensamblar matriz wavelet completa
+
+    W <- Ensamblar(dwt_obj)
+
+    # Codificar con SPIHT
+
+    bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+
+    # Tamaño en memoria del bitstream
+
+    tamanno_bytes <- object.size(bitstream)
+    tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+    cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+
+    # Decodificar SPIHT
+
+    n_inicial <- floor(log2(max(abs(W))))
+    W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+
+    # Desensamblar matriz wavelet reconstruida
+
+    dwt_rec <- Desensamblar(W_rec)
+
+    # Reconstruir imagen con IDWT
+
+    attributes(dwt_rec) <- attributes(dwt_obj)
+    dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+    dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+    dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+    dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+
+    img_rec <- idwt.2d(dwt_rec)
+
+    img_recuperada <- as.cimg(img_rec)
+
+    # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2
+    # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+
+    return(img_recuperada)
+  }
+
+  canales_comprimidos <- lapply(canales, procesar_canal)
+  img_final <- imappend(canales_comprimidos, axis = "c")
+
+  img_final <- resize(img_final, size_x = ancho, size_y = alto)
+
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.png"))
+
+  save.image(img_final, ruta_salida, quality = 1)
+
+  return(img_final)
+}
 ```
 
 ```{r, results='hide'}
-# tic()
-# barcos_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
-# time <- toc(quiet = TRUE)
-# barcos_SPIHT_time <- as.numeric(time$toc - time$tic)
+tic()
+barcos_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
+time <- toc(quiet = TRUE)
+barcos_SPIHT_time <- as.numeric(time$toc - time$tic)
 ```
-
-```{r, comment = TRUE}
-# par(mfrow = c(1,2), mar = c(2,2,2,2))
-# plot(as.cimg(img_mat), main = "Original")
-# plot(as.cimg(img_rec), main = "Reconstruida SPIHT")
-# par(mfrow = c(1,1))
-```
-
-```{r, comment = TRUE}
-# PSNR <- function(orig, rec) {
-#   mse <- mean((orig - rec)^2)
-#   10 * log10(1 / mse)
-# }
-# 
-# orig_n <- (img_mat - min(img_mat)) / (max(img_mat) - min(img_mat))
-# rec_n  <- (img_rec - min(img_rec)) / (max(img_rec) - min(img_rec))
-# 
-# psnr_val <- PSNR(orig_n, rec_n)
-# cat("PSNR aproximado:", psnr_val, "dB\n")
-```
-
 
 ## Compresión de vídeo
 
@@ -475,7 +453,7 @@ Para abordar la compresión del vídeo, separaremos sus imágenes o fotogramas (
 
 ### Compresión de imagen
 
-Para la compresión de los fotogramas, le aplicaremos el algoritmo DCT a cada uno de ellos.
+Para la compresión de los fotogramas, le aplicaremos el algoritmo DWT a cada uno de ellos.
 
 ```{r}
 # Comprimimos los frames del video con cada algoritmo
@@ -537,6 +515,10 @@ Donde $H(\lambda)$ es la entropía de la distribución de energía de los coefic
 Se ha seleccionado el formato `.rds` para el análisis del almacenamiento debido a su capacidad para preservar la estructura de los coeficientes wavelet, incluyendo los valores nulos generados por el umbralado. A diferencia del formato `.wav`, que almacena la señal reconstruida en el dominio temporal sin tener en cuenta la presencia de ceros. 
 El porcentaje de archivo comprimido se calcula como el tamaño relativo del archivo `.rds` normalizado respecto al tamaño máximo obtenido para $\lambda=0$, correspondiene al caso sin compresión. De esta manera, esta magnitud refleja la reducción de información estructural debida al umbralado.
 
+## Métricas de error
+
+La manera de evaluar los resultados obtenidos tras la compresión de las diferentes imágenes
+
 
 # Resultados
 
@@ -547,20 +529,24 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 ```{r}
 crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comprimida_DCT, ruta_orig, ruta_comprimida_IDWT, ruta_comprimida_DCT, imagen_IDWT_time, imagen_DCT_time, titulo){
   
+  entropia_orig <- entropia(imagen_orig)
+  
   mse_IDWT <- MSE(imagen_orig, imagen_comprimida_IDWT)
   psnr_IDWT <- PSNR(imagen_orig, imagen_comprimida_IDWT)
   ssim_IDWT <- SSIM(imagen_orig, imagen_comprimida_IDWT)
   cr_IDWT <- CR(ruta_orig, ruta_comprimida_IDWT)
+  entropia_IDWT <- entropia(imagen_comprimida_IDWT)
   time_IDWT <- imagen_IDWT_time
   
   mse_DCT <- MSE(imagen_orig, imagen_comprimida_DCT)
   psnr_DCT <- PSNR(imagen_orig, imagen_comprimida_DCT)
   ssim_DCT <- SSIM(imagen_orig, imagen_comprimida_DCT)
   cr_DCT <- CR(ruta_orig, ruta_comprimida_DCT)
+  entropia_DCT <- entropia(imagen_comprimida_DCT)
   time_DCT <- imagen_DCT_time
   
-  df_IDWT <- data.frame(MSE = mse_IDWT, PSNR = psnr_IDWT, SSIM = ssim_IDWT, CR = cr_IDWT, TIEMPO = time_IDWT)
-  df_DCT <- data.frame(MSE = mse_DCT, PSNR = psnr_DCT, SSIM = ssim_DCT, CR = cr_DCT, TIEMPO = time_DCT)
+  df_IDWT <- data.frame(MSE = mse_IDWT, PSNR = psnr_IDWT, SSIM = ssim_IDWT, CR = cr_IDWT, ENTROPIA = entropia_IDWT,TIEMPO = time_IDWT)
+  df_DCT <- data.frame(MSE = mse_DCT, PSNR = psnr_DCT, SSIM = ssim_DCT, CR = cr_DCT, ENTROPIA = entropia_DCT, TIEMPO = time_DCT)
   
   df <- rbind(df_IDWT, df_DCT)
   
@@ -570,14 +556,19 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comp
       caption = titulo,
       align = "c",
       booktabs = TRUE,
-      col.names = c('MSE', 'PSNR', 'SSIM', 'CR', 'Tiempo (s)'),
-      digits = c(4,2,4,3,2)) %>%
+      col.names = c("MSE", "PSNR (dB)", "SSIM", "CR", "Entropía (bits/píxel)", "Tiempo (s)"),
+      digits = c(4, 2, 4, 3, 2, 2)) %>%
     kable_styling(
     position = "center",
     full_width = FALSE,
     bootstrap_options = c("striped", "hover")
   ) %>%
-  column_spec(1, bold = TRUE)
+  column_spec(1, bold = TRUE) %>%
+  footnote(
+    general = paste("Nota: La entropía de la imagen original es de", 
+                    round(entropia_orig, 2), "bits/píxel."),
+    general_title = ""
+  )
 }
 ```
 
@@ -594,7 +585,7 @@ plot(acantilado_DCT, axes = FALSE)
 title(main = "Compresión DCT", line = -3.5)
 ```
 
-A simple vista se observa como la compresión IDWT hace que la imagen sea más borrosa y la de DCT que aparezca ruido. Si calculamos las métricas de error para ambas compresiones obtenemos la siguiente tabla.
+A simple vista se observa como la compresión IDWT hace que la imagen sea más borrosa y la de DCT que aparezca ruido. Si calculamos las métricas de error para ambas compresiones, obtenemos la siguiente tabla.
 
 ```{r}
 crear_tabla_errores(acantilado, acantilado_IDWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_IDWT.jpg", "data_comp/acantilado_DCT.jpg", acantilado_IDWT_time, acantilado_DCT_time, "Compresión acantilado")
@@ -681,10 +672,58 @@ plot(barcos_SPIHT, main = "Compresión SPIHT", axes = FALSE)
 ```
 
 ```{r}
+entropia_orig <- entropia(imagen_orig)
+  
+  mse_IDWT <- MSE(imagen_orig, imagen_comprimida_IDWT)
+  psnr_IDWT <- PSNR(imagen_orig, imagen_comprimida_IDWT)
+  ssim_IDWT <- SSIM(imagen_orig, imagen_comprimida_IDWT)
+  cr_IDWT <- CR(ruta_orig, ruta_comprimida_IDWT)
+  entropia_IDWT <- entropia(imagen_comprimida_IDWT)
+  time_IDWT <- imagen_IDWT_time
+  
+  mse_DCT <- MSE(imagen_orig, imagen_comprimida_DCT)
+  psnr_DCT <- PSNR(imagen_orig, imagen_comprimida_DCT)
+  ssim_DCT <- SSIM(imagen_orig, imagen_comprimida_DCT)
+  cr_DCT <- CR(ruta_orig, ruta_comprimida_DCT)
+  entropia_DCT <- entropia(imagen_comprimida_DCT)
+  time_DCT <- imagen_DCT_time
+  
+  df_IDWT <- data.frame(MSE = mse_IDWT, PSNR = psnr_IDWT, SSIM = ssim_IDWT, CR = cr_IDWT, ENTROPIA = entropia_IDWT,TIEMPO = time_IDWT)
+  df_DCT <- data.frame(MSE = mse_DCT, PSNR = psnr_DCT, SSIM = ssim_DCT, CR = cr_DCT, ENTROPIA = entropia_DCT, TIEMPO = time_DCT)
+  
+  df <- rbind(df_IDWT, df_DCT)
+  
+  rownames(df) <- c("IDWT", "DCT")
+  
+  knitr::kable(df, 
+      caption = titulo,
+      align = "c",
+      booktabs = TRUE,
+      col.names = c("MSE", "PSNR (dB)", "SSIM", "CR", "Entropía (bits/píxel)", "Tiempo (s)"),
+      digits = c(4, 2, 4, 3, 2, 2)) %>%
+    kable_styling(
+    position = "center",
+    full_width = FALSE,
+    bootstrap_options = c("striped", "hover")
+  ) %>%
+  column_spec(1, bold = TRUE) %>%
+  footnote(
+    general = paste("Nota: La entropía de la imagen original es de", 
+                    round(entropia_orig, 2), "bits/píxel."),
+    general_title = ""
+  )
+```
+
+
+```{r}
+entropia_orig <- entropia(barcos)
+
 mse_SPIHT <- MSE(barcos, barcos_SPIHT)
 psnr_SPIHT <- PSNR(barcos, barcos_SPIHT)
 ssim_SPIHT <- SSIM(barcos, barcos_SPIHT)
 cr_SPIHT <- CR(ruta_barcos, "data_comp/boats_SPIHT.png")
+entropia_IDWT <- entropia(barcos_SPIHT)
+time_IDWT <- imagen_IDWT_time
 
 df_SPIHT <- data.frame(MSE = mse_SPIHT, PSNR = psnr_SPIHT, SSIM = ssim_SPIHT, CR = cr_SPIHT)
 
