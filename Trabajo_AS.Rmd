@@ -256,17 +256,17 @@ Esto se realiza porque el ojo humano es muy sensible a las frecuencias bajas (ca
 
 Con este método la imagen se divide en bloques de 8x8 píxeles. Al aplicar la fórmula matemática a cada bloque, se obtiene una matriz de frecuencias donde:
 
-  •	Esquina superior izquierda (Componente DC): Contiene la información más importante (el color promedio del bloque).
+- Esquina superior izquierda (Componente DC): Contiene la información más importante (el color promedio del bloque).
   
-  •	Esquina inferior derecha (Componentes AC): Contienen las frecuencias altas (detalles finos). Aquí es donde se acumulan valores pequeños o prescindibles.
+- Esquina inferior derecha (Componentes AC): Contienen las frecuencias altas (detalles finos). Aquí es donde se acumulan valores pequeños o prescindibles.
   
 Dicha matriz de frecuencias se divide por una "Matriz de Cuantización" predefinida (Q).
 
-  •	El objetivo es que los valores de las frecuencias altas (los detalles que el ojo casi no ve) se conviertan en ceros o números muy bajos al dividirse por números grandes.
+- El objetivo es que los valores de las frecuencias altas (los detalles que el ojo casi no ve) se conviertan en ceros o números muy bajos al dividirse por números grandes.
   
-  •	Es el único paso donde realmente se pierde información irrecuperable.
+- Es el único paso donde realmente se pierde información irrecuperable.
   
-  •	La "Calidad" del JPG (ej. 50% vs 80%) depende de qué tan agresiva sea esta matriz.
+- La "Calidad" del JPG (ej. 50% vs 80%) depende de qué tan agresiva sea esta matriz.
 
 Finalmente, se aplica el algoritmo de Huffman. Se asignan códigos binarios muy cortos a los valores que se repiten mucho y códigos más largos a los poco frecuentes. Esto comprime aún más el archivo final sin perder datos adicionales.
 
