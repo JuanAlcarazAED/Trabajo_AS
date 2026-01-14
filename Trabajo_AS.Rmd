@@ -4,15 +4,15 @@ subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
 author: "Juan Alcaraz, Adrián Carrasco, Fabián Calvo, Javier Herrero y Clara Montalvá"
 date: "Curso 2025-2026"
 output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   html_document:
     echo: true
     number_sections: true
     theme: lumen
     toc: true
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   bookdown::html_document2:
     echo: true
     number_sections: true
@@ -100,7 +100,7 @@ Estos métodos utilizados para la compresión de imágenes se pueden utilizar ta
 
 # Objetivos
 
-El objetivo de este proyecto es evaluar y comparar la eficacia de los algoritmos de compresión DWT (Discrete Wavelet Transform), DCT (Discrete Cosine Transform), EZW (Embedded Zerotree Wavelet) y SPIHT (Set Partitioning in Hierarchical Trees) aplicados a imágenes y a vídeos.
+Evaluaremos y compararemos la eficacia de los algoritmos de compresión DWT (Discrete Wavelet Transform), DCT (Discrete Cosine Transform) y SPIHT (Set Partitioning in Hierarchical Trees) aplicados a imágenes y a vídeos.
 
 Para las imágenes, seleccionaremos cinco imágenes con características diversas. Esta selección nos permitirá observar cómo cada algoritmo gestiona conceptos como la entropía, la retención de nitidez y el ruido.
 
@@ -331,6 +331,93 @@ También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se
 
 Enlace al repositorio donde se encuentra la librería mencionada: [aquí](https://github.com/theAdamColton/spiht.git)
 
+```{r}
+obtener_potencia_4 <- function(x) {
+  return(4^round(log(x,4)))
+}
+
+resize_SPIHT <- function(img){
+  nuevo_tamaño <- obtener_potencia_4(max(width(img), height(img)))
+  img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
+}
+```
+
+```{r, results = FALSE}
+compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
+
+  # Cargar la imagen, redimensionarla y separarla en canales
+
+  img <- load.image(ruta_imagen)
+
+  ancho <- width(img)
+  alto <- height(img)
+
+  img_re4 <- resize_SPIHT(img)
+
+  canales <- imsplit(img_re4, "c")
+
+  procesar_canal <- function(canal) {
+    # matriz <- as.matrix(canal)
+
+    # Transformada wavelet 2D
+
+    dwt_obj <- dwt.2d(canal, wf = wf, J = J)
+    # J: niveles de descomposición
+    # wf: wavelet
+
+    # Ensamblar matriz wavelet completa
+
+    W <- Ensamblar(dwt_obj)
+
+    # Codificar con SPIHT
+
+    bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+
+    # Tamaño en memoria del bitstream
+
+    tamanno_bytes <- object.size(bitstream)
+    tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+    cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+
+    # Decodificar SPIHT
+
+    n_inicial <- floor(log2(max(abs(W))))
+    W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+
+    # Desensamblar matriz wavelet reconstruida
+
+    dwt_rec <- Desensamblar(W_rec)
+
+    # Reconstruir imagen con IDWT
+
+    attributes(dwt_rec) <- attributes(dwt_obj)
+    dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+    dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+    dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+    dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+
+    img_rec <- idwt.2d(dwt_rec)
+
+    img_recuperada <- as.cimg(img_rec)
+
+    return(img_recuperada)
+  }
+
+  canales_comprimidos <- lapply(canales, procesar_canal)
+  img_final <- imappend(canales_comprimidos, axis = "c")
+
+  img_final <- resize(img_final, size_x = ancho, size_y = alto)
+
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.png"))
+
+  save.image(img_final, ruta_salida, quality = 1)
+
+  return(img_final)
+}
+```
+
 ## Compresión de vídeo
 
 ```{r}
@@ -346,7 +433,7 @@ Para abordar la compresión del vídeo, separaremos sus imágenes o fotogramas (
 Para la compresión de los fotogramas, le aplicaremos el algoritmo DCT a cada uno de ellos.
 
 ```{r}
-# Comprimimos los frames del vídeo con cada algoritmo
+# Comprimimos los frames del vídeo con el algoritmo DCT
 frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
 
 for (frame in frames_orig){
@@ -371,7 +458,7 @@ n.levels <- 6
 
 El audio a estudiar está en estéreo, la amplitud del audio para ambos canales se puede observar en la siguiente figura.
 
-```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
+```{r,dev="png", dpi=300, fig.width=8, fig.height=3, fig.align='center'}
 
 N <- length(audio@left)
 freq <- audio@samp.rate
@@ -403,17 +490,17 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 
 ## Métricas de error
 
-Para la evaluación de los resultados obtenidos tras la compresión de las diferentes imágenes utilizaremos, además de la evaluación visual subjetiva, una serie de métricas de error habituales en el campo del procesado de imágenes. Estas medidas nos permitirán valorar tanto la fidelidad en la reconstrucción de la imagen como la eficiencia computacional del proceso.
+Para la evaluación de los resultados obtenidos tras la compresión de las diferentes imágenes utilizaremos, además de la evaluación visual subjetiva, una serie de métricas de error que nos permitirán valorar tanto la fidelidad en la reconstrucción de la imagen como la eficiencia computacional del proceso.
 
 Las dos métricas más utilizadas en el contexto de compresión de imágenes y más simples son el Error Cuadrático Medio (MSE) y la Proporción Máxima de Señal a Ruido (PSNR), esta última expresada en decibelios. Ambas son métricas basadas en el error de píxeles. Un mayor PSNR indicará una mayor calidad de la imagen y un menor MSE significará, evidentemente, que hay una menor diferencia entre la imagen comprimida y la original.
 
 Ahora bien, estas dos métricas no reflejan bien la calidad de imagen percibida por el ojo humano. Buscando encontrar una medida cuantitativa que representase esta "calidad percibida" subjetiva, Zhou Wang, Alan Bovik, Hamid Sheikh y Eero Simoncelli desarrollaron en [@wang2004] el llamado Índice de Similitud Estructural (SSIM), el cual considera la degradación de una imagen como cambios en la información estructural, no solo como errores de píxeles absolutos. Compara cambios en la luminancia, el contraste y la estructura de las imágenes.
 
-Por otra parte, al tratarse de algoritmos de compresión, también estaremos interesados en analizar la Tasa o Ratio de Compresión (CR) y la entropía de las imágenes. La primera de estas métrica medirá la relación entre el tamaño del archivo original y el comprimido, indicando cuánto espacio en memoria hemos ganado. Por lo que respecta a la entropía, esta mide la cantidad de información contenida en la imagen, por lo que necesitaremos conocer la de la imagen original para poder realizar una comparación. Se mide en bits/píxel.
+Por otra parte, al tratarse de algoritmos de compresión, también estaremos interesados en analizar la Tasa o Ratio de Compresión (CR) y la entropía de las imágenes. La primera de estas métrica medirá la relación entre el tamaño del archivo original y el comprimido, indicando cuánto espacio en memoria hemos ganado, y la segunda mide la cantidad de información contenida en la imagen (la compararemos con la de la imagen original). Se mide en bits/píxel.
 
 Un detalle a tener en cuenta a la hora de comparar el tamaño de las imágenes originales y las comprimidas es que los formatos en los que se guardan las imágenes en un ordenador ya realizan compresiones implícitas. Por tanto, podemos obtener resultados aparentemente contradictorios como que los archivos comprimidos ocupen más espacio que los originales (los cuales ya estaban comprimidos). Además, el simple hecho de cargar una imagen externa en R y volverla a guardar sin modificarla ya hace que cambie su espacio en memoria.
 
-Teniendo en cuenta lo anterior, para tratar de que la métrica CR sea lo más útil y representativa posible, cargaremos inicialmente todas las imágenes en R y las volveremos a guardar directamente. De esta forma, el tamaño que tengan ya será una vez pasadas por R.
+Con todo esto, para que la métrica CR sea lo más útil y representativa posible, cargaremos inicialmente todas las imágenes en R y las volveremos a guardar directamente (modificando su tamaño).
 
 Por último, para determinar el coste computacional de cada uno de los algoritmos calcularemos el tiempo de ejecución de cada uno de ellos en segundos. 
 
@@ -421,11 +508,9 @@ Por último, para determinar el coste computacional de cada uno de los algoritmo
 
 ## Compresión de imágenes
 
-Analicemos los resultados obtenidos para las compresiones de las imágenes con los diferentes algoritmos.
-
 ### Compresiones DWT y DCT
 
-En esta sección no añadiremos demasiados comentarios para no excedernos en la extensión del documento final y porque que ya se realiza un análisis general de los resultados obtenidos en el apartado de Conclusiones. Simplemente mostraremos la comparativa entre las imágenes originales y las comprimidas y tablas con las diferentes métricas de error descritas en el apartado de Metodología.
+En esta sección simplemente mostraremos la comparativa entre las imágenes originales y las comprimidas y tablas con las diferentes métricas de error descritas en el apartado de Metodología.
 
 ```{r}
 crear_tabla_errores <- function(imagen_orig, imagen_comprimida_DWT, imagen_comprimida_DCT, ruta_orig, ruta_comprimida_DWT, ruta_comprimida_DCT, imagen_DWT_time, imagen_DCT_time, titulo){
@@ -578,93 +663,6 @@ Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se
 
 Es posible que con más tiempo y usando herramientas más avanzadas se pudiera hacer una mejor implementación del algoritmo, consiguiendo mayor precisión y rapidez, sin embargo no disponemos de ese tiempo.
 
-```{r}
-obtener_potencia_4 <- function(x) {
-  return(4^round(log(x,4)))
-}
-
-resize_SPIHT <- function(img){
-  nuevo_tamaño <- obtener_potencia_4(max(width(img), height(img)))
-  img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
-}
-```
-
-```{r, results = FALSE}
-compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
-
-  # Cargar la imagen, redimensionarla y separarla en canales
-
-  img <- load.image(ruta_imagen)
-
-  ancho <- width(img)
-  alto <- height(img)
-
-  img_re4 <- resize_SPIHT(img)
-
-  canales <- imsplit(img_re4, "c")
-
-  procesar_canal <- function(canal) {
-    # matriz <- as.matrix(canal)
-
-    # Transformada wavelet 2D
-
-    dwt_obj <- dwt.2d(canal, wf = wf, J = J)
-    # J: niveles de descomposición
-    # wf: wavelet
-
-    # Ensamblar matriz wavelet completa
-
-    W <- Ensamblar(dwt_obj)
-
-    # Codificar con SPIHT
-
-    bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
-
-    # Tamaño en memoria del bitstream
-
-    tamanno_bytes <- object.size(bitstream)
-    tamanno_kb <- as.numeric(tamanno_bytes) / 1024
-    cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
-
-    # Decodificar SPIHT
-
-    n_inicial <- floor(log2(max(abs(W))))
-    W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
-
-    # Desensamblar matriz wavelet reconstruida
-
-    dwt_rec <- Desensamblar(W_rec)
-
-    # Reconstruir imagen con IDWT
-
-    attributes(dwt_rec) <- attributes(dwt_obj)
-    dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
-    dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
-    dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
-    dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
-
-    img_rec <- idwt.2d(dwt_rec)
-
-    img_recuperada <- as.cimg(img_rec)
-
-    return(img_recuperada)
-  }
-
-  canales_comprimidos <- lapply(canales, procesar_canal)
-  img_final <- imappend(canales_comprimidos, axis = "c")
-
-  img_final <- resize(img_final, size_x = ancho, size_y = alto)
-
-  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
-
-  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.png"))
-
-  save.image(img_final, ruta_salida, quality = 1)
-
-  return(img_final)
-}
-```
-
 ```{r, results='hide'}
 tic()
 barcos_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
@@ -714,9 +712,9 @@ column_spec(1, bold = TRUE) %>%
 
 ## Compresión de vídeo
 
-Para realizar la compresión del vídeo se ha decidido separar el audio y las imágenes para la compresión por separado.
+Para realizar la compresión del vídeo se ha decidido separar el audio y las imágenes por separado.
 
-### Compresión de imagenes del vídeo
+### Compresión de imágenes del vídeo
 
 La compresión de los frames del vídeo se ha realizado mediante el método DCT, reutilizando exactamente el mismo procedimiento desarrollado para la compresión de imágenes individuales. A partir del vídeo original se extraen 223 imágenes a 30 fotogramas por segundo y se aplica el algoritmo de compresión de forma iterativa a cada una de ellas.
 
@@ -724,7 +722,7 @@ La compresión de los frames del vídeo se ha realizado mediante el método DCT,
 
 Para buscar el mejor parámetro umbral se va a buscar aquel valor que tiene una alta reducción del archivo y un bajo valor de la redundancia, debido a que cuanto más se acerque a la redundancia de la señal sin comprimir menos información pierde. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilizar un número de bins fijo a 100 por conveniencia.
 
-```{r,fig.width=6, fig.height=3.5, fig.align='center', out.width='100%'}
+```{r,fig.width=6, fig.height=3, fig.align='center'}
 lambda_vals <- seq(0, 1, by = 0.1)
 lambda_vals_2<-seq(0, 0.3, by = 0.1)
 red_data <- redundancy_vs_lambda(
@@ -791,7 +789,7 @@ size_bytes <- save_compressed(
 
 El mapa de calor de los coeficientes de detalle permite visualizar la distribución de la energía de la señal a través de las seis escalas wavelet. Las áreas en rojo representan coeficientes con valores cercanos a cero, mientras que las zonas amarillas y blancas indican la presencia de componentes de alta energía. Tras aplicar el umbral se observa una escasez estructural, especialmente en los niveles más finos $d_1$ y $d_2$. En la siguiente figura se ha representado únicamente el canal izquierdo por simplicidad, pero sería análogo con el canal derecho.
 
-```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
+```{r,dev="png", dpi=300, fig.width=8, fig.height=3, fig.align='center'}
 par(mfrow = c(1, 2))
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
@@ -800,7 +798,7 @@ par(mfrow = c(1, 1))
 
 Se ha aplicado una función de expansión para compensar el submuestreo intrínseco de la DWT, donde los niveles más profundos como $d_6$ contienen menos coeficientes que los niveles finos. Permite alinear todas las escalas con la longitud original de la señal, facilitando una comparación visual directa de la energía en cada instante de tiempo.
 
-```{r,fig.width=6, fig.height=3}
+```{r,fig.width=4, fig.height=2, fig.align='center'}
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
@@ -858,9 +856,9 @@ par(mfrow = c(1, 1))
 
 Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras comprimir en el canal izquierdo es `r round(mse_left,2)` y para el canal derecho `r round(mse_right, 2)`. Esto indica una pérdida apreciable pero concentrada en coeficientes de baja energía, manteniendo una estructura perceptualmente reconocible de la señal.
 
-```{r}
+```{r, echo=FALSE, warning = FALSE,message = FALSE}
 # Juntar imagen y vídeo comprimido (funciones_audio.R)
-rebuild_video_comp()
+x <- rebuild_video_comp()
 ratio_memoria <- CR("data/video_R.mp4","data_comp/video_comp.mp4")
 ```
 
