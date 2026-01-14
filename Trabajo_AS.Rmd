@@ -602,6 +602,8 @@ A simple vista se observa como la compresión IDWT hace que la imagen sea más b
 crear_tabla_errores(acantilado, acantilado_IDWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_IDWT.jpg", "data_comp/acantilado_DCT.jpg", acantilado_IDWT_time, acantilado_DCT_time, "Compresión acantilado")
 ```
 
+Notamos que la tasa de compresión (CR) para la compresión DCT es menor que 1. Es decir, que el espacio en memoria que ocupa la imagen comprimida es mayor al de la imagen orginal. Esto es debido a que no realizamos una codificación entrópica tras la aplicación de la DCT y el umbral.
+
 ```{r, fig.width=8, fig.height=3.25, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
