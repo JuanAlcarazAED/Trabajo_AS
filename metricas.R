@@ -126,7 +126,6 @@ SSIM <- function(x, y, numBreaks = 256) {
   
   return(ssim)
 }
-# 
 
 ## Métricas Específicas de Compresión
 
@@ -138,4 +137,19 @@ CR <- function(ruta_imagen_orig, ruta_imagen_comprimida){
   return(cr)
 }
 
+# Entropía de la imagen
+entropia <- function(imagen){
+  
+  imagen_gris <- grayscale(imagen)
+  v_imagen <- as.vector(imagen_gris)
+  
+  v_imagen_255 <- pmax(pmin(round(v_imagen*255), 255), 0)
+  
+  h <- table(factor(v_imagen_255, levels = 0:255))
+  prob <- h / sum(h)
+  prob <- prob[prob > 0]
+  H <- -sum(prob * log2(prob))
+  return(H)
+}
+# Mide la cantidad de información contenida en la imagen. Se mide en bits.
 
