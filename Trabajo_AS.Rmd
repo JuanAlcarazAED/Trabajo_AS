@@ -106,7 +106,7 @@ Para las imágenes, seleccionaremos cinco imágenes con características diversa
 
 Para la aplicación a la compresión de vídeos, necesitaremos comprimir también el audio. Para ello, exploraremos el dominio wavelet mediante el mejor valor umbral de energía, analizando la redundancia de la señal a través de la entropía de Shannon. Esto nos permitirá comprender la relación entre la concentración de energía de una señal y su capacidad para ser comprimida.
 
-Para la evaluación de los diferentes algoritmos haremos un análisis de métricas de error como el MSE (Mean Squared Error) y el PSNR (Peak Signal-to-Noise Ratio), el SSIM (Structural similarity index measure) o el CR (Compression Rate). Trataremos de determinar qué método ofrece el mayor  equilibrio entre la reducción del peso de la imagen y la mejor reconstrucción visual posible de la misma, buscando entender el motivo por el que las wavelets se han convertido en la base de estándares actuales como el JPEG 2000.
+Para la evaluación de los diferentes algoritmos haremos un análisis de métricas de error como el MSE (Mean Squared Error) y el PSNR (Peak Signal-to-Noise Ratio), el SSIM (Structural similarity index measure), la entropía o el CR (Compression Rate). Trataremos de determinar qué método ofrece el mayor equilibrio entre la reducción del peso de la imagen y la mejor reconstrucción visual posible de la misma, buscando entender el motivo por el que las wavelets se han convertido en la base de estándares actuales como el JPEG 2000.
 
 # Descripción de los datos
 
@@ -325,7 +325,7 @@ Sin dar muchos detalles, la forma en la que se organizan los algoritmos se basa 
 
 La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada pero en EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT, que es una versión más refinada de EZW, se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
 
-Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd` dentro de la carpeta explicaciones_y_pruebas. Para entender el funcionamiento nos hemos informado en el libro la referencia [@raoKRetall2001].
+Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd` dentro de la carpeta `explicaciones_y_pruebas/`. Para entender el funcionamiento nos hemos informado en el libro la referencia [@raoKRetall2001].
 
 También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se ha implementado EZW por falta de tiempo y porque SPIHT es claramente mejor. Hemos elegido implementarlo nosotros mismos porque no hemos conseguido encontrar ninguna librería de R que ya lo implemente. Si bien es cierto que encontramos una librería de Python que podríamos haber llamado desde R, esta era muy compleja de usar y además era necesario tener nociones del lenguaje de programación Rust, lenguaje que el autor de la librería mencionada emplea para la implementación del método, y que no es nada sencillo.
 
@@ -488,7 +488,7 @@ A simple vista se observa como la compresión DWT hace que la imagen sea más bo
 crear_tabla_errores(acantilado, acantilado_DWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_DWT.jpg", "data_comp/acantilado_DCT.jpg", acantilado_DWT_time, acantilado_DCT_time, "Compresión acantilado")
 ```
 
-Notamos que la tasa de compresión (CR) para la compresión DCT es menor que 1. Es decir, que el espacio en memoria que ocupa la imagen comprimida es mayor al de la imagen orginal. Esto es debido a que no realizamos una codificación entrópica tras la aplicación de la DCT y el umbral.
+Notamos que la tasa de compresión (CR) para la compresión DCT es menor que 1. Es decir, que el espacio en memoria que ocupa la imagen comprimida es mayor al de la imagen orginal. Esto es debido a que no realizamos una codificación adecuada tras la aplicación de la DCT y el umbral, o al menos no tan eficiente como la del estándar `jpg` y `jpeg`. No obstante, si comprobamos la cantidad de ceros en las matrices correspondientes a cada una de las imágenes
 
 ```{r,dev="png",dpi=300, fig.width=8, fig.height=3.25, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
@@ -562,7 +562,7 @@ crear_tabla_errores(barcos, barcos_DWT, barcos_DCT, ruta_barcos, "data_comp/barc
 
 ### Compresión SPIHT y posibles mejoras
 
-Sobre el desempeño de la implementación realizada se puede ver con detalle en el archivo `Pruebas_SPIHT.Rmd`, pero en resumen se observa que el algoritmo agota todas las iteraciones posibles que puede hacer, por tanto, en teoría la imagen se ha comprimido completamente y el decodificador debería obtener una imagen muy parecida a la original. Sin embargo nada más lejos de la realidad la imagen que se obtiene es de una calidad nefasta.
+Sobre el desempeño de la implementación realizada se puede ver con detalle en el archivo `Pruebas_SPIHT.Rmd` de la carpeta `explicaciones_y_pruebas/`, pero en resumen se observa que el algoritmo agota todas las iteraciones posibles que puede hacer, por tanto, en teoría la imagen se ha comprimido completamente y el decodificador debería obtener una imagen muy parecida a la original. Sin embargo nada más lejos de la realidad la imagen que se obtiene es de una calidad nefasta.
 
 Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se trata de un fallo en el código, y hay una gran cantidad de factores que pueden causar los pobres resultados obtenidos, entre los cuales destacamos:
 
@@ -572,7 +572,7 @@ Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se
 
 - El rango de coeficientes wavelet de la imagen escogida es desafortunadamente bajo. Es posible que los coeficientes wavelet para la imagen estén repartidos en un rango de valores muy pequeños y eso cause una mala aproximación. Una posible solución sería multiplicar por una constante, lo cual produciría como efecto secundario un aumento en el tiempo de ejecución, sin embargo se han hecho pruebas y los resultados a penas mejoran.
 
-Es posible que con más tiempo y usando herramientas más avanzadas se podría hacer una mejor implementación del algoritmo, consiguiendo mayor precisión y rapidez, sin embargo no disponemos de ese tiempo.
+Es posible que con más tiempo y usando herramientas más avanzadas se pudiera hacer una mejor implementación del algoritmo, consiguiendo mayor precisión y rapidez, sin embargo no disponemos de ese tiempo.
 
 ```{r}
 obtener_potencia_4 <- function(x) {
@@ -683,7 +683,7 @@ entropia_orig <- entropia(barcos)
 mse_SPIHT <- MSE(barcos, barcos_SPIHT)
 psnr_SPIHT <- PSNR(barcos, barcos_SPIHT)
 ssim_SPIHT <- SSIM(barcos, barcos_SPIHT)
-cr_SPIHT <- CR(ruta_barcos, "data_comp/boats_SPIHT.png")
+cr_SPIHT <- CR(ruta_barcos, "data_comp/barcos_SPIHT.png")
 entropia_SPIHT <- entropia(barcos_SPIHT)
 time_SPIHT <- barcos_SPIHT_time
 
@@ -717,7 +717,7 @@ Para realizar la compresión del vídeo se ha decidido separar el audio y las im
 
 ### Compresión de imagenes del vídeo
 
-La compresión de los frames del vídeo se ha realizado mediante el método DCT, reutilizando exactamente el mismo procedimiento desarrollado para la compresión de imágenes individuales. A partir del vídeo original se extraen 223 imágenes a 30 fotogramas por segundo y se aplica el algoritmo de compresión de forma iterativa.
+La compresión de los frames del vídeo se ha realizado mediante el método DCT, reutilizando exactamente el mismo procedimiento desarrollado para la compresión de imágenes individuales. A partir del vídeo original se extraen 223 imágenes a 30 fotogramas por segundo y se aplica el algoritmo de compresión de forma iterativa a cada una de ellas.
 
 ### Compresión del audio del vídeo
 
@@ -865,19 +865,25 @@ ratio_memoria<-CR("data/video_R.mp4","data_comp/video_comp.mp4")
 
 # Conclusiones
 
-En primer lugar, respecto a las métricas, la DCT obtuvo mejores resultados de fidelidad matemática (PSNR y SSIM más altos) en la mayoría de las imágenes probadas. Además, ambas técnicas mantuvieron un SSIM superior a 0.99, lo que indica que la estructura visual apenas se degrada tras la compresión.
+Analizando en primer lugar las métricas de error obtenidas para las compresiones utilizando la DWT y la DCT, y de acuerdo con la descripción de las mismas hecha en el apartado de Metodología, observamos que todas ellas son relativamente satisfactorias para las cinco imágenes. Es decir, obtenemos valores del MSE cercanos a 0 y valores del PSNR altos (alrededor de 25-30 dB), índices de similitud estructural muy próximos a 1 y entropías prácticamente idénticas a las de la imagen original (poca pérdida de información). Además, los tiempos de compilación de los algoritmos, medidos en segundos, son relativamente bajos.
+
+La aparición de tasas de compresión (CR) menores que 1 y su relación con el codificador a la hora de guardar la imagen ya se ha comentado brevemente en el apartad de Resultados.
+
+Si comparamos los dos métodos entre sí, podemos concluir que la DCT obtiene mejores resultados en cuanto a la fidelidad matemática y visual de las imágenes comprimidas con la original, con valores del MSE más bajos y valores del PSNR, SSIM y entropía superiores en todas las imágenes probadas. Ahora bien, el tiempo de ejecución de esta compresión es mayor y, salvo en imágenes pequeñas como en la generada con inteligencia artificial y la de los barcos, el tamaño del archivo final es más grande que el original. Es por ello que, si nuestro interés fuera únicamente el ahorro computacional, tanto en tiempo como en espacio en memoria, y no nos importase tanto la preservación de la "calidad visual" de las imágenes, sería más recomendable usar la compresión con DWT.
+
+Por lo que respecta a la codificación SPIHT, a simple vista podemos observar
+
 Mediante wavelets, se logró capturar el 90% de la energía del audio utilizando solo el 8% de los coeficientes totales.
 La imagen generada por IA fue la que mejor se comprimió, alcanzando el PSNR más alto (49.88 dB) debido a sus colores planos y bordes definidos.
 
-
 Aunque la DCT tiene mejores métricas, la DWT (Wavelets) es preferible en alta compresión porque evita los "bloques" visuales y ofrece una reconstrucción más limpia. El éxito de la compresión reside en eliminar la  información que el ojo y el oído humano no perciben.
+
 
 
 La compresión del audio en el domino wavelet permite concentrar la mayor parte de la energía del audio en un número reducido de coeficientes de detalle, haciendo posible eliminar la mayoría de ellos mediante un umbralado energético sin pérdida significativa de información y logrando así una compresión eficiente.
 Un umbral de $\lambda = 0.1$ es el punto óptimo para reducir el peso del archivo sin perder la esencia de la señal sonora.
 
 El resultado del vídeo comprimido se puede observar en el siguiente enlace https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data_comp/video_comp.mp4
-
 
 # Link del repositorio
 
