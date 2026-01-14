@@ -153,7 +153,7 @@ dibujo<-load.image(ruta_dibujo)
 barcos<-load.image(ruta_barcos)
 ```
 
-```{r, fig.align='center'}
+```{r,dev="png",dpi=300, fig.align='center'}
 layout(matrix(c(1, 1, 1, 2, 2, 0, 3, 3, 4, 4, 5, 5), nrow = 2, byrow = TRUE))
 par(mar = c(0.25, 0.25, 1.5, 0.25))
 
@@ -396,11 +396,7 @@ par(mfrow = c(1, 1))
 
 La compresión de una señal mediante umbralizado de energía en el dominio wavelet busca concentrar la energía de la señal en un número reducido de coeficientes, eliminando aquellos que aportan poca contribución energética. Este proceso modifica la distribución estadística de la energía, haciendo que esta se concentre en menos estados. Como consecuencia la señal resultante presenta una distribución menos uniforme, lo que conlleva a una reducción de la entropía.
 
-Para analizar de forma cuantitativa este efecto, se estudia la entropía de Shannon asociada a la distribución de energía de los coeficientes wavelet tras haber umbralizado. La entropía se calcula a partir del histograma de energías, en el que cada bin representa un simbolo discreto. De esta forma se puede medir de manera robusta el grado de concentración energética dado por el parámetro umbral $\lambda$. Con el fin de normalizar la magnitud se introduce el concepto de redundancia definida como:
-
-$$R(\lambda)=1-\frac{H(\lambda)}{H_{max}}$$
-
-Donde $H(\lambda)$ es la entropía de la distribución de energía de los coeficientes wavelet tras umbralizar y $H_{max}=\log_2(N_{bins})$ con $N_{bins}$ el número de bins que se mantiene constante para todos los valores de $\lambda$. Una redundancia elevada indica que la entropía de la señal está concentrada en un número reducido de estados, lo que indica que la señal presenta una alta compresibilidad. 
+Para analizar de forma cuantitativa este efecto, se estudia la entropía de Shannon asociada a la distribución de energía de los coeficientes wavelet tras haber umbralizado. La entropía se calcula a partir del histograma de energías, en el que cada bin representa un simbolo discreto. De esta forma se puede medir de manera robusta el grado de concentración energética dado por el parámetro umbral $\lambda$. Con el fin de normalizar la magnitud se introduce el concepto de redundancia definida como $R(\lambda)=1-\frac{H(\lambda)}{H_{max}}$. Donde $H(\lambda)$ es la entropía de la distribución de energía de los coeficientes wavelet tras umbralizar y $H_{max}=\log_2(N_{bins})$ con $N_{bins}$ el número de bins que se mantiene constante para todos los valores de $\lambda$. Una redundancia elevada indica que la entropía de la señal está concentrada en un número reducido de estados, lo que indica que la señal presenta una alta compresibilidad. 
 
 Se ha seleccionado el formato `.rds` para el análisis del almacenamiento debido a su capacidad para preservar la estructura de los coeficientes wavelet, incluyendo los valores nulos generados por el umbralado. A diferencia del formato `.wav`, que almacena la señal reconstruida en el dominio temporal sin tener en cuenta la presencia de ceros. 
 El porcentaje de archivo comprimido se calcula como el tamaño relativo del archivo `.rds` normalizado respecto al tamaño máximo obtenido para $\lambda=0$, correspondiene al caso sin compresión. De esta manera, esta magnitud refleja la reducción de información estructural debida al umbralado.
@@ -473,7 +469,7 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida_DWT, imagen_compr
 }
 ```
 
-```{r, fig.width=8, fig.height=4.8, fig.align='center', out.width='100%'}
+```{r,dev="png",dpi=300, fig.width=8, fig.height=4.8, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(acantilado, axes = FALSE)
@@ -494,7 +490,7 @@ crear_tabla_errores(acantilado, acantilado_DWT, acantilado_DCT, ruta_acantilado,
 
 Notamos que la tasa de compresión (CR) para la compresión DCT es menor que 1. Es decir, que el espacio en memoria que ocupa la imagen comprimida es mayor al de la imagen orginal. Esto es debido a que no realizamos una codificación entrópica tras la aplicación de la DCT y el umbral.
 
-```{r, fig.width=8, fig.height=3.25, fig.align='center', out.width='100%'}
+```{r,dev="png",dpi=300, fig.width=8, fig.height=3.25, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(flores, axes = FALSE)
@@ -511,7 +507,7 @@ title(main = "Compresión DCT", line = -3)
 crear_tabla_errores(flores, flores_DWT, flores_DCT, ruta_flores, "data_comp/flores_DWT.jpg", "data_comp/flores_DCT.jpg", flores_DWT_time, flores_DCT_time, "Compresión flores")
 ```
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
+```{r,dev="png",dpi=300, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(noche, axes = FALSE)
@@ -530,7 +526,7 @@ De nuevo observamos el mismo efecto que para la imagen del acantilado.
 crear_tabla_errores(noche, noche_DWT, noche_DCT, ruta_noche, "data_comp/noche_DWT.jpg", "data_comp/noche_DCT.jpg", noche_DWT_time, noche_DCT_time, "Compresión noche")
 ```
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
+```{r,dev="png",dpi=300, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(dibujo, axes = FALSE)
@@ -547,7 +543,7 @@ title(main = "Compresión DCT", line = -1)
 crear_tabla_errores(dibujo, dibujo_DWT, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_DWT.png", "data_comp/dibujo_DCT.png", dibujo_DWT_time, dibujo_DCT_time, "Compresión dibujo")
 ```
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
+```{r,dev="png",dpi=300, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 
 plot(barcos, axes = FALSE)
@@ -675,7 +671,7 @@ time <- toc(quiet = TRUE)
 barcos_SPIHT_time <- as.numeric(time$toc - time$tic)
 ```
 
-```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
+```{r, dev="png", fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 par(mfrow = c(1,2), mar = c(2,2,2,2))
 plot(barcos, main = "Imagen original", axes = FALSE)
 plot(barcos_SPIHT, main = "Compresión SPIHT", axes = FALSE)
@@ -721,13 +717,13 @@ Para realizar la compresión del vídeo se ha decidido separar el audio y las im
 
 ### Compresión de imagenes del vídeo
 
-La compresión de los frames del vídeo se ha realizado mediante el método DCT, reutilizando exactamente el mismo procedimiento desarrollado para la compresión de imágenes individuales. A partir del vídeo original se extraen 223 imágenes a 330 fotogramas por segundo y se aplica el algoritmo de compresión de forma iterativa.
+La compresión de los frames del vídeo se ha realizado mediante el método DCT, reutilizando exactamente el mismo procedimiento desarrollado para la compresión de imágenes individuales. A partir del vídeo original se extraen 223 imágenes a 30 fotogramas por segundo y se aplica el algoritmo de compresión de forma iterativa.
 
 ### Compresión del audio del vídeo
 
 Para buscar el mejor parámetro umbral se va a buscar aquel valor que tiene una alta reducción del archivo y un bajo valor de la redundancia, debido a que cuanto más se acerque a la redundancia de la señal sin comprimir menos información pierde. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilizar un número de bins fijo a 100 por conveniencia.
 
-```{r,fig.width=6, fig.height=4}
+```{r,fig.width=6, fig.height=3.5}
 lambda_vals <- seq(0, 1, by = 0.1)
 lambda_vals_2<-seq(0, 0.3, by = 0.1)
 red_data <- redundancy_vs_lambda(
@@ -745,11 +741,11 @@ size_data <- size_vs_lambda(
 plot(
   red_data$redundancy,
   size_data$size_bytes/max(size_data$size_bytes),
-  type = "b", pch = 19,
+  type = "b", pch = 15,
   col = "darkred",
   xlab = "Redundancia",
-  ylab = "Porcentaje de archivo comprimido",
-  main = "Porcentaje de archivo comprimido vs redundancia"
+  ylab = "Tamaño en memoria",
+  main = "Tamaño en memoria normalizado vs redundancia"
 )
 text(
   red_data$redundancy[1:3],
@@ -803,7 +799,7 @@ par(mfrow = c(1, 1))
 
 Se ha aplicado una función de expansión para compensar el submuestreo intrínseco de la DWT, donde los niveles más profundos como $d_6$ contienen menos coeficientes que los niveles finos. Permite alinear todas las escalas con la longitud original de la señal, facilitando una comparación visual directa de la energía en cada instante de tiempo.
 
-```{r,fig.width=6, fig.height=4}
+```{r,fig.width=6, fig.height=3}
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
@@ -836,7 +832,7 @@ mse_right <- sqrt(mean((audio@right - signal_right_rec)^2))/sqrt(mean(audio@righ
 
 Para ver el efecto de la señal comprimida se va a comprar la amplitud de la señal original (rojo) y la señal comprimida (negro). A pesar de haber eliminado solo un $10\%$ de la energía hay un efecto importante en la señal como se puede ver en la figura.
 
-```{r,dev="png", dpi=300, fig.width=10, fig.height=4}
+```{r,dev="png", dpi=300, fig.width=10, fig.height=3}
 audio_comp <- readWave("data_comp/audio2comp.wav")
 
 
