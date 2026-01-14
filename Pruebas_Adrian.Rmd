@@ -216,7 +216,7 @@ entropia <- function(imagen){
   imagen_gris <- grayscale(imagen)
   v_imagen <- as.vector(imagen_gris)
 
-  v_imagen_255 <- pmax(pmin(round(v_imagen*255), 255), 0)
+  v_imagen_255 <- round(v_imagen*255)
   
   h <- table(factor(v_imagen_255, levels = 0:255))
   prob <- h / sum(h)
@@ -233,6 +233,12 @@ entr <- function(histogram){
   probs<-nonzeroCounts / sum(nonzeroCounts)
   -sum(probs * log2(probs))
 }
+```
+
+```{r}
+entropia(acantilado)
+entropia(acantilado_IDWT)
+entropia(acantilado_DCT)
 ```
 
 ```{r}
@@ -422,7 +428,7 @@ flores_dct <- compresion_DCT_opt(ruta_flores)
 
 ```{r}
 source("compresion_SPIHT.R")
-source("Codificacion_SPIHT.R")
+source("Codificacion_SPIHT_funcionals.R")
 ```
 
 ```{r}
