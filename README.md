@@ -58,6 +58,9 @@ Trabajo_AS/
 
 ### Compresión EZW y SPIHT
 
+Se explica de forma breve el funcionamiento de los algoritmos y se hace un ejemplo de compresión con una imagen de pequeñas dimensiones.
+
+Después se comentan los resultados obtenidos y posibles causas de la falta de calidad, y posibles mejoras.
 
 ### Compresión de vídeo
 
@@ -88,6 +91,7 @@ Para reproducir el trabajo, ejecute el archivo `Trabajo_AS.Rmd`
 
 * **Mallat, S. (2009).** *A Wavelet Tour of Signal Processing: The Sparse Way* (3rd ed.). Academic Press. (Capítulos 1–6).
 * **Gonzalez, R. C., & Woods, R. E. (2018).** *Digital Image Processing* (4th ed.). Pearson. (Capítulo 8: Image Compression).
-* **Sullivan, G. J., & Wiegand, T. (2005).** Video compression—from concepts to the H.264/AVC standard. *Proceedings of the IEEE*, 93(1), 18–31.
+* **K.R. Rao & P.C. Yip (2001).** *The Transform and Data Compression Handbook* (1th ed.). CRC Press. (Capítulo 6: Wavelet Based Image Compression)
+* **Sullivan, G. J., & Wiegand, T. (2005).** *Video compression—from concepts to the H.264/AVC standard.* *Proceedings of the IEEE*, 93(1), 18–31.
 * **Perales Gómez, Á. L.** *DCT para la compresión de imágenes con perdida de calidad*. Documento Técnico. Universidad de Murcia, Facultad de Informática.
 
