@@ -110,11 +110,6 @@ mean((img - img_final_alta )^2)
 ```
 
 ```{r}
-
-```
-
-
-```{r}
 MAE <- function(imagen_orig, imagen_comprimida){
   
   diferencia <- imagen_orig - imagen_comprimida
@@ -177,7 +172,82 @@ PSNR(img, img_final_alta)
 ```{r}
 file.size('im_2/acantilado.jpg')
 file.size('data_comp/acantilado_IDWT.jpg')
+file.size('data_comp/acantilado_DCT.jpg')
 ```
+
+```{r}
+ruta_acantilado <- 'im_2/acantilado.jpg'
+acantilado<-load.image(ruta_acantilado)
+save.image(acantilado, ruta_acantilado, quality = 1)
+file.size('im_2/acantilado.jpg')
+```
+
+```{r}
+ruta_acantilado <- 'im_2/acantilado.png'
+acantilado<-load.image(ruta_acantilado)
+save.image(acantilado, ruta_acantilado, quality = 1)
+```
+
+```{r}
+source("compresion_IDWT.R")
+source("compresion_DCT_opt.R")
+```
+
+```{r}
+acantilado_IDWT <- compresion_IDWT(ruta_acantilado)
+acantilado_DCT<-compresion_DCT_opt(ruta_acantilado)
+```
+
+```{r}
+file.size('im_2/acantilado.png')
+file.size('data_comp/acantilado_IDWT.png')
+file.size('data_comp/acantilado_DCT.png')
+```
+
+```{r}
+print(object.size("acantilado"))
+print(object.size("acantilado_IDWT"))
+print(object.size("acantilado_DCT"))
+```
+
+```{r}
+entropia <- function(imagen){
+  
+  imagen_gris <- grayscale(imagen)
+  v_imagen <- as.vector(imagen_gris)
+
+  v_imagen_255 <- pmax(pmin(round(v_imagen*255), 255), 0)
+  
+  h <- table(factor(v_imagen_255, levels = 0:255))
+  prob <- h / sum(h)
+  prob <- prob[prob > 0]
+  H <- -sum(prob * log2(prob))
+  return(H)
+}
+# Se mide en bits
+```
+
+```{r}
+entr <- function(histogram){
+  nonzeroCounts<-histogram$counts[histogram$counts > 0]
+  probs<-nonzeroCounts / sum(nonzeroCounts)
+  -sum(probs * log2(probs))
+}
+```
+
+```{r}
+entropia(acantilado)
+entropia(acantilado_IDWT)
+entropia(acantilado_DCT)
+```
+
+
+```{r}
+imagen_gris <- grayscale(acantilado)
+v_imagen <- as.vector(imagen_gris)
+h <- table(factor(v_imagen, levels = 0:255))
+```
+
 
 ```{r}
 save.image(img_final_baja, 'data_comp/img_final_baja.jpg', quality = 1)
@@ -284,7 +354,6 @@ SSMI <- function(imagen_orig, imagen_comprimida){
   return(ssmi)
 }
 ```
-
 
 ```{r, echo = FALSE}
 library(gsignal)
