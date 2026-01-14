@@ -106,7 +106,7 @@ Para las imágenes, seleccionaremos cinco imágenes con características diversa
 
 Para la aplicación a la compresión de vídeos, necesitaremos comprimir también el audio. Para ello, exploraremos el dominio wavelet mediante el mejor valor umbral de energía, analizando la redundancia de la señal a través de la entropía de Shannon. Esto nos permitirá comprender la relación entre la concentración de energía de una señal y su capacidad para ser comprimida.
 
-Para la evaluación de los diferentes algoritmos haremos un análisis de métricas de error como el MSE (Mean Squared Error) y el PSNR (Peak Signal-to-Noise Ratio), el SSIM (Structural similarity index measure), la entropía o el CR (Compression Rate). Trataremos de determinar qué método ofrece el mayor equilibrio entre la reducción del peso de la imagen y la mejor reconstrucción visual posible de la misma, buscando entender el motivo por el que las wavelets se han convertido en la base de estándares actuales como el JPEG 2000.
+Para la evaluación de los diferentes algoritmos haremos un análisis de métricas de error como el MSE y el PSNR, el SSIM, la entropía o el CR. Trataremos de determinar qué método ofrece el mayor equilibrio entre la reducción del peso de la imagen y la mejor reconstrucción visual posible de la misma.
 
 # Descripción de los datos
 
