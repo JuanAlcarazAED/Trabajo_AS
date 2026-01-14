@@ -453,7 +453,7 @@ Para abordar la compresión del vídeo, separaremos sus imágenes o fotogramas (
 
 ### Compresión de imagen
 
-Para la compresión de los fotogramas, le aplicaremos el algoritmo DWT a cada uno de ellos.
+Para la compresión de los fotogramas, le aplicaremos el algoritmo DCT a cada uno de ellos.
 
 ```{r}
 # Comprimimos los frames del video con cada algoritmo
@@ -517,8 +517,19 @@ El porcentaje de archivo comprimido se calcula como el tamaño relativo del arch
 
 ## Métricas de error
 
-La manera de evaluar los resultados obtenidos tras la compresión de las diferentes imágenes
+Para la evaluación de los resultados obtenidos tras la compresión de las diferentes imágenes utilizaremos, además de la evaluación visual subjetiva, una serie de métricas de error habituales en el campo del procesado de imágenes. Estas medidas nos permitirán valorar tanto la fidelidad en la reconstrucción de la imagen como la eficiencia computacional del proceso.
 
+Las dos métricas más utilizadas en el contexto de compresión de imágenes y más simples son el Error Cuadrático Medio (MSE) y la Proporción Máxima de Señal a Ruido (PSNR), esta última expresada en decibelios. Ambas son métricas basadas en el error de píxeles. Un mayor PSNR indicará una mayor calidad de la imagen y un menor MSE significará, evidentemente, que hay una menor diferencia entre la imagen comprimida y la original.
+
+Ahora bien, estas dos métricas no reflejan bien la calidad de imagen percibida por el ojo humano. Buscando encontrar una medida cuantitativa que representase esta "calidad percibida" subjetiva, Zhou Wang, Alan Bovik, Hamid Sheikh y Eero Simoncelli desarrollaron en [@wang2004] el llamado Índice de Similitud Estructural (SSIM), el cual considera la degradación de una imagen como cambios en la información estructural, no solo como errores de píxeles absolutos. Compara cambios en la luminancia, el contraste y la estructura de las imágenes.
+
+Por otra parte, al tratarse de algoritmos de compresión, también estaremos interesados en analizar la Tasa o Ratio de Compresión (CR) y la entropía de las imágenes. La primera de estas métrica medirá la relación entre el tamaño del archivo original y el comprimido, indicando cuánto espacio en memoria hemos ganado. Por lo que respecta a la entropía, esta mide la cantidad de información contenida en la imagen, por lo que necesitaremos conocer la de la imagen original para poder realizar una comparación. Se mide en bits/píxel.
+
+Un detalle a tener en cuenta a la hora de comparar el tamaño de las imágenes originales y las comprimidas es que los formatos en los que se guardan las imágenes en un ordenador ya realizan compresiones implícitas. Por tanto, podemos obtener resultados aparentemente contradictorios como que los archivos comprimidos ocupen más espacio que los originales (los cuales ya estaban comprimidos). Además, el simple hecho de cargar una imagen externa en R y volverla a guardar sin modificarla ya hace que cambie su espacio en memoria.
+
+Teniendo en cuenta lo anterior, para tratar de que la métrica CR sea lo más útil y representativa posible, cargaremos inicialmente todas las imágenes en R y las volveremos a guardar directamente. De esta forma, el tamaño que tengan ya será una vez pasadas por R.
+
+Por último, para determinar el coste computacional de cada uno de los algoritmos calcularemos el tiempo de ejecución de cada uno de ellos en segundos. 
 
 # Resultados
 
