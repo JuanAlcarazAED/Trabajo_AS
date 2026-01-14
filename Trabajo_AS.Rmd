@@ -861,8 +861,10 @@ Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras compr
 ```{r}
 # Juntar imagen y vídeo comprimido (funciones_audio.R)
 rebuild_video_comp()
-ratio_memoria<-CR("data/video_R.mp4","data_comp/video_comp.mp4")
+ratio_memoria <- CR("data/video_R.mp4","data_comp/video_comp.mp4")
 ```
+
+Por lo que respecta a la tasa de compresión, obtenemos un CR de `r round(ratio_memoria, 2)`, es decir, efectivamente hemos ganado espacio en memoria tras la compresión del vídeo.
 
 # Conclusiones
 
