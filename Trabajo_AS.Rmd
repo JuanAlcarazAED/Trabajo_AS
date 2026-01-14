@@ -74,13 +74,13 @@ Históricamente, el método de compresión más utilizado ha sido el de la Trans
 
 # Revisión bibliográfica
 
-Comenzaremos haciendo una pequeña mención a la base teórica sobre la que se sustenta todo el trabajo realizado, el análisis de Fourier. Históricamente, este ha sido de una utilidad insólita en lo que se refiere a la ciencia en general y al análisis de señales en particular, siendo las wavelets la evolución natural de la transformada de Fourier.
+La base teórica sobre la que se sustenta todo el trabajo realizado es el análisis de Fourier. Históricamente, este ha sido de una inconmesurable utilidad en lo que se refiere a la ciencia en general y al análisis de señales en particular, siendo las wavelets la evolución natural de la transformada de Fourier.
 
-Desde una perspectiva matemática, se vio que la transformada introducida por el matemático y físico francés podía interpretarse como una especie de producto escalar. Más concretamente, la transformada de Fourier de una función $f$, podía verse como $\mathcal{F}\{f\}(s) = \langle f, e^{isx}\rangle$, donde $\langle, \rangle$ denota un cierto producto escalar entre funciones.
+Desde una perspectiva matemática, esta transformada puede interpretarse como un de producto escalar. Más concretamente, la transformada de Fourier de una función $f$, puede verse como $\mathcal{F}\{f\}(s) = \langle f, e^{isx}\rangle$, donde $\langle, \rangle$ denota un cierto producto escalar entre funciones.
 
-Las wavelet surgieron al pensar que se podía tomar el producto escalar con otras funciones distintas, que son lo que comúnmente se llaman wavelets madre. Así, dada una wavelet madre $\psi$, la transformada wavelet de una cierta señal $f$ será $\langle f, \psi(\frac{t-a}{b})\rangle$.
+Las wavelet surgieron al considerar el producto escalar con otras funciones distintas, las denominadas wavelets madre. Así, dada una wavelet madre $\psi$, la transformada wavelet de una cierta señal $f$ será $\langle f, \psi(\frac{t-a}{b})\rangle$.
 
-Como se ha visto en numerosas ocasiones las wavelets permiten hacer un análisis en el dominio de frecuencias de las señales, obteniendo resultados realmente impresionantes, además de tener cantidad de aplicaciones muy diversas. Para este trabajo, como se ha mencionado anteriormente, se usarán para la compresión de imágenes y vídeos.
+Las wavelets permiten hacer un análisis en el dominio de frecuencias de las señales y tiene aplicaciones muy diversas. En este trabajo, como se ha mencionado anteriormente, las aplicaremos para la compresión de imágenes y vídeos.
 
 La compresión de imágenes se fundamenta en la premisa de que los archivos digitales de las imágenes contienen una cantidad importante de datos que no necesariamente aportan información relevante. Como se establece en el libro “Digital Image Processing” de González y Woods (2018) [@gonzalez2018], los datos son el medio a través del cual se transporta la información y la cantidad de datos utilizados usualmente excede la cantidad de información real contenida, siendo este exceso comúnmente conococido como redundancia.
 
@@ -90,9 +90,9 @@ El objetivo central de los algoritmos de compresión utilizados en este proyecto
 
 - Redundancia Psicovisual: Es una redundancia asociada a la percepción que tiene el humano de las imágenes. No toda la información visual que contiene una imagen es percibida con la misma importancia. Es por ello que en la compresión con pérdida se puede eliminar redundancia en una imagen y que para el ojo humano el cambio en la imagen sea imperceptible.
 
-Históricamente la compresión de imágenes ha dependido de transformadas ortogonales para concentrar la energía de la señal en pocos coeficientes. El estándar se ha basado en la Transformada de Coseno Discreta (DCT), por su capacidad de compactación y debido a que el costo computacional no es muy alto. Este método divide la imagen en bloques de 8x8 píxeles y procesa cada uno de estos bloques.
+Históricamente, la compresión de imágenes ha dependido de transformadas ortogonales para concentrar la energía de la señal en pocos coeficientes. El estándar se ha basado en la Transformada de Coseno Discreta (DCT), por su capacidad de compactación y debido a que su coste computacional no es muy alto. Este método divide la imagen en bloques de 8x8 píxeles y procesa cada uno de estos bloques.
 
-La investigación ha llevado a distintas alternativas a la DCT, una de ellas la Transformada Discreta de Wavelet (DWT), que utiliza wavelets localizadas tanto en tiempo como en frecuencia. Esto permite la descomposición de la imagen en bandas de aproximación y detalles a distintas escalas.
+La investigación ha llevado a distintas alternativas a la DCT, una de ellas la Transformada Discreta de Wavelet (DWT), que utiliza wavelets localizadas tanto en tiempo como en frecuencia. Esto permite la descomposición de la imagen en bandas de aproximación y detalle a diferentes escalas.
 
 Otra alternativa, son los algoritmos "Embedded Zerotree Wavelet" (EZW) y “Set Partitioning in Hierarchical Trees”  (SPIHT) que, a diferencia de los métodos tradicionales que tratan los coeficientes de manera aislada, organizan los coeficientes en árboles de orientación espacial y clasifican los coeficientes por magnitud, transmitiendo primero los bits más significativos de los coeficientes más grandes.
 
