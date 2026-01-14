@@ -153,7 +153,7 @@ dibujo<-load.image(ruta_dibujo)
 barcos<-load.image(ruta_barcos)
 ```
 
-```{r,dev="png",dpi=300, fig.align='center'}
+```{r, dev="png",dpi=300, fig.align='center'}
 layout(matrix(c(1, 1, 1, 2, 2, 0, 3, 3, 4, 4, 5, 5), nrow = 2, byrow = TRUE))
 par(mar = c(0.25, 0.25, 1.5, 0.25))
 
@@ -190,11 +190,11 @@ source("funciones/compresion_SPIHT.R")
 
 ### Contexto inicial: codificador y decodificador
 
-Todos los métodos de compresión siguen una forma común de trabajar. La idea sobre la que se sustentan estos métodos consiste en tomar la transformada wavelet de una imagen y mediante un método u otro transformar esa matriz de coeficientes wavelet (o una parte de ella) en una cadena de _bits_, que generalmente se llama _bitstream_. Esta tarea de codificar parte de la información de la matriz en el _bitstream_ y la hace un codificador.
+La idea sobre la que se sustentan todos los métodos de compresión consiste en tomar la transformada wavelet de una imagen y almacenar la información de la matriz de coeficientes wavelet (o una parte de ella) en una cadena de _bits_, llamada _bitstream_. Esta tarea la hace un codificador.
 
-Será el _bitstream_ lo que se enviará y/o se almacenará, según el uso que le queramos dar. La razón de esta transformación es doble, primero es lo que permite transmitir la información por un canal binario (en la realidad los ordenadores solo puede transmitir _bits_) y además esta cadena ocupa, en general, menos espacio en memoria (o al menos ese es el objetivo de los algoritmos de compresión).
+Será el _bitstream_ lo que se enviará y/o se almacenará, según el uso que le queramos dar. Esta transformación sirve, primero para poder transmitir la información por un canal binario y además porque esta cadena ocupa, en general, menos espacio en memoria.
 
-Sin embargo, cuando el destinatario del mensaje, en el caso de que enviemos la imagen, o cuando se quiera acceder a la imagen tras un tiempo, en el caso de ser almacenada, se necesita realizar el proceso inverso al que hizo el codificador, para así recuperar la imagen a partir del _bitstream_. Este proceso lo realiza el llamado decodificador, que juega un papel tan importante como el codificador, pues sin él no se podría recuperar la información una vez codificada. 
+Sin embargo, cuando el usuario final quiere recuperar la imagen, se necesita realizar el proceso inverso al que hizo el codificador. Este proceso lo realiza el llamado decodificador, que recupera la información a partir del _bitstream_. 
 
 Cada uno de los siguientes algoritmos tiene una forma distinta de codificar la información de los coeficientes wavelet.
 
@@ -421,7 +421,11 @@ Por último, para determinar el coste computacional de cada uno de los algoritmo
 
 ## Compresión de imágenes
 
+Analicemos los resultados obtenidos para las compresiones de las imágenes con los diferentes algoritmos.
+
 ### Compresiones DWT y DCT
+
+En esta sección no añadiremos demasiados comentarios para no excedernos en la extensión del documento final y porque que ya se realiza un análisis general de los resultados obtenidos en el apartado de Conclusiones. Simplemente mostraremos la comparativa entre las imágenes originales y las comprimidas y tablas con las diferentes métricas de error descritas en el apartado de Metodología.
 
 ```{r}
 crear_tabla_errores <- function(imagen_orig, imagen_comprimida_DWT, imagen_comprimida_DCT, ruta_orig, ruta_comprimida_DWT, ruta_comprimida_DCT, imagen_DWT_time, imagen_DCT_time, titulo){
@@ -643,9 +647,6 @@ compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8,
 
     img_recuperada <- as.cimg(img_rec)
 
-    # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2
-    # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
-
     return(img_recuperada)
   }
 
@@ -723,7 +724,7 @@ La compresión de los frames del vídeo se ha realizado mediante el método DCT,
 
 Para buscar el mejor parámetro umbral se va a buscar aquel valor que tiene una alta reducción del archivo y un bajo valor de la redundancia, debido a que cuanto más se acerque a la redundancia de la señal sin comprimir menos información pierde. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilizar un número de bins fijo a 100 por conveniencia.
 
-```{r,fig.width=6, fig.height=3.5}
+```{r,fig.width=6, fig.height=3.5, fig.align='center', out.width='100%'}
 lambda_vals <- seq(0, 1, by = 0.1)
 lambda_vals_2<-seq(0, 0.3, by = 0.1)
 red_data <- redundancy_vs_lambda(
@@ -859,7 +860,7 @@ Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras compr
 
 ```{r}
 # Juntar imagen y vídeo comprimido (funciones_audio.R)
-# rebuild_video_comp()
+rebuild_video_comp()
 ratio_memoria<-CR("data/video_R.mp4","data_comp/video_comp.mp4")
 ```
 
@@ -871,16 +872,9 @@ La aparición de tasas de compresión (CR) menores que 1 y su relación con el c
 
 Si comparamos los dos métodos entre sí, podemos concluir que la DCT obtiene mejores resultados en cuanto a la fidelidad matemática y visual de las imágenes comprimidas con la original, con valores del MSE más bajos y valores del PSNR, SSIM y entropía superiores en todas las imágenes probadas. Ahora bien, el tiempo de ejecución de esta compresión es mayor y, salvo en imágenes pequeñas como en la generada con inteligencia artificial y la de los barcos, el tamaño del archivo final es más grande que el original. Es por ello que, si nuestro interés fuera únicamente el ahorro computacional, tanto en tiempo como en espacio en memoria, y no nos importase tanto la preservación de la "calidad visual" de las imágenes, sería más recomendable usar la compresión con DWT.
 
-Por lo que respecta a la codificación SPIHT, a simple vista podemos observar
+Por lo que respecta a la codificación SPIHT, las métricas de error obtenidas respaldan los comentarios hechos en la sección de Compresión SPIHT y posibles mejoras. Resumidamente, obtenemos un MSE bastante superior al de las compresiones con los algoritmos DWT y DCT de la misma imagen y magnitudes del PSNR, el SSIM y la entropía considerablemente más bajas. Además, el tiempo de compilación se dispara con respecto a las otras compresiones, haciendo la implementación del algoritmo poco óptima. La tasa de compresión lograda es la única métrica favorable, siendo esta extremadamente superior a la de los otros algoritmos (cerca de 50 cuando las otras no llegan ni a 2).
 
-Mediante wavelets, se logró capturar el 90% de la energía del audio utilizando solo el 8% de los coeficientes totales.
-La imagen generada por IA fue la que mejor se comprimió, alcanzando el PSNR más alto (49.88 dB) debido a sus colores planos y bordes definidos.
-
-Aunque la DCT tiene mejores métricas, la DWT (Wavelets) es preferible en alta compresión porque evita los "bloques" visuales y ofrece una reconstrucción más limpia. El éxito de la compresión reside en eliminar la  información que el ojo y el oído humano no perciben.
-
-
-
-La compresión del audio en el domino wavelet permite concentrar la mayor parte de la energía del audio en un número reducido de coeficientes de detalle, haciendo posible eliminar la mayoría de ellos mediante un umbralado energético sin pérdida significativa de información y logrando así una compresión eficiente.
+Por último, en cuanto al vídeo, la compresión del audio en el domino wavelet permite concentrar la mayor parte de la energía del audio en un número reducido de coeficientes de detalle, haciendo posible eliminar la mayoría de ellos mediante un umbralado energético sin pérdida significativa de información y logrando así una compresión eficiente.
 Un umbral de $\lambda = 0.1$ es el punto óptimo para reducir el peso del archivo sin perder la esencia de la señal sonora.
 
 El resultado del vídeo comprimido se puede observar en el siguiente enlace https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data_comp/video_comp.mp4
