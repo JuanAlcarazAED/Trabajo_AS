@@ -330,117 +330,6 @@ También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se
 
 Enlace al repositorio donde se encuentra la librería mencionada: [aquí](https://github.com/theAdamColton/spiht.git)
 
-### Resultados obtenidos y posibles mejoras
-
-Sobre el desempeño de la implementación realizada se puede ver con detalle en el archivo `Pruebas_SPIHT.Rmd`, pero en resumen se observa que el algoritmo agota todas las iteraciones posibles que puede hacer, por tanto, en teoría la imagen se ha comprimido completamente y el decodificador debería obtener una imagen muy parecida a la original. Sin embargo nada más lejos de la realidad la imagen que se obtiene es de una calidad nefasta.
-
-Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se trata de un fallo en el código, y hay una gran cantidad de factores que pueden causar los pobres resultados obtenidos, entre los cuales destacamos:
-
-- La aproximación de los coeficientes wavelet hecha en el paso subordinado. En el algoritmo no se codifican los valores reales de los coeficientes wavelet si no una aproximación que en algunos casos pensamos puede ser muy burda y es la causa de los malos resultados.
-
-- La wavelet madre usada no es la adecuada, puede ser que usando alguna wavelet específica los resultados mejoren. En nuestro caso tras hacer pruebas con las wavelets de `haar`, `d8` y `d4` no se han obtenido resultados de mejor calidad.
-
-- El rango de coeficientes wavelet de la imagen escogida es desafortunadamente bajo. Es posible que los coeficientes wavelet para la imagen estén repartidos en un rango de valores muy pequeños y eso cause una mala aproximación. Una posible solución sería multiplicar por una constante, lo cual produciría como efecto secundario un aumento en el tiempo de ejecución, sin embargo se han hecho pruebas y los resultados a penas mejoran.
-
-Es posible que con más tiempo y usando herramientas más avanzadas se podría hacer una mejor implementación del algoritmo, consiguiendo mayor precisión y rapidez, sin embargo no disponemos de ese tiempo.
-
-```{r}
-obtener_potencia_4 <- function(x) {
-  return(4^round(log(x,4)))
-}
-
-resize_SPIHT <- function(img){
-  nuevo_tamaño <- obtener_potencia_4(max(width(img), height(img)))
-  img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
-}
-```
-
-```{r, results = FALSE}
-compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
-
-  # Cargar la imagen, redimensionarla y separarla en canales
-
-  img <- load.image(ruta_imagen)
-
-  ancho <- width(img)
-  alto <- height(img)
-
-  img_re4 <- resize_SPIHT(img)
-
-  canales <- imsplit(img_re4, "c")
-
-  procesar_canal <- function(canal) {
-    # matriz <- as.matrix(canal)
-
-    # Transformada wavelet 2D
-
-    dwt_obj <- dwt.2d(canal, wf = wf, J = J)
-    # J: niveles de descomposición
-    # wf: wavelet
-
-    # Ensamblar matriz wavelet completa
-
-    W <- Ensamblar(dwt_obj)
-
-    # Codificar con SPIHT
-
-    bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
-
-    # Tamaño en memoria del bitstream
-
-    tamanno_bytes <- object.size(bitstream)
-    tamanno_kb <- as.numeric(tamanno_bytes) / 1024
-    cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
-
-    # Decodificar SPIHT
-
-    n_inicial <- floor(log2(max(abs(W))))
-    W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
-
-    # Desensamblar matriz wavelet reconstruida
-
-    dwt_rec <- Desensamblar(W_rec)
-
-    # Reconstruir imagen con IDWT
-
-    attributes(dwt_rec) <- attributes(dwt_obj)
-    dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
-    dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
-    dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
-    dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
-
-    img_rec <- idwt.2d(dwt_rec)
-
-    img_recuperada <- as.cimg(img_rec)
-
-    # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2
-    # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
-
-    return(img_recuperada)
-  }
-
-  canales_comprimidos <- lapply(canales, procesar_canal)
-  img_final <- imappend(canales_comprimidos, axis = "c")
-
-  img_final <- resize(img_final, size_x = ancho, size_y = alto)
-
-  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
-
-  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.png"))
-
-  save.image(img_final, ruta_salida, quality = 1)
-
-  return(img_final)
-}
-```
-
-```{r, results='hide'}
-tic()
-barcos_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
-time <- toc(quiet = TRUE)
-barcos_SPIHT_time <- as.numeric(time$toc - time$tic)
-```
-
 ## Compresión de vídeo
 
 ```{r}
@@ -674,7 +563,116 @@ title(main = "Compresión DCT", line = -1)
 crear_tabla_errores(barcos, barcos_IDWT, barcos_DCT, ruta_barcos, "data_comp/barcos_IDWT.jpg", "data_comp/barcos_DCT.jpg", barcos_IDWT_time, barcos_DCT_time, "Compresión barcos")
 ```
 
-### Compresión SPIHT
+### Compresión SPIHT y posibles mejoras
+
+Sobre el desempeño de la implementación realizada se puede ver con detalle en el archivo `Pruebas_SPIHT.Rmd`, pero en resumen se observa que el algoritmo agota todas las iteraciones posibles que puede hacer, por tanto, en teoría la imagen se ha comprimido completamente y el decodificador debería obtener una imagen muy parecida a la original. Sin embargo nada más lejos de la realidad la imagen que se obtiene es de una calidad nefasta.
+
+Tras revisar numerosas veces el algoritmo llegamos a la conclusión de que no se trata de un fallo en el código, y hay una gran cantidad de factores que pueden causar los pobres resultados obtenidos, entre los cuales destacamos:
+
+- La aproximación de los coeficientes wavelet hecha en el paso subordinado. En el algoritmo no se codifican los valores reales de los coeficientes wavelet si no una aproximación que en algunos casos pensamos puede ser muy burda y es la causa de los malos resultados.
+
+- La wavelet madre usada no es la adecuada, puede ser que usando alguna wavelet específica los resultados mejoren. En nuestro caso tras hacer pruebas con las wavelets de `haar`, `d8` y `d4` no se han obtenido resultados de mejor calidad.
+
+- El rango de coeficientes wavelet de la imagen escogida es desafortunadamente bajo. Es posible que los coeficientes wavelet para la imagen estén repartidos en un rango de valores muy pequeños y eso cause una mala aproximación. Una posible solución sería multiplicar por una constante, lo cual produciría como efecto secundario un aumento en el tiempo de ejecución, sin embargo se han hecho pruebas y los resultados a penas mejoran.
+
+Es posible que con más tiempo y usando herramientas más avanzadas se podría hacer una mejor implementación del algoritmo, consiguiendo mayor precisión y rapidez, sin embargo no disponemos de ese tiempo.
+
+```{r}
+obtener_potencia_4 <- function(x) {
+  return(4^round(log(x,4)))
+}
+
+resize_SPIHT <- function(img){
+  nuevo_tamaño <- obtener_potencia_4(max(width(img), height(img)))
+  img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
+}
+```
+
+```{r, results = FALSE}
+compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 500){
+
+  # Cargar la imagen, redimensionarla y separarla en canales
+
+  img <- load.image(ruta_imagen)
+
+  ancho <- width(img)
+  alto <- height(img)
+
+  img_re4 <- resize_SPIHT(img)
+
+  canales <- imsplit(img_re4, "c")
+
+  procesar_canal <- function(canal) {
+    # matriz <- as.matrix(canal)
+
+    # Transformada wavelet 2D
+
+    dwt_obj <- dwt.2d(canal, wf = wf, J = J)
+    # J: niveles de descomposición
+    # wf: wavelet
+
+    # Ensamblar matriz wavelet completa
+
+    W <- Ensamblar(dwt_obj)
+
+    # Codificar con SPIHT
+
+    bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+
+    # Tamaño en memoria del bitstream
+
+    tamanno_bytes <- object.size(bitstream)
+    tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+    cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+
+    # Decodificar SPIHT
+
+    n_inicial <- floor(log2(max(abs(W))))
+    W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+
+    # Desensamblar matriz wavelet reconstruida
+
+    dwt_rec <- Desensamblar(W_rec)
+
+    # Reconstruir imagen con IDWT
+
+    attributes(dwt_rec) <- attributes(dwt_obj)
+    dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+    dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+    dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+    dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+
+    img_rec <- idwt.2d(dwt_rec)
+
+    img_recuperada <- as.cimg(img_rec)
+
+    # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2
+    # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+
+    return(img_recuperada)
+  }
+
+  canales_comprimidos <- lapply(canales, procesar_canal)
+  img_final <- imappend(canales_comprimidos, axis = "c")
+
+  img_final <- resize(img_final, size_x = ancho, size_y = alto)
+
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.png"))
+
+  save.image(img_final, ruta_salida, quality = 1)
+
+  return(img_final)
+}
+```
+
+```{r, results='hide'}
+tic()
+barcos_SPIHT <- compresion_SPIHT(ruta_barcos, max_iter = 500)
+time <- toc(quiet = TRUE)
+barcos_SPIHT_time <- as.numeric(time$toc - time$tic)
+```
 
 ```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
 barcos_SPIHT <- load.image("data_comp/boats_SPIHT.png")
