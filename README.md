@@ -94,4 +94,4 @@ Para reproducir el trabajo, ejecute el archivo `Trabajo_AS.Rmd`
 * **K.R. Rao & P.C. Yip (2001).** *The Transform and Data Compression Handbook* (1th ed.). CRC Press. (Capítulo 6: Wavelet Based Image Compression)
 * **Sullivan, G. J., & Wiegand, T. (2005).** *Video compression—from concepts to the H.264/AVC standard.* *Proceedings of the IEEE*, 93(1), 18–31.
 * **Perales Gómez, Á. L.** *DCT para la compresión de imágenes con perdida de calidad*. Documento Técnico. Universidad de Murcia, Facultad de Informática.
-
+* **Wang, Z., Bovik, A. C., Sheikh, H. R., & Simoncelli, E. P. (2004).** *Image quality assessment: From error visibility to structural similarity.* *IEEE Transactions on Image Processing*, 13(4), 600–612.
