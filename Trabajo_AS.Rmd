@@ -458,7 +458,7 @@ n.levels <- 6
 
 El audio a estudiar está en estéreo, la amplitud del audio para ambos canales se puede observar en la siguiente figura.
 
-```{r,dev="png", dpi=300, fig.width=8, fig.height=3, fig.align='center'}
+```{r,dev="png", dpi=300, fig.width=10, fig.height=3, fig.align='center', out.width='100%'}
 
 N <- length(audio@left)
 freq <- audio@samp.rate
@@ -789,7 +789,7 @@ size_bytes <- save_compressed(
 
 El mapa de calor de los coeficientes de detalle permite visualizar la distribución de la energía de la señal a través de las seis escalas wavelet. Las áreas en rojo representan coeficientes con valores cercanos a cero, mientras que las zonas amarillas y blancas indican la presencia de componentes de alta energía. Tras aplicar el umbral se observa una escasez estructural, especialmente en los niveles más finos $d_1$ y $d_2$. En la siguiente figura se ha representado únicamente el canal izquierdo por simplicidad, pero sería análogo con el canal derecho.
 
-```{r,dev="png", dpi=300, fig.width=8, fig.height=3, fig.align='center'}
+```{r,dev="png", dpi=300, fig.width=10, fig.height=4, fig.align='center', out.width='100%'}
 par(mfrow = c(1, 2))
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=F)
 plot_heatmap_wavelet_coef(audio,n.levels,lambda,threshold=T)
@@ -798,7 +798,7 @@ par(mfrow = c(1, 1))
 
 Se ha aplicado una función de expansión para compensar el submuestreo intrínseco de la DWT, donde los niveles más profundos como $d_6$ contienen menos coeficientes que los niveles finos. Permite alinear todas las escalas con la longitud original de la señal, facilitando una comparación visual directa de la energía en cada instante de tiempo.
 
-```{r,fig.width=4, fig.height=2, fig.align='center'}
+```{r,fig.width=6, fig.height=3, fig.align='center'}
 plot_energy_vs_coeff(audio,n.levels,lambda)
 ```
 
