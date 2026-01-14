@@ -307,27 +307,27 @@ barcos_DCT_time <- as.numeric(time$toc - time$tic)
 
 ## Compresión EZW y SPIHT
 
-A parte de los algoritmos ya mencionados, los cuales son los más conocidos, para dar una visión algo más amplia del campo de la compresión de imágenes y de las herramientas disponibles, hemos decidido incluir dos algoritmos más que también se basan en la transformada wavelet.
+A parte de los algoritmos ya mencionados, los cuales son los más conocidos, para dar una visión más amplia del campo de la compresión de imágenes decidimos incluir dos algoritmos más también basados en la transformada wavelet.
 
-Estos dos algoritmos llamados EZW (_Embedded Zerotree Wavelet_) y SPIHT (_Set Partitioning in Hierachical Trees_) tienen la misma idea base, tomar la transformada wavelet de una imagen y hacer una selección de los coeficientes más importantes y aproximar su valor.
+Estos dos algoritmos llamados EZW (_Embedded Zerotree Wavelet_) y SPIHT (_Set Partitioning in Hierachical Trees_) tienen la misma idea base, tomar la transformada wavelet de una imagen, hacer una selección de los coeficientes más importantes y aproximar su valor.
 
 Dado que el funcionamiento detallado de los dos algoritmos es muy extenso, haremos aquí un pequeño resumen del mismo y de sus ideas principales.
 
 ### Funcionamiento básico de los algoritmos
 
-Los dos algoritmos tienen un funcionamiento base muy similar, se recorren las posiciones de la matriz de coeficientes wavelet en busca de los coeficientes con más información o los más importantes.
+Los dos algoritmos tienen el mismo fundamento base, se recorren las posiciones de la matriz de coeficientes wavelet en busca de los más importantes.
 
-Se hace un bucle y cada iteración tiene dos fases, la primera es el llamado paso dominante que resumidamente trata de encontrar los coeficientes wavelet que son significativos, si un coeficiente es significativo o no se decide en función de si es mayor o menor que una cierta cota $T$; luego está el paso subordinado que trata de aproximar el valor de los coeficientes que se han señalado como significativos en el paso dominante anterior.
+Se hace un bucle y cada iteración tiene dos fases, la primera de las cuales es el llamado paso dominante, que trata de encontrar los coeficientes wavelet significativos. Si un coeficiente es significativo o no se decide en función de una cierta cota $T$. Luego está el paso subordinado, que trata de aproximar el valor de los coeficientes encontrados en el paso anterior.
 
-Después de cada iteración se reduce a la mitad la cota usada para medir la significancia y se repite el proceso con la nueva cota. El algoritmo finaliza cuando la cota toma un valor menor o igual a $1$.
+Después de cada iteración se reduce a la mitad la cota usada para medir la significancia y se repite el proceso. El algoritmo finaliza cuando la cota toma un valor menor o igual a $1$.
 
-Sin dar muchos detalles, la forma en la que se organizan los algoritmos se basa en darle una estructura de árbol a la matriz de coeficientes, se establece que el coeficiente en la posición $(i,j)$ tiene hijos, que son $(2i, 2j)$, $(2i+1, 2j)$, $(2i, 2j+1)$ y $(2i+1, 2j+1)$. Con este convenio se forma una estructura que permite analizar los coeficientes, pues en general si el coeficiente padre no es significativo, lo hijos es muy probable que no lo sean, aunque no siempre es cierto, esto se puede aprovechar para analizar todos los coeficientes de forma eficaz.
+Sin dar muchos detalles, la forma en la que se organizan los algoritmos se basa en darle una estructura de árbol a la matriz de coeficientes, se establece que el coeficiente en la posición $(i,j)$ tiene hijos, que son $(2i, 2j)$, $(2i+1, 2j)$, $(2i, 2j+1)$ y $(2i+1, 2j+1)$. Con este convenio se forma una estructura que permite analizar los coeficientes de forma eficaz.
 
-La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada pero en EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT, que es una versión más refinada de EZW, se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
+La diferencia principal entre ambos algoritmos es la forma de recorrer la matriz de coeficientes. En ambos casos se aprovecha la estructura de árbol explicada, pero en EZW se recorre la matriz siguiendo un orden de barrido específico, para no analizar nunca un coeficiente hijo antes que su padre, mientras que en SPIHT, que es una versión más refinada de EZW, se tienen tres listas LIS, LIP y LSP, las cuales contienen índices de los coeficientes, y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
 
-Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd` dentro de la carpeta `explicaciones_y_pruebas/`. Para entender el funcionamiento nos hemos informado en el libro la referencia [@raoKRetall2001].
+Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd` dentro de la carpeta `explicaciones_y_pruebas/`. Para entender el funcionamiento de los algoritmos, se ha consultado el libro [@raoKRetall2001].
 
-También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se ha implementado EZW por falta de tiempo y porque SPIHT es claramente mejor. Hemos elegido implementarlo nosotros mismos porque no hemos conseguido encontrar ninguna librería de R que ya lo implemente. Si bien es cierto que encontramos una librería de Python que podríamos haber llamado desde R, esta era muy compleja de usar y además era necesario tener nociones del lenguaje de programación Rust, lenguaje que el autor de la librería mencionada emplea para la implementación del método, y que no es nada sencillo.
+También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se ha implementado EZW por falta de tiempo y porque SPIHT es claramente mejor. Hemos elegido implementarlo nosotros mismos porque no hemos encontrado ninguna librería de R que ya lo implemente. Si bien es cierto que encontramos una librería de Python que podríamos haber llamado desde R, esta era muy compleja de usar y además era necesario tener nociones del lenguaje de programación Rust, lenguaje que el autor de la librería mencionada emplea para la implementación del método.
 
 Enlace al repositorio donde se encuentra la librería mencionada: [aquí](https://github.com/theAdamColton/spiht.git)
 
