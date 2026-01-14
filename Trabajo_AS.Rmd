@@ -4,15 +4,15 @@ subtitle: "Análisis de Señales. Máster en Ciencia de Datos - UV"
 author: "Juan Alcaraz, Adrián Carrasco, Fabián Calvo, Javier Herrero y Clara Montalvá"
 date: "Curso 2025-2026"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_sections: true
   html_document:
     echo: true
     number_sections: true
     theme: lumen
     toc: true
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
   bookdown::html_document2:
     echo: true
     number_sections: true
@@ -165,7 +165,9 @@ plot(barcos, axes=F, main="Barcos")
 ```
 
 
-Para el estudio de la compresión de vídeo se ha utilizado un úncio vídeo elaborado por nosotros. Al vídeo se le ha añadido música de fondo con el objetivo de enriquecer el contenido de audio. Tiene una duración total de 7 segundos y fue grabado a una tasa de 30 fotogramas por segundo. El archivo de vídeo puede consultarse en el siguiente enlace: https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data/video.mp4.
+Para el estudio de la compresión de vídeo se ha utilizado un úncio vídeo elaborado por nosotros. Al vídeo se le ha añadido música de fondo con el objetivo de enriquecer el contenido de audio. Tiene una duración total de 7 segundos y fue grabado a una tasa de 30 fotogramas por segundo.
+
+El archivo de vídeo puede consultarse en el siguiente enlace: https://github.com/JuanAlcarazAED/Trabajo_AS/blob/main/data/video.mp4.
 
 # Metodología
 
@@ -323,7 +325,7 @@ Sin dar muchos detalles, la forma en la que se organizan los algoritmos se basa 
 
 La diferencia principal entre ambos algoritmos es la forma en la que recorren la matriz de coeficientes, en ambos casos se aprovecha la estructura de árbol explicada pero en EZW se recorre la matriz siguiendo un orden de barrido específico para no analizar nunca un coeficiente hijo antes que su padre, se sigue un barrido parecido a un _zigzag_; en SPIHT, que es una versión más refinada de EZW, se tienen tres listas LIS, LIP y LSP las cuales contienen índices de los coeficientes y siguiendo ciertas directrices se recorren las listas y se traspasan elementos de unas a otras o se añaden nuevos elementos en función de si los coeficientes son significativos o no.
 
-Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd`. Para entender el funcionamiento nos hemos informado en el libro la referencia [@raoKRetall2001].
+Una explicación más detallada de ambos algoritmos se puede encontrar en el repositorio del proyecto, en el archivo `Explicacion_Algoritmos_EZW_SPIHT.rmd` dentro de la carpeta explicaciones_y_pruebas. Para entender el funcionamiento nos hemos informado en el libro la referencia [@raoKRetall2001].
 
 También se ha implementado una versión rudimentaria del algoritmo SPIHT, no se ha implementado EZW por falta de tiempo y porque SPIHT es claramente mejor. Hemos elegido implementarlo nosotros mismos porque no hemos conseguido encontrar ninguna librería de R que ya lo implemente. Si bien es cierto que encontramos una librería de Python que podríamos haber llamado desde R, esta era muy compleja de usar y además era necesario tener nociones del lenguaje de programación Rust, lenguaje que el autor de la librería mencionada emplea para la implementación del método, y que no es nada sencillo.
 
@@ -863,12 +865,12 @@ ratio_memoria<-CR("data/video_R.mp4","data_comp/video_comp.mp4")
 
 # Conclusiones
 
-En primer lugar, respecto a las métricas, la **DCT** obtuvo mejores resultados de fidelidad matemática (**PSNR** y **SSIM** más altos) en la mayoría de las imágenes probadas. Además, ambas técnicas mantuvieron un **SSIM** superior a 0.99, lo que indica que la estructura visual apenas se degrada tras la compresión.
-Mediante wavelets, se logró capturar el **90% de la energía** del audio utilizando solo el **8% de los coeficientes** totales.
-La imagen generada por IA fue la que mejor se comprimió, alcanzando el PSNR más alto (**49.88 dB**) debido a sus colores planos y bordes definidos.
+En primer lugar, respecto a las métricas, la DCT obtuvo mejores resultados de fidelidad matemática (PSNR y SSIM más altos) en la mayoría de las imágenes probadas. Además, ambas técnicas mantuvieron un SSIM superior a 0.99, lo que indica que la estructura visual apenas se degrada tras la compresión.
+Mediante wavelets, se logró capturar el 90% de la energía del audio utilizando solo el 8% de los coeficientes totales.
+La imagen generada por IA fue la que mejor se comprimió, alcanzando el PSNR más alto (49.88 dB) debido a sus colores planos y bordes definidos.
 
 
-Aunque la DCT tiene mejores métricas, la **DWT (Wavelets)** es preferible en alta compresión porque evita los "bloques" visuales y ofrece una reconstrucción más limpia. El éxito de la compresión reside en eliminar la  información que el ojo y el oído humano no perciben.
+Aunque la DCT tiene mejores métricas, la DWT (Wavelets) es preferible en alta compresión porque evita los "bloques" visuales y ofrece una reconstrucción más limpia. El éxito de la compresión reside en eliminar la  información que el ojo y el oído humano no perciben.
 
 
 La compresión del audio en el domino wavelet permite concentrar la mayor parte de la energía del audio en un número reducido de coeficientes de detalle, haciendo posible eliminar la mayoría de ellos mediante un umbralado energético sin pérdida significativa de información y logrando así una compresión eficiente.
