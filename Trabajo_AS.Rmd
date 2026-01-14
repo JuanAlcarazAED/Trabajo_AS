@@ -125,11 +125,11 @@ Por último, utilizaremos la imagen `boats` de la librería `imager`, cuyas dime
 ```{r}
 # Cargamos inicialmente todas las imágenes y las guardamos desde R, para que las
 # métricas basadas en el tamaño de los archivos sean consistentes
-ruta_acantilado<-"im_2/acantilado.jpg"
-ruta_flores<-"im_2/flores.jpg"
-ruta_noche<-"im_2/noche.jpg"
-ruta_dibujo<-"im_2/dibujo.png"
-ruta_barcos<-"im_2/barcos.png"
+ruta_acantilado<-"data/acantilado.jpg"
+ruta_flores<-"data/flores.jpg"
+ruta_noche<-"data/noche.jpg"
+ruta_dibujo<-"data/dibujo.png"
+ruta_barcos<-"data/barcos.png"
 
 acantilado<-load.image(ruta_acantilado)
 flores<-load.image(ruta_flores)
@@ -176,14 +176,12 @@ Debido a que una señal (o función) se puede representar en términos de los co
 Las wavelets son, por tanto, muy útiles en el campo de la compresión de datos y de la reducción de ruido.
 
 ```{r}
-source("compresion_IDWT.R")
-source("compresion_DWT.R")
-source("compresion_DCT.R")
-source("compresion_DCT_opt.R")
-source("metricas.R")
-source("funciones_audio.R")
-source("Codificacion_SPIHT_funcional.R")
-source("compresion_SPIHT.R")
+source("funciones/compresion_DWT.R")
+source("funciones/compresion_DCT_opt.R")
+source("funciones/metricas.R")
+source("funciones/funciones_audio.R")
+source("funciones/Codificacion_SPIHT_funcional.R")
+source("funciones/compresion_SPIHT.R")
 ```
 
 ## Bases para comprender la compresión de imágenes
@@ -347,11 +345,11 @@ Para la compresión de los fotogramas, le aplicaremos el algoritmo DCT a cada un
 
 ```{r}
 # Comprimimos los frames del vídeo con cada algoritmo
-# frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
-# 
-# for (frame in frames_orig){
-#   compresion_DCT_opt(frame, "data_comp/frames_comp")
-# }
+frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
+
+for (frame in frames_orig){
+  compresion_DCT_opt(frame, "data_comp/frames_comp")
+}
 ```
 
 ### Compresión de audio
