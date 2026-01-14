@@ -486,7 +486,7 @@ plot(acantilado_DCT, axes = FALSE)
 title(main = "Compresión DCT", line = -3.5)
 ```
 
-A simple vista se observa como la compresión IDWT hace que la imagen sea más borrosa y la de DCT que aparezca ruido. Si calculamos las métricas de error para ambas compresiones, obtenemos la siguiente tabla.
+A simple vista se observa como la compresión DWT hace que la imagen sea más borrosa y la de DCT que aparezca ruido. Si calculamos las métricas de error para ambas compresiones, obtenemos la siguiente tabla.
 
 ```{r}
 crear_tabla_errores(acantilado, acantilado_DWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_DWT.jpg", "data_comp/acantilado_DCT.jpg", acantilado_DWT_time, acantilado_DCT_time, "Compresión acantilado")
@@ -553,7 +553,7 @@ par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 plot(barcos, axes = FALSE)
 title(main = "Imagen barcos", line = -1)
 
-plot(barcos_IDWT, axes = FALSE)
+plot(barcos_DWT, axes = FALSE)
 title(main = "Compresión DWT", line = -1)
 
 plot(barcos_DCT, axes = FALSE)
