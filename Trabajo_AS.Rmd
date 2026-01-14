@@ -197,20 +197,20 @@ Sin embargo, cuando el destinatario del mensaje, en el caso de que enviemos la i
 
 Cada uno de los siguientes algoritmos tiene una forma distinta de codificar la información de los coeficientes wavelet.
 
-## Compresión IDWT
+## Compresión DWT
 
-La IDWT (Inverse Discrete Wavelet Transform) es el proceso matemático y algorítmico utilizado para recuperar la señal original x[n] a partir de sus coeficientes wavelet (coeficientes de aproximación y detalle) previamente calculados mediante la DWT. 
-Mientras que la DWT descompone la señal en diferentes niveles de resolución, la IDWT realiza el camino inverso, reconstruye la señal sumando las contribuciones de las distintas escalas.
+La DWT (Discrete Wavelet Transform) es el proceso matemático y algorítmico utilizado para descomponer la señal original x[n] en una serie de coeficientes wavelet (coeficientes de aproximación y detalle), que representan la señal en distintos dominios de frecuencia y tiempo. 
+Mientras que la IDWT (Inverse Discrete Wavelet Transform) busca reconstruir la señal, la DWT realiza el camino de análisis, separando la información en distintos niveles de resolución para aislar características específicas.
 
-El proceso de reconstrucción se basa en iteraciones que invierten el Algoritmo de Mallat:
+El proceso de descomposición se basa en el esquema del Algoritmo de Mallat:
 
-1. Proceso Iterativo: La reconstrucción comienza desde el nivel más bajo de resolución, que corresponde a las frecuencias más bajas y avanza nivel por nivel hacia arriba.
+1. Proceso Iterativo: La descomposición comienza desde la señal original (alta resolución) y avanza iterativamente hacia abajo, generando niveles de resolución cada vez más bajos (frecuencias más bajas).
 
-2. Combinación de Coeficientes: En cada nivel, la señal se reconstruye combinando los coeficientes de aproximación y los coeficientes de detalle del nivel siguiente.
+2. Separación de Coeficientes: En cada nivel, la señal se divide en dos conjuntos: los coeficientes de aproximación (que capturan bajas frecuencias) y los coeficientes de detalle (que capturan altas frecuencias).
 
-3. Filtrado y Desplazamiento: Matemáticamente, esto implica aplicar filtros de reconstrucción y operaciones de desplazamiento sobre los coeficientes. 
+3. Filtrado: Matemáticamente, esto implica pasar la señal por filtros (paso bajo y paso alto) seguido de una operación de submuestreo (eliminar muestras alternas). 
 
-En imágenes, la IDWT combina los coeficientes verticales, horizontales y diagonales procesados para recuperar la imagen visualizable. Si se han alterado los coeficientes (por ejemplo, para comprimir), la imagen reconstruida tendrá diferencias respecto a la original.
+En imágenes, la DWT separa la información visual original, en bandas: una versión reducidad de la imagen (aproximación) y conjuntos de detalles (verticales, horizontales y diagonales). Esta separación es lo que permite, posteriormente, descartar información menos visible (compresión) antes de reconstruir.
 
 ```{r}
 tic()
