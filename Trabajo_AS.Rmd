@@ -902,6 +902,7 @@ Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras compr
 ```{r}
 # Juntar imagen y video comprimido (funciones_audio.R)
 # rebuild_video_comp()
+ratio_memoria<-CR("data/video_R.mp4","data_comp/video_comp.mp4")
 ```
 
 # Conclusiones
