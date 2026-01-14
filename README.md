@@ -12,40 +12,56 @@ Miembros del grupo:
 ## Estructura del repositorio
 ```
 Trabajo_AS/
-├── im_2/                  # Carpeta donde se guardan las imágenes
+├── data/                   # Carpeta donde se guardan las imágenes y los archivos de video
+│   ├── frames/             # Carpeta donde se guardan las imágenes del vídeo (fotogramas)
 │   ├── acantilado.jpg
-│   ├── dibujo.jpg        
+│   ├── audio.wav
+│   ├── barcos.png
+│   ├── dibujo.png     
 │   ├── flores.jpg     
-│   └── noche.jpg
-├── data/                   # Archivos de video
+│   ├── noche.jpg
 │   ├── video.mp4
-│   ├── frames/             # Carpeta donde se guardan las imágenes
-│   └── audio.wav
-├── src/                    # Scripts de código fuente
+│   └── video_R.mp4    # Vídeo cargado, separado y directamente guardado
+├── data_comp/                 # Resultados de la compresión
+│   ├── frames_comp/         # Carpeta con las imagenes comprimidas del vídeo
+│   ├── acantilado_DCT.jpg       # Imagen comprimida con DCT
+│   ├── acantilado_DWT.jpg       # Imagen comprimida con DWT
+│   ├── audio2comp.wav       # Audio comprimido
+│   ├── audio_wavelet_comp.rds       # Archivo optimizado con ceros
+│   ├── barcos_DCT.png       # Imagen comprimida con DCT
+│   ├── barcos_DWT.png       # Imagen comprimida con DWT
+│   ├── dibujo_DCT.png       # Imagen comprimida con DCT
+│   ├── dibujo_DWT.png       # Imagen comprimida con DWT
+│   ├── flores_DCT.jpg       # Imagen comprimida con DCT
+│   ├── flores_DWT.jpg       # Imagen comprimida con DWT
+│   ├── noche_DCT.jpg       # Imagen comprimida con DCT
+│   ├── noche_DWT.jpg       # Imagen comprimida con DWT
+│   └── video_comp.mp4         # Vídeo comprimido
+├── explicaciones_y_pruebas/          # Scripts de código fuente
+|   ├── compresion_ DWT.R    # Función para compresión DWT
 │   ├── compresion_IDWT.R
 │   ├── compresion_DCT.R
-│   ├── compresion_DCT_opt.R
-│   ├── metricas.R
+│   ├── compresion_DCT_opt.R    # Función para compresión DCT
+│   ├── metricas.R    # Funciones para las diferentes métricas
 │   ├── funciones_audio.R   # Funciones para el vídeo
-│   ├── Codificacion_SPIHT.R
-│   ├── compresion_SPIHT.R
-│   └── Trabajo_AS.Rmd      # Script principal que ejecuta la compresión
-├── data_comp/                 # Resultados de la compresión
-│   ├── audio_wavelet_comp.rds       # Archivo optimizado con ceros 
-│   ├── audio2comp.wav       # Audio comprimido
-│   ├── audio_wavelet_comp.rds       # Archivo optimizado con ceros 
-│   ├── frames_comp/         # Carpeta con las imagenes comprimidas del vídeo
-│   ├── video_comp.mp4         # Vídeo comprimido
-│   ├── acantilado_DCT.jpg       # Imagen comprimida con DCT
-│   ├── dibujo_DCT.jpg       # Imagen comprimida con DCT
-│   ├── flores_DCT.jpg       # Imagen comprimida con DCT
-│   ├── noche_DCT.jpg       # Imagen comprimida con DCT
-│   ├── acantilado_IDWT.jpg     # Imagen comprimida con IDWT
-│   ├── dibujo_IDWT.jpg       # Imagen comprimida con IDWT
-│   ├── flores_IDWT.jpg       # Imagen comprimida conIDWT
-│   ├── noche_IDWT.jpg       # Imagen comprimida con IDWT
+│   ├── Codificacion_SPIHT_funcional.R   # Funciones para la codificación SPIHT
+│   ├── compresion_SPIHT.R    # Funciones para la compresión SPIHT
+│   ├── Decodificacion_SPIHT.R
+
+├── funciones/                    # Scripts de código fuente
+|   ├── compresion_ DWT.R    # Función para compresión DWT
+│   ├── compresion_IDWT.R
+│   ├── compresion_DCT.R
+│   ├── compresion_DCT_opt.R    # Función para compresión DCT
+│   ├── metricas.R    # Funciones para las diferentes métricas
+│   ├── funciones_audio.R   # Funciones para el vídeo
+│   ├── Codificacion_SPIHT_funcional.R   # Funciones para la codificación SPIHT
+│   ├── compresion_SPIHT.R    # Funciones para la compresión SPIHT
+│   ├── Decodificacion_SPIHT.R
 ├── Trabajo_AS.pdf               # Memoria
 ├── Referencias.bib               # Referencias
+├── Trabajo_AS.Rmd      # Script principal que ejecuta la compresión
+├── README.md      # Este archivo
 ```
 
 
