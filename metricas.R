@@ -143,7 +143,7 @@ entropia <- function(imagen){
   imagen_gris <- grayscale(imagen)
   v_imagen <- as.vector(imagen_gris)
   
-  v_imagen_255 <- pmax(pmin(round(v_imagen*255), 255), 0)
+  v_imagen_255 <- round(v_imagen*255)
   
   h <- table(factor(v_imagen_255, levels = 0:255))
   prob <- h / sum(h)
@@ -151,5 +151,5 @@ entropia <- function(imagen){
   H <- -sum(prob * log2(prob))
   return(H)
 }
-# Mide la cantidad de información contenida en la imagen. Se mide en bits.
+# Mide la cantidad de información contenida en la imagen. Se mide en bits/píxel.
 
