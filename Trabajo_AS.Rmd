@@ -131,17 +131,17 @@ ruta_noche<-"im_2/noche.jpg"
 ruta_dibujo<-"im_2/dibujo.png"
 ruta_barcos<-"im_2/barcos.png"
 
-# acantilado<-load.image(ruta_acantilado)
-# flores<-load.image(ruta_flores)
-# noche<-load.image(ruta_noche)
-# dibujo<-load.image(ruta_dibujo)
-# barcos<-load.image(ruta_barcos)
-# 
-# save.image(acantilado, ruta_acantilado, quality = 1)
-# save.image(flores, ruta_flores, quality = 1)
-# save.image(noche, ruta_noche, quality = 1)
-# save.image(dibujo, ruta_dibujo, quality = 1)
-# save.image(barcos, ruta_barcos, quality = 1)
+acantilado<-load.image(ruta_acantilado)
+flores<-load.image(ruta_flores)
+noche<-load.image(ruta_noche)
+dibujo<-load.image(ruta_dibujo)
+barcos<-load.image(ruta_barcos)
+
+save.image(acantilado, ruta_acantilado, quality = 1)
+save.image(flores, ruta_flores, quality = 1)
+save.image(noche, ruta_noche, quality = 1)
+save.image(dibujo, ruta_dibujo, quality = 1)
+save.image(barcos, ruta_barcos, quality = 1)
 ```
 
 ```{r}
@@ -177,6 +177,7 @@ Las wavelets son, por tanto, muy útiles en el campo de la compresión de datos 
 
 ```{r}
 source("compresion_IDWT.R")
+source("compresion_DWT.R")
 source("compresion_DCT.R")
 source("compresion_DCT_opt.R")
 source("metricas.R")
@@ -214,37 +215,37 @@ En imágenes, la DWT separa la información visual original, en bandas: una vers
 
 ```{r}
 tic()
-acantilado_IDWT <- compresion_IDWT(ruta_acantilado)
+acantilado_DWT <- compresion_DWT(ruta_acantilado)
 time <- toc(quiet = TRUE)
-acantilado_IDWT_time <- as.numeric(time$toc - time$tic)
+acantilado_DWT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ```{r}
 tic()
-flores_IDWT <- compresion_IDWT(ruta_flores)
+flores_DWT <- compresion_DWT(ruta_flores)
 time <- toc(quiet = TRUE)
-flores_IDWT_time <- as.numeric(time$toc - time$tic)
+flores_DWT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ```{r}
 tic()
-noche_IDWT <- compresion_IDWT(ruta_noche)
+noche_DWT <- compresion_DWT(ruta_noche)
 time <- toc(quiet = TRUE)
-noche_IDWT_time <- as.numeric(time$toc - time$tic)
+noche_DWT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ```{r}
 tic()
-dibujo_IDWT <- compresion_IDWT(ruta_dibujo)
+dibujo_DWT <- compresion_DWT(ruta_dibujo, extension_comp = "png")
 time <- toc(quiet = TRUE)
-dibujo_IDWT_time <- as.numeric(time$toc - time$tic)
+dibujo_DWT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ```{r}
 tic()
-barcos_IDWT <- compresion_IDWT(ruta_barcos)
+barcos_DWT <- compresion_DWT(ruta_barcos, extension_comp = "png")
 time <- toc(quiet = TRUE)
-barcos_IDWT_time <- as.numeric(time$toc - time$tic)
+barcos_DWT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ## Compresión DCT
@@ -271,14 +272,14 @@ Finalmente, se aplica el algoritmo de Huffman. Se asignan códigos binarios muy 
 
 ```{r}
 tic()
-acantilado_DCT<-compresion_DCT_opt(ruta_acantilado)
+acantilado_DCT <- compresion_DCT_opt(ruta_acantilado)
 time <- toc(quiet = TRUE)
 acantilado_DCT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ```{r}
 tic()
-flores_DCT<-compresion_DCT_opt(ruta_flores)
+flores_DCT <- compresion_DCT_opt(ruta_flores)
 time <- toc(quiet = TRUE)
 flores_DCT_time <- as.numeric(time$toc - time$tic)
 ```
@@ -292,14 +293,14 @@ noche_DCT_time <- as.numeric(time$toc - time$tic)
 
 ```{r}
 tic()
-dibujo_DCT <- compresion_DCT_opt(ruta_dibujo)
+dibujo_DCT <- compresion_DCT_opt(ruta_dibujo, extension_comp = "png")
 time <- toc(quiet = TRUE)
 dibujo_DCT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ```{r}
 tic()
-barcos_DCT<-compresion_DCT_opt(ruta_barcos)
+barcos_DCT<-compresion_DCT_opt(ruta_barcos, extension_comp = "png")
 time <- toc(quiet = TRUE)
 barcos_DCT_time <- as.numeric(time$toc - time$tic)
 ```
@@ -345,7 +346,7 @@ Para abordar la compresión del vídeo, separaremos sus imágenes o fotogramas (
 Para la compresión de los fotogramas, le aplicaremos el algoritmo DCT a cada uno de ellos.
 
 ```{r}
-# Comprimimos los frames del video con cada algoritmo
+# Comprimimos los frames del vídeo con cada algoritmo
 # frames_orig <- list.files(path = "data/frames", full.names = TRUE, recursive = FALSE)
 # 
 # for (frame in frames_orig){
@@ -427,16 +428,16 @@ Por último, para determinar el coste computacional de cada uno de los algoritmo
 ### Compresiones DWT y DCT
 
 ```{r}
-crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comprimida_DCT, ruta_orig, ruta_comprimida_IDWT, ruta_comprimida_DCT, imagen_IDWT_time, imagen_DCT_time, titulo){
+crear_tabla_errores <- function(imagen_orig, imagen_comprimida_DWT, imagen_comprimida_DCT, ruta_orig, ruta_comprimida_DWT, ruta_comprimida_DCT, imagen_DWT_time, imagen_DCT_time, titulo){
   
   entropia_orig <- entropia(imagen_orig)
   
-  mse_IDWT <- MSE(imagen_orig, imagen_comprimida_IDWT)
-  psnr_IDWT <- PSNR(imagen_orig, imagen_comprimida_IDWT)
-  ssim_IDWT <- SSIM(imagen_orig, imagen_comprimida_IDWT)
-  cr_IDWT <- CR(ruta_orig, ruta_comprimida_IDWT)
-  entropia_IDWT <- entropia(imagen_comprimida_IDWT)
-  time_IDWT <- imagen_IDWT_time
+  mse_DWT <- MSE(imagen_orig, imagen_comprimida_DWT)
+  psnr_DWT <- PSNR(imagen_orig, imagen_comprimida_DWT)
+  ssim_DWT <- SSIM(imagen_orig, imagen_comprimida_DWT)
+  cr_DWT <- CR(ruta_orig, ruta_comprimida_DWT)
+  entropia_DWT <- entropia(imagen_comprimida_DWT)
+  time_DWT <- imagen_DWT_time
   
   mse_DCT <- MSE(imagen_orig, imagen_comprimida_DCT)
   psnr_DCT <- PSNR(imagen_orig, imagen_comprimida_DCT)
@@ -445,12 +446,12 @@ crear_tabla_errores <- function(imagen_orig, imagen_comprimida_IDWT, imagen_comp
   entropia_DCT <- entropia(imagen_comprimida_DCT)
   time_DCT <- imagen_DCT_time
   
-  df_IDWT <- data.frame(MSE = mse_IDWT, PSNR = psnr_IDWT, SSIM = ssim_IDWT, CR = cr_IDWT, ENTROPIA = entropia_IDWT,TIEMPO = time_IDWT)
+  df_DWT <- data.frame(MSE = mse_DWT, PSNR = psnr_DWT, SSIM = ssim_DWT, CR = cr_DWT, ENTROPIA = entropia_DWT,TIEMPO = time_DWT)
   df_DCT <- data.frame(MSE = mse_DCT, PSNR = psnr_DCT, SSIM = ssim_DCT, CR = cr_DCT, ENTROPIA = entropia_DCT, TIEMPO = time_DCT)
   
-  df <- rbind(df_IDWT, df_DCT)
+  df <- rbind(df_DWT, df_DCT)
   
-  rownames(df) <- c("IDWT", "DCT")
+  rownames(df) <- c("DWT", "DCT")
   
   knitr::kable(df, 
       caption = titulo,
@@ -478,8 +479,8 @@ par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 plot(acantilado, axes = FALSE)
 title(main = "Imagen acantilado", line = -3.5)
 
-plot(acantilado_IDWT, axes = FALSE)
-title(main = "Compresión IDWT", line = -3.5)
+plot(acantilado_DWT, axes = FALSE)
+title(main = "Compresión DWT", line = -3.5)
 
 plot(acantilado_DCT, axes = FALSE)
 title(main = "Compresión DCT", line = -3.5)
@@ -488,7 +489,7 @@ title(main = "Compresión DCT", line = -3.5)
 A simple vista se observa como la compresión IDWT hace que la imagen sea más borrosa y la de DCT que aparezca ruido. Si calculamos las métricas de error para ambas compresiones, obtenemos la siguiente tabla.
 
 ```{r}
-crear_tabla_errores(acantilado, acantilado_IDWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_IDWT.jpg", "data_comp/acantilado_DCT.jpg", acantilado_IDWT_time, acantilado_DCT_time, "Compresión acantilado")
+crear_tabla_errores(acantilado, acantilado_DWT, acantilado_DCT, ruta_acantilado, "data_comp/acantilado_DWT.jpg", "data_comp/acantilado_DCT.jpg", acantilado_DWT_time, acantilado_DCT_time, "Compresión acantilado")
 ```
 
 Notamos que la tasa de compresión (CR) para la compresión DCT es menor que 1. Es decir, que el espacio en memoria que ocupa la imagen comprimida es mayor al de la imagen orginal. Esto es debido a que no realizamos una codificación entrópica tras la aplicación de la DCT y el umbral.
@@ -499,15 +500,15 @@ par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 plot(flores, axes = FALSE)
 title(main = "Imagen flores", line = -3)
 
-plot(flores_IDWT, axes = FALSE)
-title(main = "Compresión IDWT", line = -3)
+plot(flores_DWT, axes = FALSE)
+title(main = "Compresión DWT", line = -3)
 
 plot(flores_DCT, axes = FALSE)
 title(main = "Compresión DCT", line = -3)
 ```
 
 ```{r}
-crear_tabla_errores(flores, flores_IDWT, flores_DCT, ruta_flores, "data_comp/flores_IDWT.jpg", "data_comp/flores_DCT.jpg", flores_IDWT_time, flores_DCT_time, "Compresión flores")
+crear_tabla_errores(flores, flores_DWT, flores_DCT, ruta_flores, "data_comp/flores_DWT.jpg", "data_comp/flores_DCT.jpg", flores_DWT_time, flores_DCT_time, "Compresión flores")
 ```
 
 ```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
@@ -516,8 +517,8 @@ par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 plot(noche, axes = FALSE)
 title(main = "Imagen noche", line = 0.75)
 
-plot(noche_IDWT, axes = FALSE)
-title(main = "Compresión IDWT", line = 0.75)
+plot(noche_DWT, axes = FALSE)
+title(main = "Compresión DWT", line = 0.75)
 
 plot(noche_DCT, axes = FALSE)
 title(main = "Compresión DCT", line = 0.75)
@@ -526,7 +527,7 @@ title(main = "Compresión DCT", line = 0.75)
 De nuevo observamos el mismo efecto que para la imagen del acantilado.
 
 ```{r}
-crear_tabla_errores(noche, noche_IDWT, noche_DCT, ruta_noche, "data_comp/noche_IDWT.jpg", "data_comp/noche_DCT.jpg", noche_IDWT_time, noche_DCT_time, "Compresión noche")
+crear_tabla_errores(noche, noche_DWT, noche_DCT, ruta_noche, "data_comp/noche_DWT.jpg", "data_comp/noche_DCT.jpg", noche_DWT_time, noche_DCT_time, "Compresión noche")
 ```
 
 ```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
@@ -535,15 +536,15 @@ par(mfrow = c(1, 3), mar = c(1, 1, 2, 1))
 plot(dibujo, axes = FALSE)
 title(main = "Imagen dibujo", line = -1)
 
-plot(dibujo_IDWT, axes = FALSE)
-title(main = "Compresión IDWT", line = -1)
+plot(dibujo_DWT, axes = FALSE)
+title(main = "Compresión DWT", line = -1)
 
 plot(dibujo_DCT, axes = FALSE)
 title(main = "Compresión DCT", line = -1)
 ```
 
 ```{r}
-crear_tabla_errores(dibujo, dibujo_IDWT, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_IDWT.jpg", "data_comp/dibujo_DCT.jpg", dibujo_IDWT_time, dibujo_DCT_time, "Compresión dibujo")
+crear_tabla_errores(dibujo, dibujo_DWT, dibujo_DCT, ruta_dibujo, "data_comp/dibujo_DWT.png", "data_comp/dibujo_DCT.png", dibujo_DWT_time, dibujo_DCT_time, "Compresión dibujo")
 ```
 
 ```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
@@ -553,14 +554,14 @@ plot(barcos, axes = FALSE)
 title(main = "Imagen barcos", line = -1)
 
 plot(barcos_IDWT, axes = FALSE)
-title(main = "Compresión IDWT", line = -1)
+title(main = "Compresión DWT", line = -1)
 
 plot(barcos_DCT, axes = FALSE)
 title(main = "Compresión DCT", line = -1)
 ```
 
 ```{r}
-crear_tabla_errores(barcos, barcos_IDWT, barcos_DCT, ruta_barcos, "data_comp/barcos_IDWT.jpg", "data_comp/barcos_DCT.jpg", barcos_IDWT_time, barcos_DCT_time, "Compresión barcos")
+crear_tabla_errores(barcos, barcos_DWT, barcos_DCT, ruta_barcos, "data_comp/barcos_DWT.png", "data_comp/barcos_DCT.png", barcos_DWT_time, barcos_DCT_time, "Compresión barcos")
 ```
 
 ### Compresión SPIHT y posibles mejoras
@@ -675,56 +676,10 @@ barcos_SPIHT_time <- as.numeric(time$toc - time$tic)
 ```
 
 ```{r, fig.width=8, fig.height=4.5, fig.align='center', out.width='100%'}
-barcos_SPIHT <- load.image("data_comp/boats_SPIHT.png")
-
 par(mfrow = c(1,2), mar = c(2,2,2,2))
 plot(barcos, main = "Imagen original", axes = FALSE)
 plot(barcos_SPIHT, main = "Compresión SPIHT", axes = FALSE)
 ```
-
-```{r}
-entropia_orig <- entropia(imagen_orig)
-  
-  mse_IDWT <- MSE(imagen_orig, imagen_comprimida_IDWT)
-  psnr_IDWT <- PSNR(imagen_orig, imagen_comprimida_IDWT)
-  ssim_IDWT <- SSIM(imagen_orig, imagen_comprimida_IDWT)
-  cr_IDWT <- CR(ruta_orig, ruta_comprimida_IDWT)
-  entropia_IDWT <- entropia(imagen_comprimida_IDWT)
-  time_IDWT <- imagen_IDWT_time
-  
-  mse_DCT <- MSE(imagen_orig, imagen_comprimida_DCT)
-  psnr_DCT <- PSNR(imagen_orig, imagen_comprimida_DCT)
-  ssim_DCT <- SSIM(imagen_orig, imagen_comprimida_DCT)
-  cr_DCT <- CR(ruta_orig, ruta_comprimida_DCT)
-  entropia_DCT <- entropia(imagen_comprimida_DCT)
-  time_DCT <- imagen_DCT_time
-  
-  df_IDWT <- data.frame(MSE = mse_IDWT, PSNR = psnr_IDWT, SSIM = ssim_IDWT, CR = cr_IDWT, ENTROPIA = entropia_IDWT,TIEMPO = time_IDWT)
-  df_DCT <- data.frame(MSE = mse_DCT, PSNR = psnr_DCT, SSIM = ssim_DCT, CR = cr_DCT, ENTROPIA = entropia_DCT, TIEMPO = time_DCT)
-  
-  df <- rbind(df_IDWT, df_DCT)
-  
-  rownames(df) <- c("IDWT", "DCT")
-  
-  knitr::kable(df, 
-      caption = titulo,
-      align = "c",
-      booktabs = TRUE,
-      col.names = c("MSE", "PSNR (dB)", "SSIM", "CR", "Entropía (bits/píxel)", "Tiempo (s)"),
-      digits = c(4, 2, 4, 3, 2, 2)) %>%
-    kable_styling(
-    position = "center",
-    full_width = FALSE,
-    bootstrap_options = c("striped", "hover")
-  ) %>%
-  column_spec(1, bold = TRUE) %>%
-  footnote(
-    general = paste("Nota: La entropía de la imagen original es de", 
-                    round(entropia_orig, 2), "bits/píxel."),
-    general_title = ""
-  )
-```
-
 
 ```{r}
 entropia_orig <- entropia(barcos)
@@ -733,10 +688,10 @@ mse_SPIHT <- MSE(barcos, barcos_SPIHT)
 psnr_SPIHT <- PSNR(barcos, barcos_SPIHT)
 ssim_SPIHT <- SSIM(barcos, barcos_SPIHT)
 cr_SPIHT <- CR(ruta_barcos, "data_comp/boats_SPIHT.png")
-entropia_IDWT <- entropia(barcos_SPIHT)
-time_IDWT <- imagen_IDWT_time
+entropia_SPIHT <- entropia(barcos_SPIHT)
+time_SPIHT <- barcos_SPIHT_time
 
-df_SPIHT <- data.frame(MSE = mse_SPIHT, PSNR = psnr_SPIHT, SSIM = ssim_SPIHT, CR = cr_SPIHT)
+df_SPIHT <- data.frame(MSE = mse_SPIHT, PSNR = psnr_SPIHT, SSIM = ssim_SPIHT, CR = cr_SPIHT, ENTROPIA = entropia_SPIHT,TIEMPO = time_SPIHT)
 
 rownames(df_SPIHT) <- "SPIHT"
 
@@ -744,14 +699,19 @@ knitr::kable(df_SPIHT,
     caption = "Compresión barcos SPIHT",
     align = "c",
     booktabs = TRUE,
-    col.names = c('MSE', 'PSNR', 'SSIM', 'CR'),
-    digits = c(4,2,4,3)) %>%
+    col.names = c("MSE", "PSNR (dB)", "SSIM", "CR", "Entropía (bits/píxel)", "Tiempo (s)"),
+    digits = c(4, 2, 4, 3, 2, 2)) %>%
   kable_styling(
   position = "center",
   full_width = FALSE,
   bootstrap_options = c("striped", "hover")
 ) %>%
-column_spec(1, bold = TRUE)
+column_spec(1, bold = TRUE) %>%
+  footnote(
+    general = paste("Nota: La entropía de la imagen original es de", 
+                    round(entropia_orig, 2), "bits/píxel."),
+    general_title = ""
+  )
 ```
 
 
@@ -902,7 +862,7 @@ par(mfrow = c(1, 1))
 Para el valor de $\lambda=0.1$ el error cuadrático medio normalizado tras comprimir en el canal izquierdo es `r round(mse_left,2)` y para el canal derecho `r round(mse_right, 2)`. Esto indica una pérdida apreciable pero concentrada en coeficientes de baja energía, manteniendo una estructura perceptualmente reconocible de la señal.
 
 ```{r}
-# Juntar imagen y video comprimido (funciones_audio.R)
+# Juntar imagen y vídeo comprimido (funciones_audio.R)
 # rebuild_video_comp()
 ratio_memoria<-CR("data/video_R.mp4","data_comp/video_comp.mp4")
 ```
