@@ -1,0 +1,661 @@
+---
+title: "Pruebas_Adrian"
+author: "Adrián Carrasco Alcalá"
+date: "2025-12-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(imager)
+library(wavethresh)
+```
+
+```{r}
+obtener_potencia_2 <- function(x) {
+  return(2^round(log2(x)))
+}
+```
+
+```{r}
+ruta_imagen <- 'IMAGENES/foto_de_prueba.jpg'
+img <- load.image(ruta_imagen)
+
+ancho <- width(img)
+alto <- height(img)
+
+plot(img)
+```
+
+```{r}
+nuevo_tamaño <- obtener_potencia_2(max(width(img), height(img))) #se le asigna el nuevo tamaño a la imagen
+  
+img_re <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
+
+plot(img_re)
+```
+
+```{r}
+canales <- imsplit(img_re, "c")
+
+procesar_canal <- function(canal, value = 0.5) {
+
+  matriz <- as.matrix(canal)
+
+  lwd <- imwd(matriz)
+  
+  lwdT <- threshold(lwd, policy = "manual", value = value)
+
+# political_umbral se define como "universal" que lo que hace es que dependiendo de la imagen
+# si tiene mucho ruido o no elimina/comprime más o menos la imagen
+# en el método de DCt está establecido en 95%
+  
+  recuperado <- imwr(lwdT)
+  
+  img_rec <- as.cimg(recuperado)
+  img_rec <- (img_rec + abs(img_rec)) / 2
+  img_rec <- (img_rec - (img_rec - 1) * (img_rec > 1))
+  
+  return(img_rec)
+}
+  
+canales_comprimidos_baja <- lapply(canales, procesar_canal)
+canales_comprimidos_alta <- lapply(canales, procesar_canal, value = 25)
+img_final_baja <- imappend(canales_comprimidos_baja, axis = "c")
+img_final_alta <- imappend(canales_comprimidos_alta, axis = "c")
+
+par(mfrow = c(1,2), mar = c(2,2,2,2))
+plot(img_final_baja, main = "Compresión baja", axes = FALSE)
+plot(img_final_alta, main = "Compresión alta", axes = FALSE)
+```
+
+```{r}
+img_final_baja <- resize(img_final_baja, size_x = ancho, size_y = alto)
+img_final_alta <- resize(img_final_alta, size_x = ancho, size_y = alto)
+
+par(mfrow = c(1,2), mar = c(2,2,2,2))
+plot(img_final_baja, main = "Compresión baja", axes = FALSE)
+plot(img_final_alta, main = "Compresión alta", axes = FALSE)
+```
+
+```{r}
+MSE <- function(imagen_orig, imagen_comprimida){
+  
+  diferencia <- imagen_orig - imagen_comprimida
+  
+  canales <- imsplit(diferencia, "c")
+  
+  mse_canales <- c()
+  
+  for (canal in canales){
+    matriz <- as.matrix(canal)
+    mse_canales <- c(mse_canales, c(1/(ancho*alto)*sum(matriz^2)))
+  }
+  
+  mse <- sum(mse_canales)/3
+  # print(paste('MSE:', mse))
+  
+  return(mse)
+}
+
+MSE(img, img_final_baja)
+MSE(img, img_final_alta)
+```
+
+```{r}
+# img = img / max( img )
+# img_final_alta = img_final_alta / max( img_final_alta )
+
+mean((img- img_final_baja)^2)
+mean((img - img_final_alta )^2)
+```
+
+```{r}
+MAE <- function(imagen_orig, imagen_comprimida){
+  
+  diferencia <- imagen_orig - imagen_comprimida
+  
+  canales <- imsplit(diferencia, "c")
+  
+  mae_canales <- c()
+  
+  for (canal in canales){
+    matriz <- as.matrix(canal)
+    mae_canales <- c(mae_canales, c(1/(ancho*alto)*sum(abs(matriz))))
+  }
+  
+  mae <- sum(mae_canales)/3
+  # print(paste('MAE:', mae))
+  
+  return(mae)
+}
+
+MAE(img, img_final_baja)
+MAE(img, img_final_alta)
+```
+
+```{r}
+RMSE <- function(imagen_orig, imagen_comprimida){
+  
+  mse <- MSE(imagen_orig, imagen_comprimida)
+
+  rsme <- sqrt(mse)
+  
+  return(rsme)
+}
+
+RMSE(img, img_final_baja)
+RMSE(img, img_final_alta)
+```
+
+```{r}
+PSNR <- function(imagen_orig, imagen_comprimida){
+  
+  mse <- MSE(imagen_orig, imagen_comprimida) 
+  
+  psnr <- 10*log10(1^2/mse)
+  
+  return(psnr)
+}
+
+PSNR(img, img_final_baja)
+PSNR(img, img_final_alta)
+```
+
+```{r}
+# img = img / max( img )
+# img_final_baja = img_final_baja / max( img_final_baja )
+20 * log10( max( img ) ) - 10 * log10( MSE( img, img_final_baja ) )
+20 * log10( max( img ) ) - 10 * log10( MSE( img, img_final_alta ) ) 
+```
+
+
+```{r}
+file.size('im_2/acantilado.jpg')
+file.size('data_comp/acantilado_IDWT.jpg')
+file.size('data_comp/acantilado_DCT.jpg')
+```
+
+```{r}
+ruta_acantilado <- 'im_2/acantilado.jpg'
+acantilado<-load.image(ruta_acantilado)
+save.image(acantilado, ruta_acantilado, quality = 1)
+file.size('im_2/acantilado.jpg')
+```
+
+```{r}
+ruta_acantilado <- 'im_2/acantilado.png'
+acantilado<-load.image(ruta_acantilado)
+save.image(acantilado, ruta_acantilado, quality = 1)
+```
+
+```{r}
+source("compresion_IDWT.R")
+source("compresion_DCT_opt.R")
+```
+
+```{r}
+acantilado_IDWT <- compresion_IDWT(ruta_acantilado)
+acantilado_DCT<-compresion_DCT_opt(ruta_acantilado)
+```
+
+```{r}
+file.size('im_2/acantilado.png')
+file.size('data_comp/acantilado_IDWT.png')
+file.size('data_comp/acantilado_DCT.png')
+```
+
+```{r}
+print(object.size("acantilado"))
+print(object.size("acantilado_IDWT"))
+print(object.size("acantilado_DCT"))
+```
+
+```{r}
+entropia <- function(imagen){
+  
+  imagen_gris <- grayscale(imagen)
+  v_imagen <- as.vector(imagen_gris)
+
+  v_imagen_255 <- round(v_imagen*255)
+  
+  h <- table(factor(v_imagen_255, levels = 0:255))
+  prob <- h / sum(h)
+  prob <- prob[prob > 0]
+  H <- -sum(prob * log2(prob))
+  return(H)
+}
+# Se mide en bits
+```
+
+```{r}
+entr <- function(histogram){
+  nonzeroCounts<-histogram$counts[histogram$counts > 0]
+  probs<-nonzeroCounts / sum(nonzeroCounts)
+  -sum(probs * log2(probs))
+}
+```
+
+```{r}
+entropia(acantilado)
+entropia(acantilado_IDWT)
+entropia(acantilado_DCT)
+```
+
+```{r}
+entropia(acantilado)
+entropia(acantilado_IDWT)
+entropia(acantilado_DCT)
+```
+
+
+```{r}
+imagen_gris <- grayscale(acantilado)
+v_imagen <- as.vector(imagen_gris)
+h <- table(factor(v_imagen, levels = 0:255))
+```
+
+
+```{r}
+save.image(img_final_baja, 'data_comp/img_final_baja.jpg', quality = 1)
+save.image(img_final_alta, 'data_comp/img_final_alta.jpg', quality = 1)
+```
+
+```{r}
+CR <- function(ruta_imagen_orig, ruta_imagen_comprimida){
+  
+  cr <- file.size(ruta_imagen_orig)/file.size(ruta_imagen_comprimida)
+  
+  return(cr)
+}
+
+CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_baja.jpg')
+CR('IMAGENES/foto_de_prueba.jpg', 'data_comp/img_final_alta.jpg')
+```
+
+```{r, warning = FALSE}
+library(SpatialPack)
+
+ssim_alta <- SpatialPack::SSIM(img, img_final_alta)
+ssim_baja <- SpatialPack::SSIM(img, img_final_baja)
+
+ssim_alta$SSIM
+ssim_baja$SSIM
+```
+
+```{r}
+# Obtenida del repositorio de la librería SPUTNIK
+SSIM <- function(x, y, numBreaks = 256) {
+  x <- c(x)
+  y <- c(y)
+
+  x <- x / max(x)
+  y <- y / max(y)
+  x.dig <- cut(as.numeric(x), numBreaks, labels = F) - 1
+  y.dig <- cut(as.numeric(y), numBreaks, labels = F) - 1
+  rm(x, y)
+
+  C1 <- (0.01 * (numBreaks - 1))^2
+  C2 <- (0.03 * (numBreaks - 1))^2
+
+  mux <- mean(x.dig)
+  muy <- mean(y.dig)
+  sigxy <- cov(x.dig, y.dig)
+  sigx <- var(x.dig)
+  sigy <- var(y.dig)
+
+  ssim <- ((2 * mux * muy + C1) * (2 * sigxy + C2)) / ((mux**2 + muy**2 + C1) * (sigx + sigy + C2))
+  stopifnot(ssim >= -1 && ssim <= 1)
+
+  return(ssim)
+}
+
+SSIM(img, img_final_alta)
+
+SSIM(img, img_final_baja)
+```
+
+```{r}
+SSIM_2 <- function( x, y, K = c( 0.01, 0.03 ) )
+{
+  x = x / max( x )
+  y = y / max( y )
+  globalMax <- max( max( x ), max( y ) )
+  globalMin <- abs( min( min( x ), min( y ) ) )
+  L <- globalMax - globalMin
+
+  C1 <- ( K[1] * L )^2
+  C2 <- ( K[2] * L )^2
+  C3 <- C2 / 2
+
+  mu_x <- mean( x )
+  mu_y <- mean( y )
+
+  mu_x_sq <- mu_x * mu_x
+  mu_y_sq <- mu_y * mu_y
+  mu_xy <- mu_x * mu_y
+
+  sigma_x_sq <- mean( x * x ) - mu_x_sq
+  sigma_y_sq <- mean( y * y ) - mu_y_sq
+  sigma_xy <- mean( x * y ) - mu_xy
+
+  numerator <- ( 2 * mu_xy + C1 ) * ( 2 * sigma_xy + C2 )
+  denominator <- ( mu_x_sq + mu_y_sq + C1 ) * ( sigma_x_sq + sigma_y_sq + C2 )
+
+  SSI <- numerator / denominator
+
+  return( SSI )
+}
+
+SSIM_2(img, img_final_alta)
+
+SSIM_2(img, img_final_baja)
+```
+
+
+
+```{r}
+
+
+SSMI <- function(imagen_orig, imagen_comprimida){
+  return(ssmi)
+}
+```
+
+```{r, echo = FALSE}
+library(gsignal)
+
+compresion_DCT_opt <- function(ruta_imagen, nivel_compresion = 0.95) {
+  
+  img <- load.image(ruta_imagen)
+  
+  canales <- imsplit(img, "c")
+  
+  procesar_canal <- function(canal) {
+    matriz <- as.matrix(canal)
+    
+    coeficientes <- gsignal::dct2(matriz)
+    
+    umbral <- quantile(abs(coeficientes), nivel_compresion)
+    coeficientes[abs(coeficientes) < umbral] <- 0
+    
+    recuperado <- gsignal::idct2(coeficientes)
+    
+    img_recuperada <- as.cimg(recuperado)
+    
+    img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+    img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+    
+    return(img_recuperada)
+  }
+
+  canales_comprimidos <- lapply(canales, procesar_canal)
+  img_final <- imappend(canales_comprimidos, axis = "c")
+  
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+  
+  ruta_salida <- file.path("data_comp", paste0(nombre_archivo, "_DCT.jpg"))
+  
+  save.image(img_final, ruta_salida, quality = 0.8) 
+
+  invisible(img_final)
+  
+  return(img_final)
+}
+```
+
+```{r}
+library(tictoc)
+tic()
+ruta_acantilado <- 'im_2/acantilado.jpg'
+acantilado_dct <- compresion_DCT_opt(ruta_acantilado)
+toc()
+```
+
+```{r}
+source('compresion_DCT.R')
+```
+
+```{r}
+tic()
+acantilado_dct <- compresion_DCT(ruta_acantilado)
+toc()
+```
+
+```{r}
+ruta_flores <- 'im_2/flores.jpg'
+flores_dct <- compresion_DCT_opt(ruta_flores)
+```
+
+```{r}
+source("compresion_SPIHT.R")
+source("Codificacion_SPIHT_funcionals.R")
+```
+
+```{r}
+obtener_potencia_4 <- function(x) {
+  return(4^round(log(x,4)))
+}
+
+resize_SPIHT <- function(img){
+  nuevo_tamaño <- obtener_potencia_4(max(width(img), height(img)))
+  img <- resize(img, size_x = nuevo_tamaño, size_y = nuevo_tamaño)
+}
+```
+
+
+```{r}
+compresion_SPIHT <- function(ruta_imagen, ruta_imagen_comp = "data_comp", J = 8, wf = "haar", max_bits = NULL, max_iter = 100){
+  
+  # Cargar la imagen, redimensionarla y separarla en canales
+  
+  img <- load.image(ruta_imagen)
+  
+  ancho <- width(img)
+  alto <- height(img)
+  
+  img_re4 <- resize_SPIHT(img)
+  
+  canales <- imsplit(img_re4, "c")
+  
+  procesar_canal <- function(canal) {
+    # matriz <- as.matrix(canal)
+    
+    # Transformada wavelet 2D
+  
+    dwt_obj <- dwt.2d(canal, wf = wf, J = J)
+    # J: niveles de descomposición
+    # wf: wavelet
+    
+    # Ensamblar matriz wavelet completa
+    
+    W <- Ensamblar(dwt_obj)
+    
+    # Codificar con SPIHT
+    
+    bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+    
+    # Tamaño en memoria del bitstream
+    
+    tamanno_bytes <- object.size(bitstream)
+    tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+    cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+    
+    # Decodificar SPIHT
+    
+    n_inicial <- floor(log2(max(abs(W))))
+    W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+    
+    # Desensamblar matriz wavelet reconstruida
+    
+    dwt_rec <- Desensamblar(W_rec)
+    
+    # Reconstruir imagen con IDWT
+    
+    attributes(dwt_rec) <- attributes(dwt_obj)
+    dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+    dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+    dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+    dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+    
+    img_rec <- idwt.2d(dwt_rec)
+    
+    img_recuperada <- as.cimg(img_rec)
+    
+    # img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+    # img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+    
+    return(img_recuperada)
+  }
+  
+  canales_comprimidos <- lapply(canales, procesar_canal)
+  img_final <- imappend(canales_comprimidos, axis = "c")
+  
+  img_final <- resize(img_final, size_x = ancho, size_y = alto)
+  
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+  
+  ruta_salida <- file.path(ruta_imagen_comp, paste0(nombre_archivo, "_SPIHT.jpg"))
+  
+  save.image(img_final, ruta_salida, quality = 1)
+  
+  return(img_final)
+}
+```
+
+```{r}
+# ¿Cambia el tamaño de la imagen original si tan solo la abrimos y la guardamos de vuelta?
+img <- load.image('IMAGENES/foto_de_prueba.jpg')
+save.image(img, 'IMAGENES/foto_de_prueba_guardada.jpg', quality = 1)
+# Partiendo de una foto .jpg sí
+```
+
+```{r}
+# Probemos formato .png
+img <- load.image('IMAGENES/dibujo.PNG')
+save.image(img, 'IMAGENES/dibujo_guardado.png', quality = 1)
+# Partiendo de una foto .png ocupa menos
+```
+
+```{r}
+img_ya_guardada <- load.image('IMAGENES/dibujo_guardado.png')
+save.image(img_ya_guardada, 'IMAGENES/dibujo_guardado_2.png', quality = 1)
+```
+
+
+```{r}
+data(boats)
+img <- boats
+
+# Usamos tu función recortar() para dejarla lista
+img <- grayscale(img)
+img_mat <- recorte(img)[,,1,1]
+```
+
+```{r}
+img <- load.image('IMAGENES/foto_de_prueba.jpg')
+  
+img_re4<-resize_SPIHT(img)
+
+canales <- imsplit(img_re4, "c")
+
+matriz <- as.matrix(canales[1])
+```
+
+
+```{r}
+# Test función compresion_SPIHT
+library(tictoc)
+data(boats)
+
+save.image(boats, 'IMAGENES/boats.png', quality = 1)
+
+tic()
+compresion_SPIHT('IMAGENES/boats.png', J = 8, max_iter = 500)
+toc()
+```
+
+```{r}
+compresion_SPIHT_gray <- function(ruta_imagen, J = 8, wf = "haar", max_bits = NULL, max_iter = 100){
+  
+  # Cargar la imagen, redimensionarla y separarla en canales
+  
+  img <- load.image(ruta_imagen)
+  
+  ancho <- width(img)
+  alto <- height(img)
+  
+  # img_re4 <- resize_SPIHT(img)
+  imagen_gray <- grayscale(img_re4)
+  
+  # Transformada wavelet 2D
+
+  dwt_obj <- dwt.2d(img_mat, wf = wf, J = J)
+  # J: niveles de descomposición
+  # wf: wavelet
+  
+  # Ensamblar matriz wavelet completa
+  
+  W <- Ensamblar(dwt_obj)
+  
+  # Codificar con SPIHT
+  
+  bitstream <- SPIHT_Codificar(W, max_bits = max_bits, max_iter = max_iter)
+  
+  # Tamaño en memoria del bitstream
+  
+  tamanno_bytes <- object.size(bitstream)
+  tamanno_kb <- as.numeric(tamanno_bytes) / 1024
+  cat("Tamaño del bitstream:", tamanno_kb, "KB\n")
+  
+  # Decodificar SPIHT
+  
+  n_inicial <- floor(log2(max(abs(W))))
+  W_rec <- SPIHT_Decodificar(bitstream, size = nrow(W), n_inicial = n_inicial)
+  
+  # Desensamblar matriz wavelet reconstruida
+  
+  dwt_rec <- Desensamblar(W_rec)
+  
+  # Reconstruir imagen con IDWT
+  
+  attributes(dwt_rec) <- attributes(dwt_obj)
+  dwt_rec$LH8 <- as.matrix(dwt_rec$LH8)
+  dwt_rec$HL8 <- as.matrix(dwt_rec$HL8)
+  dwt_rec$HH8 <- as.matrix(dwt_rec$HH8)
+  dwt_rec$LL8 <- as.matrix(dwt_rec$LL8)
+  
+  img_rec <- idwt.2d(dwt_rec)
+  
+  img_recuperada <- as.cimg(img_rec)
+  
+  #img_recuperada <- (img_recuperada + abs(img_recuperada)) / 2 
+  #img_recuperada <- (img_recuperada - (img_recuperada - 1) * (img_recuperada > 1))
+  
+  img_recuperada <- resize(img_recuperada, size_x = ancho, size_y = alto)
+  
+  nombre_archivo <- tools::file_path_sans_ext(basename(ruta_imagen))
+  
+  ruta_salida <- file.path("data_comp", paste0(nombre_archivo, "_SPIHT.jpg"))
+  
+  save.image(img_recuperada, ruta_salida, quality = 1)
+  
+  return(img_recuperada)
+}
+```
+
+```{r}
+tic()
+compresion_SPIHT_gray('IMAGENES/boats.png', J = 8, max_iter = 500)
+toc()
+```
+
+```{r}
+tic()
+compresion_SPIHT('IMAGENES/boats.png', J = 8, max_iter = 500)
+toc()
+```
+
+```{r}
+source("funciones/metricas.R")
+```
+
