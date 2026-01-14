@@ -759,11 +759,11 @@ column_spec(1, bold = TRUE)
 
 Para realizar la compresión del vídeo se ha decidido separar el audio y las imágenes para la compresión por separado.
 
-### Compresión imagen
+### Compresión de imagenes del vídeo
 
+La compresión de los frames del vídeo se ha realizado mediante el método DCT, reutilizando exactamente el mismo procedimiento desarrollado para la compresión de imágenes individuales. A partir del vídeo original se extraen 223 imágenes a 330 fotogramas por segundo y se aplica el algoritmo de compresión de forma iterativa.
 
-
-### Compresión del audio
+### Compresión del audio del vídeo
 
 Para buscar el mejor parámetro umbral se va a buscar aquel valor que tiene una alta reducción del archivo y un bajo valor de la redundancia, debido a que cuanto más se acerque a la redundancia de la señal sin comprimir menos información pierde. En la siguiente figura se representa el porcentaje de archivo comprimido frente a la redundancia de la señal wavelet. Para el cálculo de la entropía se va a utilizar un número de bins fijo a 100 por conveniencia.
 
