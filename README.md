@@ -23,7 +23,7 @@ Trabajo_AS/
 │   ├── video.mp4
 │   └── video_R.mp4    # Vídeo cargado, separado y directamente guardado
 ├── data_comp/                 # Resultados de la compresión
-│   ├── frames_comp/         # Carpeta con las imagenes comprimidas del vídeo
+│   ├── frames_comp/         # Carpeta con las imágenes comprimidas del vídeo
 │   ├── acantilado_DCT.jpg       # Imagen comprimida con DCT
 │   ├── acantilado_DWT.jpg       # Imagen comprimida con DWT
 │   ├── audio2comp.wav       # Audio comprimido
@@ -38,37 +38,38 @@ Trabajo_AS/
 │   ├── noche_DWT.jpg       # Imagen comprimida con DWT
 │   └── video_comp.mp4         # Vídeo comprimido
 ├── explicaciones_y_pruebas/          # Scripts de código fuente
-|   ├── compresion_ DWT.R    # Función para compresión DWT
-│   ├── compresion_IDWT.R
+|   ├── IMAGENES SPIHT/      # Carpeta con imágenes comprimidas con SPIHT
+|   ├── IMAGENES/            # Carpeta con imágenes de prueba para los algoritmos
+|   ├── Captura de pantalla 2025-12-09 194338.png
+│   ├── Explicacion_Algoritmos_DCT_IDWT.Rmd
+│   ├── Explicacion_Algoritmos_EZW_SPIHT.Rmd
+│   ├── Imagen_descomposicion_DWT.png
+│   ├── Pruebas_Adrian.Rmd
+│   ├── Pruebas_SPIHT.Rmd
+│   ├── Reconstruccion_500_iter.jpeg
+│   ├── Reconstruccion_50_iter.jpeg
+│   └── audio_video.Rmd
+├── funciones/      # Scripts de código fuente
+│   ├── Codificacion_SPIHT_funcional.R   # Funciones para la codificación SPIHT
+│   ├── Decodificacion_SPIHT.R
 │   ├── compresion_DCT.R
 │   ├── compresion_DCT_opt.R    # Función para compresión DCT
-│   ├── metricas.R    # Funciones para las diferentes métricas
-│   ├── funciones_audio.R   # Funciones para el vídeo
-│   ├── Codificacion_SPIHT_funcional.R   # Funciones para la codificación SPIHT
-│   ├── compresion_SPIHT.R    # Funciones para la compresión SPIHT
-│   ├── Decodificacion_SPIHT.R
-
-├── funciones/                    # Scripts de código fuente
-|   ├── compresion_ DWT.R    # Función para compresión DWT
+|   ├── compresion_DWT.R    # Función para compresión DWT
 │   ├── compresion_IDWT.R
-│   ├── compresion_DCT.R
-│   ├── compresion_DCT_opt.R    # Función para compresión DCT
-│   ├── metricas.R    # Funciones para las diferentes métricas
-│   ├── funciones_audio.R   # Funciones para el vídeo
-│   ├── Codificacion_SPIHT_funcional.R   # Funciones para la codificación SPIHT
 │   ├── compresion_SPIHT.R    # Funciones para la compresión SPIHT
-│   ├── Decodificacion_SPIHT.R
-├── Trabajo_AS.pdf               # Memoria
-├── Referencias.bib               # Referencias
-├── Trabajo_AS.Rmd      # Script principal que ejecuta la compresión
+│   ├── funciones_audio.R   # Funciones para el vídeo
+│   └── metricas.R    # Funciones para las diferentes métricas
 ├── README.md      # Este archivo
+├── Trabajo_AS.Rmd      # Script principal que ejecuta la compresión
+├── Trabajo_AS.pdf      # Memoria
+├── ieee.csl      # Memoria
+└── Referencias.bib      # Referencias
 ```
-
 
 
 ## Módulos del proyecto
 
-### Compresión IDWT
+### Compresión DWT
 
 ### Compresión DCT
 
